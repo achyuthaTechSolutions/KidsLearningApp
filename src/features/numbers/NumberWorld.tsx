@@ -1,24 +1,31 @@
 import { useState } from 'react';
-import { Box, Typography, Grid, Button, IconButton, Card, CardContent, LinearProgress } from '@mui/material';
-import { NavigateBefore, NavigateNext, Replay, VolumeUp } from '@mui/icons-material';
+import { Box, Button, Grid, Typography } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import { NavigateBefore, NavigateNext, ReplayRounded, RecordVoiceOverRounded } from '@mui/icons-material';
 import { numberData } from '../../data/numbers';
 import { NUMBER_TOTAL } from '../../services/progressStats';
 import { useAppStore } from '../../store/useAppStore';
 import { speak, cancelSpeech, speakNumber } from '../../services/speech';
 import { playConfirmation } from '../../services/audio';
+import Page from '../../components/ui/Page';
+import PageHero from '../../components/ui/PageHero';
+import LearnTile from '../../components/ui/LearnTile';
+import DetailStage from '../../components/ui/DetailStage';
+import RoundIconButton from '../../components/ui/RoundIconButton';
+import Mascot, { SpeechBubble } from '../../components/ui/Mascot';
+import { useWorld } from '../../components/ui/world';
+import { rainbow, type WorldKey } from '../../theme/tokens';
+import Illustration from '../../components/ui/Illustration';
 
-const numberColors = [
-  '#636E72','#E17055','#00B894','#6C5CE7','#FDCB6E','#74B9FF',
-  '#FF7675','#A29BFE','#55EFC4','#FAB1A0','#81ECEC',
-  '#DFE6E9','#FFEAA7','#FD79A8','#00CEC9','#E84393',
-  '#0984E3','#F39C12','#6AB04C','#EB4D4B','#7ED6DF',
-];
+const numberWorld = (value: number): WorldKey => rainbow[(value + 5) % rainbow.length];
 
 export default function NumberWorld() {
   const [selected, setSelected] = useState<number | null>(null);
   const settings = useAppStore((s) => s.settings);
   const progress = useAppStore((s) => s.progress);
   const addNumberExplored = useAppStore((s) => s.addNumberExplored);
+  const world = selected !== null ? numberWorld(selected) : 'sun';
+  const w = useWorld(world);
 
   const handleSelect = (num: number) => {
     setSelected(num);
@@ -37,112 +44,152 @@ export default function NumberWorld() {
     handleSelect(next);
   };
 
-  const d = selected !== null ? numberData[selected] : null;
-
-  const renderCountingObjects = (num: number, emoji: string) => {
-    if (num === 0) return <Typography sx={{ fontSize: '2rem', color: 'text.secondary' }}>Nothing here!</Typography>;
-    const items = [];
-    for (let i = 0; i < num; i++) {
-      items.push(
-        <Box key={i} sx={{
-          display: 'inline-block', fontSize: { xs: '1.5rem', md: '2rem' }, m: 0.3,
-          animation: `popIn 0.3s ease ${i * 0.05}s both`,
-          '@keyframes popIn': { '0%': { transform: 'scale(0)', opacity: 0 }, '100%': { transform: 'scale(1)', opacity: 1 } },
-        }}>
-          {emoji}
-        </Box>
-      );
-    }
-    return <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 0.5 }}>{items}</Box>;
+  const countAloud = (value: number) => {
+    if (!settings.speechEnabled) return;
+    cancelSpeech();
+    let countText = `Let's count! `;
+    for (let i = 1; i <= value; i++) countText += `${i}. `;
+    speak(countText, { rate: settings.speechRate });
   };
 
-  return (
-    <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1100, mx: 'auto' }}>
-      <Box sx={{ textAlign: 'center', mb: 3 }}>
-        <Typography variant="h2" sx={{ fontWeight: 800, color: 'primary.main', fontSize: { xs: '1.5rem', md: '2rem' } }}>
-          🔢 Number World
-        </Typography>
-        <Typography variant="body1" color="text.secondary">Learn to count from 0 to 20!</Typography>
-        <Box sx={{ maxWidth: 400, mx: 'auto', mt: 1 }}>
-          <LinearProgress variant="determinate" value={(progress.numbersExplored.length / NUMBER_TOTAL) * 100}
-            sx={{ height: 8, borderRadius: 4, '& .MuiLinearProgress-bar': { borderRadius: 4, bgcolor: 'secondary.main' } }} />
-          <Typography variant="caption" color="text.secondary">{progress.numbersExplored.length}/{NUMBER_TOTAL} numbers explored</Typography>
-        </Box>
-      </Box>
+  const d = selected !== null ? numberData[selected] : null;
 
-      {/* Number Grid */}
-      <Grid container spacing={1} sx={{ mb: 3, justifyContent: 'center' }}>
-        {numberData.map((n) => {
-          const isExplored = progress.numbersExplored.includes(n.value);
-          const isSelected = selected === n.value;
-          const color = numberColors[n.value];
-          return (
-            <Grid key={n.value}>
-              <Button
+  return (
+    <Page>
+      <PageHero
+        world="sun"
+        title="Number World"
+        subtitle="Tap a number and count the things together."
+        emoji="🔢"
+        progress={{ value: progress.numbersExplored.length, total: NUMBER_TOTAL, label: 'Numbers explored', ariaLabel: `${progress.numbersExplored.length} of ${NUMBER_TOTAL} numbers explored` }}
+      />
+
+      <Grid container spacing={{ xs: 3, md: 4 }}>
+        <Grid size={{ xs: 12, md: 6 }} sx={{ order: { xs: 2, md: 1 } }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: 'repeat(auto-fill, minmax(54px, 1fr))', sm: 'repeat(auto-fill, minmax(62px, 1fr))', md: 'repeat(auto-fill, minmax(66px, 1fr))' },
+              gap: { xs: 1.5, md: 2 },
+              justifyItems: 'center',
+              p: { xs: 1, md: 0 },
+            }}
+          >
+            {numberData.map((n) => (
+              <LearnTile
+                key={n.value}
+                world={numberWorld(n.value)}
+                selected={selected === n.value}
+                done={progress.numbersExplored.includes(n.value)}
+                ariaLabel={`Number ${n.value}${progress.numbersExplored.includes(n.value) ? ', explored' : ''}`}
                 onClick={() => handleSelect(n.value)}
-                variant={isSelected ? 'contained' : 'outlined'}
-                sx={{
-                  width: { xs: 48, md: 60 }, height: { xs: 48, md: 60 },
-                  fontSize: { xs: '1.2rem', md: '1.5rem' }, fontWeight: 800, borderRadius: 3,
-                  bgcolor: isSelected ? color : isExplored ? `${color}22` : 'background.paper',
-                  color: isSelected ? 'white' : color, borderColor: color,
-                  '&:hover': { bgcolor: isSelected ? color : `${color}33` },
-                }}
               >
                 {n.value}
-              </Button>
-            </Grid>
-          );
-        })}
-      </Grid>
+              </LearnTile>
+            ))}
+          </Box>
+        </Grid>
 
-      {/* Number Detail */}
-      {d && (
-        <Card sx={{ maxWidth: 600, mx: 'auto', borderTop: `4px solid ${numberColors[d.value]}` }}>
-          <CardContent sx={{ textAlign: 'center', p: { xs: 3, md: 4 } }}>
-            <Typography variant="h1" sx={{ fontSize: { xs: '4rem', md: '6rem' }, color: numberColors[d.value], lineHeight: 1, mb: 1 }}>
-              {d.value}
-            </Typography>
-            <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>{d.word}</Typography>
-            <Typography variant="h5" color="text.secondary" sx={{ mb: 2 }}>{d.description}</Typography>
-
-            {/* Counting display */}
-            <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 3, mb: 2 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
-                Let's count {d.value} {d.objects}!
-              </Typography>
-              {renderCountingObjects(d.value, d.emoji)}
-            </Box>
-
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-              <Button startIcon={<NavigateBefore />} onClick={() => handleNav(-1)} variant="outlined" disabled={selected === 0} sx={{ borderRadius: 3 }}>Prev</Button>
-              <IconButton aria-label="Repeat the number" onClick={() => {
-                if (settings.speechEnabled) { cancelSpeech(); speakNumber(d.value, d.word, d.description, settings.speechRate); }
-              }} color="primary" sx={{ bgcolor: 'action.hover' }}>
-                <Replay />
-              </IconButton>
-              <IconButton aria-label="Count out loud" onClick={() => {
-                if (settings.speechEnabled) {
-                  cancelSpeech();
-                  let countText = `Let's count! `;
-                  for (let i = 1; i <= d.value; i++) countText += `${i}. `;
-                  speak(countText, { rate: settings.speechRate });
+        <Grid size={{ xs: 12, md: 6 }} sx={{ order: { xs: 1, md: 2 } }}>
+          <Box sx={{ position: { md: 'sticky' }, top: { md: 24 } }}>
+            {d ? (
+              <DetailStage
+                world={world}
+                popKey={d.value}
+                art={
+                  <Box
+                    sx={{
+                      width: { xs: 120, md: 140 },
+                      height: { xs: 120, md: 140 },
+                      borderRadius: '36px',
+                      display: 'grid',
+                      placeItems: 'center',
+                      bgcolor: w.main,
+                      color: w.onMain,
+                      boxShadow: `0 8px 0 ${w.dark}`,
+                      fontFamily: 'Fredoka, Nunito, sans-serif',
+                      fontWeight: 700,
+                      fontSize: { xs: '4.4rem', md: '5.4rem' },
+                      lineHeight: 1,
+                      transform: 'rotate(-4deg)',
+                      animation: 'kl-pop-in 480ms cubic-bezier(0.34, 1.56, 0.64, 1) both',
+                    }}
+                    key={d.value}
+                    aria-hidden
+                  >
+                    {d.value}
+                  </Box>
                 }
-              }} color="secondary" sx={{ bgcolor: 'action.hover' }}>
-                <VolumeUp />
-              </IconButton>
-              <Button endIcon={<NavigateNext />} onClick={() => handleNav(1)} variant="outlined" disabled={selected === 20} sx={{ borderRadius: 3 }}>Next</Button>
-            </Box>
-          </CardContent>
-        </Card>
-      )}
-
-      {!d && (
-        <Box sx={{ textAlign: 'center', p: 4 }}>
-          <Typography sx={{ fontSize: '3rem', mb: 1 }}>🔢</Typography>
-          <Typography variant="h4" color="text.secondary">Select a number to start counting!</Typography>
-        </Box>
-      )}
-    </Box>
+                heading={`${d.word}!`}
+                controls={
+                  <>
+                    <Button startIcon={<NavigateBefore />} onClick={() => handleNav(-1)} variant="outlined" disabled={selected === 0} aria-label="Previous number">
+                      Back
+                    </Button>
+                    <RoundIconButton
+                      label="Repeat the number"
+                      world={world}
+                      onClick={() => {
+                        if (settings.speechEnabled) { cancelSpeech(); speakNumber(d.value, d.word, d.description, settings.speechRate); }
+                      }}
+                    >
+                      <ReplayRounded />
+                    </RoundIconButton>
+                    <RoundIconButton label="Count out loud" world={world} filled onClick={() => countAloud(d.value)}>
+                      <RecordVoiceOverRounded />
+                    </RoundIconButton>
+                    <Button endIcon={<NavigateNext />} onClick={() => handleNav(1)} variant="contained" color="warning" disabled={selected === 20} aria-label="Next number">
+                      Next
+                    </Button>
+                  </>
+                }
+              >
+                <Typography variant="body1" sx={{ color: 'text.secondary', mt: 0.5 }}>{d.description}</Typography>
+                <Box
+                  sx={{
+                    mt: 2,
+                    p: 2,
+                    borderRadius: '24px',
+                    border: `3px dashed ${alpha(w.main, 0.45)}`,
+                    bgcolor: w.tint,
+                    minHeight: 96,
+                  }}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: 800, color: w.text, mb: 1 }}>
+                    Let&apos;s count {d.value} {d.objects}!
+                  </Typography>
+                  {d.value === 0 ? (
+                    <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, color: w.text }}>
+                      <Illustration emoji="🫙" sx={{ mr: 1 }} />Nothing here!
+                    </Typography>
+                  ) : (
+                    <Box key={d.value} role="img" aria-label={`${d.value} ${d.objects}`} sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: { xs: 0.5, md: 1 } }}>
+                      {Array.from({ length: d.value }, (_, i) => (
+                        <Box
+                          key={i}
+                          aria-hidden
+                          sx={{
+                            fontSize: { xs: '1.7rem', md: '2.1rem' },
+                            lineHeight: 1.1,
+                            animation: `kl-pop-in 380ms cubic-bezier(0.34, 1.56, 0.64, 1) ${i * 60}ms both`,
+                          }}
+                        >
+                          <Illustration emoji={d.emoji} />
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
+                </Box>
+              </DetailStage>
+            ) : (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: { xs: 1, md: 4 }, px: 1 }}>
+                <Mascot size={110} mood="think" />
+                <SpeechBubble>Pick a number and we&apos;ll count together!</SpeechBubble>
+              </Box>
+            )}
+          </Box>
+        </Grid>
+      </Grid>
+    </Page>
   );
 }

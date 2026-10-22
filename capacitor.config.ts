@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Kids Learning',
   webDir: 'dist',
   android: {
-    backgroundColor: '#F8F9FD',
+    backgroundColor: '#F6F4FF',
     allowMixedContent: false,
     captureInput: true,
     webContentsDebuggingEnabled: false,
@@ -14,7 +14,7 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchAutoHide: true,
       launchShowDuration: 800,
-      backgroundColor: '#6C5CE7',
+      backgroundColor: '#6C4EF5',
       androidScaleType: 'CENTER_INSIDE',
       showSpinner: false,
       splashFullScreen: true,

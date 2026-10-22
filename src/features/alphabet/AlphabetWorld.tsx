@@ -1,25 +1,30 @@
 import { useState } from 'react';
-import { Box, Typography, Grid, Button, IconButton, Card, CardContent, LinearProgress, Chip } from '@mui/material';
-import { VolumeUp, NavigateBefore, NavigateNext, Replay } from '@mui/icons-material';
+import { Box, Button, Grid, Typography } from '@mui/material';
+import { VolumeUpRounded, NavigateBefore, NavigateNext, ReplayRounded } from '@mui/icons-material';
 import { alphabetData, letterOrder } from '../../data/alphabet';
 import { LETTER_TOTAL } from '../../services/progressStats';
 import { useAppStore } from '../../store/useAppStore';
 import { speak, cancelSpeech, speakLetter } from '../../services/speech';
 import { playConfirmation } from '../../services/audio';
+import Page from '../../components/ui/Page';
+import PageHero from '../../components/ui/PageHero';
+import LearnTile from '../../components/ui/LearnTile';
+import DetailStage from '../../components/ui/DetailStage';
+import IllustrationBubble from '../../components/ui/IllustrationBubble';
+import RoundIconButton from '../../components/ui/RoundIconButton';
+import Mascot, { SpeechBubble } from '../../components/ui/Mascot';
+import { useWorld } from '../../components/ui/world';
+import { rainbow, type WorldKey } from '../../theme/tokens';
+import Illustration from '../../components/ui/Illustration';
 
-const letterColors = [
-  '#E17055','#00B894','#6C5CE7','#FDCB6E','#74B9FF',
-  '#FF7675','#A29BFE','#55EFC4','#FAB1A0','#81ECEC',
-  '#DFE6E9','#FFEAA7','#FD79A8','#636E72','#00CEC9',
-  '#E84393','#0984E3','#F39C12','#6AB04C','#EB4D4B',
-  '#7ED6DF','#E056FD','#F9CA24','#30336B','#22A6B3','#BE2EDD',
-];
+const letterWorld = (letter: string): WorldKey => rainbow[letterOrder.indexOf(letter) % rainbow.length];
 
 export default function AlphabetWorld() {
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
   const settings = useAppStore((s) => s.settings);
   const progress = useAppStore((s) => s.progress);
   const addLetterExplored = useAppStore((s) => s.addLetterExplored);
+  const green = useWorld('green');
 
   const explored = progress.lettersExplored;
 
@@ -48,85 +53,106 @@ export default function AlphabetWorld() {
   };
 
   const d = selectedLetter ? alphabetData[selectedLetter] : null;
+  const world = selectedLetter ? letterWorld(selectedLetter) : 'green';
 
   return (
-    <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1100, mx: 'auto' }}>
-      <Box sx={{ textAlign: 'center', mb: 3 }}>
-        <Typography variant="h2" sx={{ fontWeight: 800, color: 'primary.main', fontSize: { xs: '1.5rem', md: '2rem' } }}>
-          🔤 Alphabet World
-        </Typography>
-        <Typography variant="body1" color="text.secondary">Click a letter to learn about it!</Typography>
-        <Box sx={{ maxWidth: 400, mx: 'auto', mt: 1 }}>
-          <LinearProgress variant="determinate" value={(explored.length / LETTER_TOTAL) * 100}
-            sx={{ height: 8, borderRadius: 4, '& .MuiLinearProgress-bar': { borderRadius: 4 } }} />
-          <Typography variant="caption" color="text.secondary">{explored.length}/{LETTER_TOTAL} letters explored</Typography>
-        </Box>
-      </Box>
+    <Page>
+      <PageHero
+        world="green"
+        title="Alphabet World"
+        subtitle="Tap a letter to meet it and hear its sound."
+        emoji="🔤"
+        progress={{ value: explored.length, total: LETTER_TOTAL, label: 'Letters explored', ariaLabel: `${explored.length} of ${LETTER_TOTAL} letters explored` }}
+      />
 
-      {/* Letter Grid */}
-      <Grid container spacing={1} sx={{ mb: 3, justifyContent: 'center' }}>
-        {letterOrder.map((letter, i) => {
-          const isExplored = explored.includes(letter);
-          const isSelected = selectedLetter === letter;
-          return (
-            <Grid key={letter}>
-              <Button
+      <Grid container spacing={{ xs: 3, md: 4 }}>
+        <Grid size={{ xs: 12, md: 7 }} sx={{ order: { xs: 2, md: 1 } }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: 'repeat(auto-fill, minmax(54px, 1fr))', sm: 'repeat(auto-fill, minmax(62px, 1fr))', md: 'repeat(auto-fill, minmax(66px, 1fr))' },
+              gap: { xs: 1.5, md: 2 },
+              justifyItems: 'center',
+              p: { xs: 1, md: 0 },
+            }}
+          >
+            {letterOrder.map((letter) => (
+              <LearnTile
+                key={letter}
+                world={letterWorld(letter)}
+                selected={selectedLetter === letter}
+                done={explored.includes(letter)}
+                ariaLabel={`Letter ${letter}${explored.includes(letter) ? ', explored' : ''}`}
                 onClick={() => handleSelect(letter)}
-                variant={isSelected ? 'contained' : 'outlined'}
-                sx={{
-                  width: { xs: 44, sm: 52, md: 60 },
-                  height: { xs: 44, sm: 52, md: 60 },
-                  fontSize: { xs: '1.1rem', md: '1.4rem' },
-                  fontWeight: 800,
-                  borderRadius: 3,
-                  bgcolor: isSelected ? letterColors[i] : isExplored ? `${letterColors[i]}22` : 'background.paper',
-                  color: isSelected ? 'white' : letterColors[i],
-                  borderColor: letterColors[i],
-                  '&:hover': { bgcolor: isSelected ? letterColors[i] : `${letterColors[i]}33` },
-                  position: 'relative',
-                }}
               >
                 {letter}
-                {isExplored && !isSelected && (
-                  <Box sx={{ position: 'absolute', top: 2, right: 2, width: 8, height: 8, borderRadius: '50%', bgcolor: '#00B894' }} />
-                )}
-              </Button>
-            </Grid>
-          );
-        })}
+              </LearnTile>
+            ))}
+          </Box>
+        </Grid>
+
+        <Grid size={{ xs: 12, md: 5 }} sx={{ order: { xs: 1, md: 2 } }}>
+          <Box sx={{ position: { md: 'sticky' }, top: { md: 24 } }}>
+            {d && selectedLetter ? (
+              <DetailStage
+                world={world}
+                popKey={selectedLetter}
+                art={<IllustrationBubble emoji={d.emoji} world={world} size="lg" popKey={selectedLetter} label={d.word} />}
+                title={`${d.uppercase} ${d.lowercase}`}
+                heading={d.description}
+                controls={
+                  <>
+                    <Button startIcon={<NavigateBefore />} onClick={() => handleNav(-1)} variant="outlined" aria-label="Previous letter">
+                      Back
+                    </Button>
+                    <RoundIconButton label="Repeat the letter" world={world} onClick={handleRepeat}>
+                      <ReplayRounded />
+                    </RoundIconButton>
+                    <RoundIconButton
+                      label="Hear the word"
+                      world={world}
+                      filled
+                      onClick={() => { if (settings.speechEnabled) speak(d.word, { rate: settings.speechRate }); }}
+                    >
+                      <VolumeUpRounded />
+                    </RoundIconButton>
+                    <Button endIcon={<NavigateNext />} onClick={() => handleNav(1)} variant="contained" color="success" aria-label="Next letter">
+                      Next
+                    </Button>
+                  </>
+                }
+              >
+                <Box
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    mt: 1.5,
+                    px: 2,
+                    py: 0.75,
+                    borderRadius: '999px',
+                    bgcolor: green.tint,
+                    color: green.text,
+                    fontWeight: 800,
+                  }}
+                >
+                  <Illustration emoji="🗣️" size="1.3em" /> Sounds like “{d.phonetic}”
+                </Box>
+              </DetailStage>
+            ) : (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: { xs: 1, md: 4 }, px: 1 }}>
+                <Mascot size={110} mood="think" />
+                <SpeechBubble>Pick any letter. I&apos;ll tell you a word that starts with it!</SpeechBubble>
+              </Box>
+            )}
+            {d && (
+              <Typography variant="body2" sx={{ textAlign: 'center', mt: 2, color: 'text.secondary' }}>
+                Letter {letterOrder.indexOf(selectedLetter ?? 'A') + 1} of {LETTER_TOTAL}
+              </Typography>
+            )}
+          </Box>
+        </Grid>
       </Grid>
-
-      {/* Letter Detail */}
-      {d && (
-        <Card sx={{ maxWidth: 600, mx: 'auto', borderTop: `4px solid ${letterColors[letterOrder.indexOf(selectedLetter!)]}` }}>
-          <CardContent sx={{ textAlign: 'center', p: { xs: 3, md: 4 } }}>
-            <Typography sx={{ fontSize: { xs: '4rem', md: '6rem' }, lineHeight: 1, mb: 1 }}>{d.emoji}</Typography>
-            <Typography variant="h1" sx={{ fontSize: { xs: '3rem', md: '4rem' }, color: letterColors[letterOrder.indexOf(selectedLetter!)], mb: 0 }}>
-              {d.uppercase} {d.lowercase}
-            </Typography>
-            <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>{d.description}</Typography>
-            <Chip label={`Phonetic: "${d.phonetic}"`} variant="outlined" sx={{ mb: 2, fontWeight: 600 }} />
-
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mt: 2 }}>
-              <Button startIcon={<NavigateBefore />} onClick={() => handleNav(-1)} variant="outlined" sx={{ borderRadius: 3 }}>Previous</Button>
-              <IconButton aria-label="Repeat the letter" onClick={handleRepeat} color="primary" sx={{ bgcolor: 'action.hover' }}>
-                <Replay />
-              </IconButton>
-              <IconButton aria-label="Hear the word" onClick={() => { if (settings.speechEnabled) speak(d.word, { rate: settings.speechRate }); }} color="secondary" sx={{ bgcolor: 'action.hover' }}>
-                <VolumeUp />
-              </IconButton>
-              <Button endIcon={<NavigateNext />} onClick={() => handleNav(1)} variant="outlined" sx={{ borderRadius: 3 }}>Next</Button>
-            </Box>
-          </CardContent>
-        </Card>
-      )}
-
-      {!d && (
-        <Box sx={{ textAlign: 'center', p: 4 }}>
-          <Typography sx={{ fontSize: '3rem', mb: 1 }}>👆</Typography>
-          <Typography variant="h4" color="text.secondary">Select a letter to begin!</Typography>
-        </Box>
-      )}
-    </Box>
+    </Page>
   );
 }

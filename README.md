@@ -19,6 +19,22 @@ npm run lint
 npm run build
 ```
 
+## Artwork and fonts
+
+Everything the app shows is bundled, so it looks the same on every device and works offline.
+
+- **Illustrations:** [Fluent Emoji](https://github.com/microsoft/fluentui-emoji), flat style, © Microsoft Corporation, MIT License. One SVG per picture lives in `src/assets/illustrations/`, with the licence notice in `src/assets/illustrations/LICENSE.txt`. They come from the `@iconify-json/fluent-emoji-flat` dev dependency.
+- **Mascot and decorations:** Pip the owl and the background shapes are inline SVG drawn for this app.
+- **Fonts:** Fredoka and Nunito, both SIL Open Font License 1.1, through `@fontsource`.
+
+The app's data and screens still name each picture with an emoji character, and `src/data/illustrations.ts` maps it to the bundled SVG. If no SVG exists, the emoji itself is shown. After adding or changing an emoji anywhere in `src/`, regenerate the files:
+
+```powershell
+npm run illustrations
+```
+
+The script prints any emoji without a Fluent illustration, and `src/data/illustrations.test.ts` fails if a letter, number, animal, word, category, badge, or section has no picture.
+
 ## Android
 
 The Android app is a Capacitor 8 shell around the built web app. The application ID is `app.kidslearning.discovery`. Change that ID only before the first Play upload. After an artifact is uploaded, Play Console keeps the ID.
@@ -85,7 +101,7 @@ Version name `1.0.0` and version code `1` are in `android/app/build.gradle`. Rai
 - Back closes a parent dialog first, then returns to the previous screen. On the home screen it moves the app to the background.
 - The layout can rotate. Safe-area padding is applied for the status bar and gesture area.
 - Pausing the app stops speech and sound. Resuming restores the audio context. Progress is already on the device.
-- Learning content is bundled. Nunito is bundled. The app does not load Google Fonts or a remote speech service.
+- Learning content, illustrations, and fonts are bundled (see Artwork and fonts). The app does not load Google Fonts, remote images, or a remote speech service.
 - No microphone, camera, location, advertising ID, analytics, or ad SDK is requested. Android backup of app data is off.
 
 ## Play Console, for the owner

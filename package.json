@@ -9,6 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",
+    "illustrations": "node scripts/build-illustrations.mjs",
     "cap:sync": "npm run build && cap sync android",
     "android:run": "npm run build && cap run android",
     "android:bundle": "npm run build && cap sync android && cd android && gradlew.bat bundleRelease"
@@ -22,6 +23,7 @@
     "@capacitor/status-bar": "^8.0.4",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@fontsource/fredoka": "^5.3.0",
     "@fontsource/nunito": "^5.3.0",
     "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",
@@ -32,6 +34,7 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.3",
+    "@iconify-json/fluent-emoji-flat": "1.2.6",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^24.13.3",

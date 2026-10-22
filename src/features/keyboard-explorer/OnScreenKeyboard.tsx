@@ -1,4 +1,7 @@
-import { Box, Button } from '@mui/material';
+import { Box, ButtonBase } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
+import { outlineColor, useWorld } from '../../components/ui/world';
+import { fonts, worlds } from '../../theme/tokens';
 
 const rows = [
   ['`','1','2','3','4','5','6','7','8','9','0','-','=','Backspace'],
@@ -19,12 +22,17 @@ interface Props {
   highlightKey?: string | null;
 }
 
+const arrowLabels: Record<string, string> = { ArrowLeft: '←', ArrowDown: '↓', ArrowUp: '↑', ArrowRight: '→' };
+
 export default function OnScreenKeyboard({ pressedKeys, activeKey, onKeyClick, highlightKey }: Props) {
-  const isPressed = (key: string) => {
-    if (pressedKeys.has(key)) return true;
-    if (pressedKeys.has(key.toLowerCase())) return true;
-    return false;
-  };
+  const theme = useTheme();
+  const violet = useWorld('violet');
+  const sun = useWorld('sun');
+  const slate = useWorld('slate');
+  const outline = outlineColor(theme);
+  const dark = theme.palette.mode === 'dark';
+
+  const isPressed = (key: string) => pressedKeys.has(key) || pressedKeys.has(key.toLowerCase());
 
   const isActive = (key: string) => {
     if (!activeKey) return false;
@@ -59,81 +67,76 @@ export default function OnScreenKeyboard({ pressedKeys, activeKey, onKeyClick, h
 
   const getLabel = (key: string) => {
     if (key === 'Backspace') return '⌫';
-    if (key === 'Tab') return 'Tab';
     if (key === 'CapsLock') return 'Caps';
-    if (key === 'Enter') return '↵';
-    if (key === 'Shift') return '⇧';
-    if (key === 'Space') return 'Space';
+    if (key === 'Enter') return '↵ Enter';
+    if (key === 'Shift') return '⇧ Shift';
+    if (key in arrowLabels) return arrowLabels[key];
     return key;
   };
 
+  const inkFor = (key: string) => {
+    if (/^[A-Z]$/.test(key)) return violet.text;
+    if (/^[0-9]$/.test(key)) return sun.text;
+    return slate.text;
+  };
+
+  const renderKey = (key: string, width: number) => {
+    const pressed = isPressed(key);
+    const active = isActive(key);
+    const highlighted = isHighlighted(key);
+    const capColor = active ? violet.main : highlighted ? (dark ? alpha(worlds.gold.main, 0.25) : worlds.gold.soft) : 'background.paper';
+    const lipColor = active ? violet.dark : highlighted ? worlds.gold.main : outline;
+    const down = pressed || active;
+    return (
+      <ButtonBase
+        key={key}
+        aria-label={accessibleName(key)}
+        onClick={() => handleClick(key)}
+        sx={{
+          minWidth: { xs: width * 30, sm: width * 38, md: width * 50 },
+          height: { xs: 38, sm: 44, md: 52 },
+          px: 0.5,
+          borderRadius: { xs: '10px', md: '14px' },
+          border: `2px solid ${active ? violet.main : highlighted ? worlds.gold.main : outline}`,
+          bgcolor: capColor,
+          color: active ? violet.onMain : inkFor(key),
+          fontFamily: fonts.display,
+          fontWeight: 600,
+          fontSize: { xs: key.length > 1 ? '0.7rem' : '0.95rem', sm: key.length > 1 ? '0.8rem' : '1.1rem', md: key.length > 1 ? '0.9rem' : '1.3rem' },
+          boxShadow: down ? `0 1px 0 ${lipColor}` : `0 4px 0 ${lipColor}`,
+          transform: down ? 'translateY(3px)' : 'none',
+          transition: 'transform 80ms, box-shadow 80ms, background-color 140ms',
+          animation: highlighted ? 'kl-ring 1.4s ease-out infinite' : 'none',
+          '&:hover': { borderColor: violet.main },
+          '&:active': { transform: 'translateY(3px)', boxShadow: `0 1px 0 ${lipColor}` },
+        }}
+      >
+        {getLabel(key)}
+      </ButtonBase>
+    );
+  };
+
   return (
-    <Box sx={{ width: '100%', maxWidth: '100%', overflowX: 'auto', pb: 1 }}>
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'center', minWidth: 'max-content', mx: 'auto' }}>
-      {rows.map((row, ri) => (
-        <Box key={ri} sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-          {row.map((key) => {
-            const w = wideKeys[key] || 1;
-            const pressed = isPressed(key);
-            const active = isActive(key);
-            const highlighted = isHighlighted(key);
-            return (
-              <Button
-                key={key}
-                aria-label={accessibleName(key)}
-                onClick={() => handleClick(key)}
-                variant={active ? 'contained' : 'outlined'}
-                sx={{
-                  minWidth: { xs: w * 28, sm: w * 36, md: w * 48 },
-                  height: { xs: 32, sm: 40, md: 48 },
-                  fontSize: { xs: '0.65rem', sm: '0.75rem', md: '0.9rem' },
-                  fontWeight: 700,
-                  borderRadius: 2,
-                  p: 0.5,
-                  textTransform: 'none',
-                  bgcolor: active ? 'primary.main' : pressed ? 'primary.light' : highlighted ? 'warning.light' : 'background.paper',
-                  color: active ? 'white' : 'text.primary',
-                  border: highlighted ? '2px solid' : '1px solid',
-                  borderColor: highlighted ? 'warning.main' : active ? 'primary.main' : 'divider',
-                  boxShadow: active ? '0 4px 12px rgba(108,92,231,0.3)' : pressed ? '0 2px 8px rgba(108,92,231,0.2)' : 'none',
-                  transform: pressed ? 'scale(0.95)' : 'scale(1)',
-                  transition: 'all 0.15s ease',
-                  animation: highlighted ? 'pulse 1.5s infinite' : 'none',
-                  '@keyframes pulse': {
-                    '0%,100%': { boxShadow: '0 0 0 0 rgba(253,203,110,0.4)' },
-                    '50%': { boxShadow: '0 0 0 8px rgba(253,203,110,0)' },
-                  },
-                }}
-              >
-                {getLabel(key)}
-              </Button>
-            );
-          })}
+    <Box
+      sx={{
+        width: '100%',
+        overflowX: 'auto',
+        borderRadius: { xs: '24px', md: '32px' },
+        bgcolor: dark ? alpha('#FFFFFF', 0.04) : alpha(worlds.violet.main, 0.07),
+        border: `2px solid ${alpha(worlds.violet.main, dark ? 0.25 : 0.15)}`,
+        p: { xs: 1.25, sm: 2, md: 2.5 },
+      }}
+    >
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 0.75, md: 1 }, alignItems: 'center', minWidth: 'max-content', mx: 'auto', pb: 0.5 }}>
+        {rows.map((row, ri) => (
+          <Box key={ri} sx={{ display: 'flex', gap: { xs: 0.5, md: 0.75 }, justifyContent: 'center' }}>
+            {row.map((key) => renderKey(key, wideKeys[key] || 1))}
+          </Box>
+        ))}
+        <Box sx={{ display: 'flex', gap: { xs: 0.5, md: 0.75 }, mt: 0.5 }}>
+          {['ArrowLeft', 'ArrowDown', 'ArrowUp', 'ArrowRight'].map((key) => renderKey(key, 1))}
         </Box>
-      ))}
-      {/* Arrow keys */}
-      <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
-        {['ArrowLeft', 'ArrowDown', 'ArrowUp', 'ArrowRight'].map((key) => {
-          const labels: Record<string, string> = { ArrowLeft: '←', ArrowDown: '↓', ArrowUp: '↑', ArrowRight: '→' };
-          const active = isActive(key);
-          return (
-            <Button
-              key={key}
-              aria-label={accessibleName(key)}
-              onClick={() => handleClick(key)}
-              variant={active ? 'contained' : 'outlined'}
-              sx={{
-                minWidth: { xs: 32, md: 48 }, height: { xs: 32, md: 48 },
-                fontSize: '1.2rem', borderRadius: 2,
-                bgcolor: active ? 'primary.main' : 'background.paper',
-              }}
-            >
-              {labels[key]}
-            </Button>
-          );
-        })}
       </Box>
-    </Box>
     </Box>
   );
 }

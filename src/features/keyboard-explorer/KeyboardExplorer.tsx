@@ -1,6 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Box, Typography, Button, ToggleButtonGroup, ToggleButton, IconButton, Chip } from '@mui/material';
-import { VolumeUp, VolumeOff, Replay, NavigateBefore, NavigateNext } from '@mui/icons-material';
+import { Box, Typography, Button } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import { VolumeUpRounded, VolumeOffRounded, ReplayRounded, NavigateBefore, NavigateNext } from '@mui/icons-material';
+import Page from '../../components/ui/Page';
+import PageHero from '../../components/ui/PageHero';
+import PillPicker from '../../components/ui/PillPicker';
+import IllustrationBubble from '../../components/ui/IllustrationBubble';
+import RoundIconButton from '../../components/ui/RoundIconButton';
+import Confetti from '../../components/ui/Confetti';
+import Mascot from '../../components/ui/Mascot';
+import { useWorld } from '../../components/ui/world';
+import { rainbow, worlds, type WorldKey } from '../../theme/tokens';
 import { alphabetData, letterOrder } from '../../data/alphabet';
 import { numberData } from '../../data/numbers';
 import { specialKeyData, punctuationData } from '../../data/specialKeys';
@@ -8,6 +18,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { speak, cancelSpeech } from '../../services/speech';
 import { playConfirmation } from '../../services/audio';
 import OnScreenKeyboard from './OnScreenKeyboard';
+import Illustration from '../../components/ui/Illustration';
 
 type Mode = 'free' | 'letters' | 'numbers' | 'guess' | 'find';
 
@@ -30,6 +41,7 @@ export default function KeyboardExplorer() {
   const [guessTarget, setGuessTarget] = useState<string | null>(null);
   const [guessResult, setGuessResult] = useState<'correct' | 'wrong' | null>(null);
   const [findTarget, setFindTarget] = useState<string | null>(null);
+  const [celebrate, setCelebrate] = useState(0);
 
   const settings = useAppStore((s) => s.settings);
   const addLetterExplored = useAppStore((s) => s.addLetterExplored);
@@ -90,6 +102,7 @@ export default function KeyboardExplorer() {
     if (mode === 'guess' && guessTarget) {
       if (key.toUpperCase() === guessTarget) {
         setGuessResult('correct');
+        setCelebrate((count) => count + 1);
         if (settings.speechEnabled) setTimeout(() => speak('Correct! Well done!', { rate: settings.speechRate }), 800);
         setTimeout(() => { setGuessResult(null); newGuessTarget(); }, 2000);
       } else {
@@ -102,6 +115,7 @@ export default function KeyboardExplorer() {
     if (mode === 'find' && findTarget) {
       if (displayKey.toUpperCase() === findTarget.toUpperCase() || key.toUpperCase() === findTarget.toUpperCase()) {
         setGuessResult('correct');
+        setCelebrate((count) => count + 1);
         if (settings.speechEnabled) setTimeout(() => speak('You found it! Great job!', { rate: settings.speechRate }), 800);
         setTimeout(() => { setGuessResult(null); newFindTarget(); }, 2000);
       }
@@ -182,108 +196,170 @@ export default function KeyboardExplorer() {
     }
   };
 
+  const stageWorld: WorldKey = (() => {
+    if (!activeKey) return 'violet';
+    const index = activeKey.length === 1 ? letterOrder.indexOf(activeKey.toUpperCase()) : -1;
+    if (index >= 0) return rainbow[index % rainbow.length];
+    if (/^[0-9]$/.test(activeKey)) return 'sun';
+    return 'slate';
+  })();
+  const stage = useWorld(stageWorld);
+  const green = useWorld('green');
+  const orange = useWorld('orange');
+  const titleColor = stageWorld === 'sun' || stageWorld === 'gold' ? stage.text : stage.main;
+  const frame = guessResult === 'correct' ? green.main : guessResult === 'wrong' ? orange.main : alpha(stage.main, 0.35);
+  const challenge = mode === 'guess' && guessTarget
+    ? { emoji: '🤔', text: `Can you press the letter ${guessTarget}?`, hint: alphabetData[guessTarget]?.description }
+    : mode === 'find' && findTarget
+      ? { emoji: '🔍', text: `Find the ${findTarget} key!`, hint: 'Look for the glowing key below.' }
+      : null;
+
   return (
-    <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1100, mx: 'auto' }}>
-      <Box sx={{ textAlign: 'center', mb: 3 }}>
-        <Typography variant="h2" sx={{ fontWeight: 800, color: 'primary.main', fontSize: { xs: '1.5rem', md: '2rem' } }}>
-          ⌨️ Keyboard Explorer
-        </Typography>
-        <Typography variant="body1" color="text.secondary">Tap a key below to learn. A keyboard works too.</Typography>
-      </Box>
+    <Page>
+      <PageHero world="violet" title="Keyboard Explorer" subtitle="Tap a key below to learn. A real keyboard works too." emoji="⌨️" />
 
-      {/* Mode Selector */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3, flexWrap: 'wrap', gap: 1 }}>
-        <ToggleButtonGroup
-          value={mode}
-          exclusive
-          onChange={(_, v) => v && setMode(v)}
-          size="small"
-          sx={{ flexWrap: 'wrap', justifyContent: 'center', maxWidth: '100%', '& .MuiToggleButton-root': { minHeight: 48 } }}
+      <PillPicker<Mode>
+        world="violet"
+        ariaLabel="Keyboard learning mode"
+        value={mode}
+        onChange={setMode}
+        scroll
+        options={[
+          { value: 'free', label: 'Free Explore', emoji: '🌈' },
+          { value: 'letters', label: 'Letter Practice', emoji: '🔤' },
+          { value: 'numbers', label: 'Number Practice', emoji: '🔢' },
+          { value: 'guess', label: 'Guess the Letter', emoji: '🤔' },
+          { value: 'find', label: 'Find the Key', emoji: '🔍' },
+        ]}
+      />
+
+      {challenge && (
+        <Box
+          key={challenge.text}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            mb: 2,
+            px: 2,
+            py: 1.5,
+            borderRadius: '22px',
+            bgcolor: worlds.gold.soft,
+            color: worlds.gold.ink,
+            border: `2px solid ${worlds.gold.main}`,
+            boxShadow: `0 4px 0 ${worlds.gold.main}`,
+            animation: 'kl-pop-in 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both',
+          }}
         >
-          <ToggleButton value="free" sx={{ borderRadius: 3, fontWeight: 600, textTransform: 'none' }}>Free Explore</ToggleButton>
-          <ToggleButton value="letters" sx={{ borderRadius: 3, fontWeight: 600, textTransform: 'none' }}>Letter Practice</ToggleButton>
-          <ToggleButton value="numbers" sx={{ borderRadius: 3, fontWeight: 600, textTransform: 'none' }}>Number Practice</ToggleButton>
-          <ToggleButton value="guess" sx={{ borderRadius: 3, fontWeight: 600, textTransform: 'none' }}>Guess the Letter</ToggleButton>
-          <ToggleButton value="find" sx={{ borderRadius: 3, fontWeight: 600, textTransform: 'none' }}>Find the Key</ToggleButton>
-        </ToggleButtonGroup>
-      </Box>
+          <Box aria-hidden sx={{ fontSize: '2rem', lineHeight: 1 }}><Illustration emoji={challenge.emoji} /></Box>
+          <Box>
+            <Typography variant="h4" component="p" sx={{ color: 'inherit' }}>{challenge.text}</Typography>
+            {challenge.hint && <Typography variant="body2" sx={{ color: 'inherit' }}>{challenge.hint}</Typography>}
+          </Box>
+        </Box>
+      )}
 
-      {/* Display Area */}
-      <Box sx={{
-        textAlign: 'center', p: { xs: 3, md: 4 }, mb: 3,
-        bgcolor: 'background.paper', borderRadius: 4,
-        boxShadow: '0 4px 20px rgba(108,92,231,0.08)',
-        minHeight: 220, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        border: guessResult === 'correct' ? '3px solid #00B894' : guessResult === 'wrong' ? '3px solid #E17055' : '3px solid transparent',
-        transition: 'border-color 0.3s ease',
-      }}>
-        {mode === 'guess' && guessTarget && !content && (
-          <>
-            <Typography sx={{ fontSize: '3rem', mb: 1 }}>🤔</Typography>
-            <Typography variant="h3">Can you press the letter {guessTarget}?</Typography>
-            <Typography variant="body1" color="text.secondary">{alphabetData[guessTarget]?.description}</Typography>
-          </>
-        )}
-        {mode === 'find' && findTarget && !content && (
-          <>
-            <Typography sx={{ fontSize: '3rem', mb: 1 }}>🔍</Typography>
-            <Typography variant="h3">Find the {findTarget} key!</Typography>
-            <Typography variant="body1" color="text.secondary">Tap it on the keyboard below</Typography>
-          </>
-        )}
-        {content ? (
-          <>
-            <Typography sx={{ fontSize: { xs: '4rem', md: '5rem' }, lineHeight: 1, mb: 1 }}>{content.emoji}</Typography>
-            <Typography variant="h2" sx={{ fontSize: { xs: '2rem', md: '3rem' }, color: 'primary.main', mb: 0.5 }}>
-              {content.title}
+      <Box
+        role="status"
+        aria-live="polite"
+        sx={{
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: { xs: '28px', md: '36px' },
+          bgcolor: 'background.paper',
+          border: `3px solid ${frame}`,
+          boxShadow: `0 8px 0 ${frame}`,
+          p: { xs: 2.5, md: 4 },
+          mb: 3.5,
+          minHeight: { md: 260 },
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: 'center',
+          gap: { xs: 2, md: 4 },
+          transition: 'border-color 200ms, box-shadow 200ms',
+          animation: guessResult === 'wrong' ? 'kl-shake 420ms ease-in-out' : 'none',
+        }}
+      >
+        <Box aria-hidden sx={{ position: 'absolute', width: 320, height: 320, borderRadius: '50%', left: -90, top: -90, bgcolor: stage.tint }} />
+        <Box sx={{ position: 'relative' }}>
+          {content ? (
+            <IllustrationBubble emoji={content.emoji} world={stageWorld} size="lg" popKey={activeKey ?? undefined} />
+          ) : (
+            <Mascot size={130} mood={challenge ? 'think' : 'happy'} wave={!challenge} />
+          )}
+        </Box>
+
+        <Box sx={{ position: 'relative', flex: 1, minWidth: 0, textAlign: { xs: 'center', sm: 'left' } }}>
+          {content ? (
+            <Box key={activeKey ?? 'none'} sx={{ animation: 'kl-rise-in 320ms ease-out both' }}>
+              <Typography
+                variant="h1"
+                component="p"
+                sx={{ fontSize: { xs: content.title.length > 6 ? '2.2rem' : '3.4rem', md: content.title.length > 6 ? '3rem' : '4.6rem' }, lineHeight: 1, color: titleColor, textShadow: `0 4px 0 ${alpha(stage.main, 0.18)}`, overflowWrap: 'anywhere' }}
+              >
+                {content.title}
+              </Typography>
+              <Typography variant="h3" component="p" sx={{ mt: 1, fontSize: { xs: '1.35rem', md: '1.7rem' } }}>{content.subtitle}</Typography>
+              {content.description && (
+                <Typography variant="body1" sx={{ mt: 0.5, color: 'text.secondary' }}>{content.description}</Typography>
+              )}
+              {guessResult && (
+                <Box
+                  sx={{
+                    display: 'inline-flex',
+                    mt: 1.5,
+                    px: 2,
+                    py: 0.75,
+                    borderRadius: '999px',
+                    fontWeight: 900,
+                    bgcolor: guessResult === 'correct' ? green.main : orange.tint,
+                    color: guessResult === 'correct' ? green.onMain : orange.text,
+                    animation: 'kl-pop-in 360ms cubic-bezier(0.34, 1.56, 0.64, 1) both',
+                  }}
+                >
+                  {guessResult === 'correct' ? <>Correct! <Illustration emoji="🎉" sx={{ ml: 0.5 }} /></> : 'Good try! Have another go.'}
+                </Box>
+              )}
+            </Box>
+          ) : (
+            <Typography variant="h3" component="p" sx={{ fontSize: { xs: '1.4rem', md: '1.8rem' }, color: 'text.secondary' }}>
+              {challenge ? 'Your turn! Press the key.' : 'Press any key to start exploring!'}
             </Typography>
-            <Typography variant="h4" sx={{ fontWeight: 600, mb: 0.5 }}>{content.subtitle}</Typography>
-            {content.description && (
-              <Typography variant="body1" color="text.secondary">{content.description}</Typography>
+          )}
+
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: { xs: 'center', sm: 'flex-start' }, gap: 1.5, mt: 2.5 }}>
+            {(mode === 'letters' || mode === 'numbers') && (
+              <>
+                <Button startIcon={<NavigateBefore />} onClick={() => handlePracticeNav(-1)} variant="outlined">
+                  Previous
+                </Button>
+                <Button endIcon={<NavigateNext />} onClick={() => handlePracticeNav(1)} variant="contained">
+                  Next
+                </Button>
+              </>
             )}
-            {guessResult === 'correct' && <Chip label="Correct!" color="success" sx={{ mt: 1, fontWeight: 700 }} />}
-            {guessResult === 'wrong' && <Chip label="Try again!" color="error" sx={{ mt: 1, fontWeight: 700 }} />}
-          </>
-        ) : !['guess', 'find'].includes(mode) ? (
-          <>
-            <Typography sx={{ fontSize: '3rem', mb: 1 }}>👆</Typography>
-            <Typography variant="h4" color="text.secondary">Press a key to start exploring!</Typography>
-          </>
-        ) : null}
+            <RoundIconButton label="Repeat speech" world={stageWorld} onClick={handleRepeat} disabled={!content}>
+              <ReplayRounded />
+            </RoundIconButton>
+            <RoundIconButton
+              label={settings.speechEnabled ? 'Turn speech off' : 'Turn speech on'}
+              world="violet"
+              filled={settings.speechEnabled}
+              onClick={() => useAppStore.getState().updateSettings({ speechEnabled: !settings.speechEnabled })}
+            >
+              {settings.speechEnabled ? <VolumeUpRounded /> : <VolumeOffRounded />}
+            </RoundIconButton>
+          </Box>
+        </Box>
       </Box>
 
-      {/* Controls */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 3 }}>
-        {(mode === 'letters' || mode === 'numbers') && (
-          <>
-            <Button startIcon={<NavigateBefore />} onClick={() => handlePracticeNav(-1)} variant="outlined" sx={{ borderRadius: 3 }}>
-              Previous
-            </Button>
-            <Button endIcon={<NavigateNext />} onClick={() => handlePracticeNav(1)} variant="outlined" sx={{ borderRadius: 3 }}>
-              Next
-            </Button>
-          </>
-        )}
-        <IconButton onClick={handleRepeat} color="primary" aria-label="Repeat speech" sx={{ bgcolor: 'action.hover' }}>
-          <Replay />
-        </IconButton>
-        <IconButton
-          onClick={() => useAppStore.getState().updateSettings({ speechEnabled: !settings.speechEnabled })}
-          color={settings.speechEnabled ? 'primary' : 'default'}
-          aria-label={settings.speechEnabled ? 'Turn speech off' : 'Turn speech on'}
-          sx={{ bgcolor: 'action.hover' }}
-        >
-          {settings.speechEnabled ? <VolumeUp /> : <VolumeOff />}
-        </IconButton>
-      </Box>
-
-      {/* On-screen keyboard */}
       <OnScreenKeyboard
         pressedKeys={pressedKeys}
         activeKey={activeKey}
         onKeyClick={(key) => handleKeyAction(key)}
         highlightKey={mode === 'find' ? findTarget : null}
       />
-    </Box>
+      <Confetti fire={celebrate} />
+    </Page>
   );
 }

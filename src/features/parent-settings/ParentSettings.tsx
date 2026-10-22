@@ -1,10 +1,18 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import {
-  Box, Typography, Card, CardContent, Switch, Slider, Select, MenuItem,
+  Box, Typography, Switch, Slider, Select, MenuItem,
   FormControl, InputLabel, Button, Dialog, DialogTitle, DialogContent,
   DialogContentText, DialogActions, Divider, Alert, LinearProgress,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import {
+  InsightsRounded, RecordVoiceOverRounded, PaletteRounded, LockRounded, PlayArrowRounded, RestartAltRounded,
+} from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
+import Page from '../../components/ui/Page';
+import PageHero from '../../components/ui/PageHero';
+import { useWorld } from '../../components/ui/world';
+import type { WorldKey } from '../../theme/tokens';
 import { useAppStore } from '../../store/useAppStore';
 import {
   getVoices, isChildVoiceName, isSpeechAvailable, RECOMMENDED_VOICE_LABEL, speak, VOICE_PREVIEW_TEXT,
@@ -14,6 +22,38 @@ import { ANIMAL_TOTAL, LETTER_TOTAL, NUMBER_TOTAL, WORD_TOTAL, overallLearningPr
 import { normalizeDailyRecord } from '../daily-challenge/dailySelection';
 import ParentGate from '../../components/parent/ParentGate.tsx';
 import { pushOverlay } from '../../platform/overlays';
+import Illustration from '../../components/ui/Illustration';
+
+function Section({ world, icon, title, children }: { world: WorldKey; icon: ReactNode; title: string; children: ReactNode }) {
+  const w = useWorld(world);
+  return (
+    <Box
+      component="section"
+      aria-label={title}
+      sx={{ mb: 3, p: { xs: 2.25, md: 3 }, borderRadius: '28px', bgcolor: 'background.paper', border: '2px solid', borderColor: 'divider' }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+        <Box aria-hidden sx={{ width: 44, height: 44, borderRadius: '14px', display: 'grid', placeItems: 'center', bgcolor: w.tint, color: w.text }}>
+          {icon}
+        </Box>
+        <Typography variant="h4" component="h2">{title}</Typography>
+      </Box>
+      {children}
+    </Box>
+  );
+}
+
+function SettingRow({ emoji, label, children }: { emoji: string; label: string; children: ReactNode }) {
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1, borderBottom: '2px solid', borderColor: 'divider', '&:last-of-type': { borderBottom: 0 } }}>
+      <Box aria-hidden sx={{ fontSize: '1.4rem', width: 32, textAlign: 'center' }}><Illustration emoji={emoji} /></Box>
+      <Typography sx={{ flex: 1, fontWeight: 800 }}>{label}</Typography>
+      {children}
+    </Box>
+  );
+}
+
+const areaWorlds: Record<string, WorldKey> = { Letters: 'green', Numbers: 'sun', Animals: 'orange', Words: 'pink' };
 
 function voiceMenuLabel(voice: SpeechSynthesisVoice): string {
   const place = voice.localService ? 'on this device' : 'needs a network';
@@ -75,179 +115,153 @@ export default function ParentSettings() {
   };
 
   return (
-    <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 700, mx: 'auto' }}>
-      <Box sx={{ textAlign: 'center', mb: 4 }}>
-        <Typography variant="h2" component="h1" sx={{ fontWeight: 800, color: 'primary.main', fontSize: { xs: '1.5rem', md: '2rem' } }}>
-          Parent Settings
+    <Page maxWidth={800}>
+      <PageHero world="slate" title="Parent Settings" subtitle="Sound, speech, appearance, and progress on this device." emoji="⚙️" />
+
+      {resetDone && <Alert severity="success" sx={{ mb: 2 }}>Progress has been reset on this device.</Alert>}
+
+      <Section world="violet" icon={<InsightsRounded />} title="Learning summary">
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          {summary.explored} of {summary.total} explored ({summary.percent}%). Today’s challenge: {daily.completed ? 'finished' : `${daily.answered} of 5`}. Answer streak: {progress.currentStreak}. Achievements: {progress.achievementsEarned.length}.
         </Typography>
-        <Typography variant="body1" color="text.secondary">Configure the learning experience</Typography>
-      </Box>
-
-      {resetDone && <Alert severity="success" sx={{ mb: 2, borderRadius: 3 }}>Progress has been reset on this device.</Alert>}
-
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography variant="h5" component="h2" sx={{ fontWeight: 700, mb: 1 }}>Learning summary</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            {summary.explored} of {summary.total} explored ({summary.percent}%). Today’s challenge: {daily.completed ? 'finished' : `${daily.answered} of 5`}. Answer streak: {progress.currentStreak}. Achievements: {progress.achievementsEarned.length}.
-          </Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, columnGap: 3, rowGap: 1.5 }}>
           {areas.map((area) => (
-            <Box key={area.label} sx={{ mb: 1.5 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mb: 0.5 }}>
-                <Typography variant="body2" sx={{ fontWeight: 700 }}>{area.label}</Typography>
-                <Typography variant="body2">{area.value} of {area.total}</Typography>
-              </Box>
-              <LinearProgress
-                variant="determinate"
-                value={area.total === 0 ? 0 : (area.value / area.total) * 100}
-                aria-label={`${area.label}, ${area.value} of ${area.total}`}
-                sx={{ height: 8, borderRadius: 4 }}
-              />
-            </Box>
+            <AreaBar key={area.label} label={area.label} value={area.value} total={area.total} />
           ))}
-        </CardContent>
-      </Card>
+        </Box>
+      </Section>
 
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography variant="h5" component="h2" sx={{ fontWeight: 700, mb: 2 }}>Speech & Audio</Typography>
+      <Section world="blue" icon={<RecordVoiceOverRounded />} title="Speech & Audio">
+        <SettingRow emoji="🗣️" label="Speech">
+          <Switch
+            checked={settings.speechEnabled}
+            onChange={(e) => updateSettings({ speechEnabled: e.target.checked })}
+            slotProps={{ input: { 'aria-label': 'Speech' } }}
+          />
+        </SettingRow>
+        <SettingRow emoji="🔔" label="Sound effects">
+          <Switch
+            checked={settings.soundEnabled}
+            onChange={(e) => updateSettings({ soundEnabled: e.target.checked })}
+            slotProps={{ input: { 'aria-label': 'Sound effects' } }}
+          />
+        </SettingRow>
 
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, gap: 2 }}>
-            <Typography>Speech</Typography>
-            <Switch
-              checked={settings.speechEnabled}
-              onChange={(e) => updateSettings({ speechEnabled: e.target.checked })}
-              slotProps={{ input: { 'aria-label': 'Speech' } }}
-            />
-          </Box>
-
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, gap: 2 }}>
-            <Typography>Sound effects</Typography>
-            <Switch
-              checked={settings.soundEnabled}
-              onChange={(e) => updateSettings({ soundEnabled: e.target.checked })}
-              slotProps={{ input: { 'aria-label': 'Sound effects' } }}
-            />
-          </Box>
-
-          <Box sx={{ mb: 2, px: 1 }}>
-            <Typography gutterBottom id="volume-label">Volume</Typography>
-            <Slider
-              aria-labelledby="volume-label"
-              value={settings.volume}
-              onChange={(_, v) => updateSettings({ volume: v as number })}
-              min={0}
-              max={1}
-              step={0.05}
-              valueLabelDisplay="auto"
-              valueLabelFormat={(v) => `${Math.round(v * 100)}%`}
-            />
-          </Box>
-
-          <Box sx={{ mb: 2, px: 1 }}>
-            <Typography gutterBottom id="speech-speed-label">Speech speed</Typography>
-            <Slider
-              aria-labelledby="speech-speed-label"
-              value={settings.speechRate}
-              onChange={(_, v) => updateSettings({ speechRate: v as number })}
-              min={0.5}
-              max={1.5}
-              step={0.1}
-              valueLabelDisplay="auto"
-              marks={[{ value: 0.5, label: 'Slow' }, { value: 1, label: 'Normal' }, { value: 1.5, label: 'Fast' }]}
-            />
-          </Box>
-
-          {isSpeechAvailable() && (
-            <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-              <InputLabel id="voice-label">Voice</InputLabel>
-              <Select
-                labelId="voice-label"
-                value={settings.selectedVoice || ''}
-                onChange={(e) => updateSettings({ selectedVoice: e.target.value || null })}
-                label="Voice"
-              >
-                <MenuItem value="">{RECOMMENDED_VOICE_LABEL}</MenuItem>
-                {settings.selectedVoice && savedVoiceMissing && (
-                  <MenuItem value={settings.selectedVoice}>{settings.selectedVoice} (not on this device)</MenuItem>
-                )}
-                {voices.map((voice) => (
-                  <MenuItem key={voice.name} value={voice.name}>{voiceMenuLabel(voice)}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          )}
-
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            The recommended choice uses the softest clear English voice installed on this device. A voice is marked youthful only when the device describes it that way. Voices that need a network are not used unless a parent selects one.
+        <Box sx={{ mt: 2, mb: 1, px: 1 }}>
+          <Typography gutterBottom id="volume-label" sx={{ fontWeight: 800 }}>
+            <Illustration emoji="🔊" sx={{ mr: 1 }} />Volume
           </Typography>
+          <Slider
+            aria-labelledby="volume-label"
+            value={settings.volume}
+            onChange={(_, v) => updateSettings({ volume: v as number })}
+            min={0}
+            max={1}
+            step={0.05}
+            valueLabelDisplay="auto"
+            valueLabelFormat={(v) => `${Math.round(v * 100)}%`}
+          />
+        </Box>
 
-          {savedVoiceMissing && (
-            <Alert severity="info" sx={{ mb: 2, borderRadius: 2 }}>
-              The saved voice is not on this device, so a soft on-device voice is used until you choose another.
-            </Alert>
-          )}
+        <Box sx={{ mb: 2.5, px: 1 }}>
+          <Typography gutterBottom id="speech-speed-label" sx={{ fontWeight: 800 }}>
+            <Illustration emoji="🐢" sx={{ mr: 1 }} />Speech speed
+          </Typography>
+          <Slider
+            aria-labelledby="speech-speed-label"
+            value={settings.speechRate}
+            onChange={(_, v) => updateSettings({ speechRate: v as number })}
+            min={0.5}
+            max={1.5}
+            step={0.1}
+            valueLabelDisplay="auto"
+            marks={[{ value: 0.5, label: 'Slow' }, { value: 1, label: 'Normal' }, { value: 1.5, label: 'Fast' }]}
+          />
+        </Box>
 
-          <Button variant="outlined" onClick={previewVoice} disabled={!settings.speechEnabled || !isSpeechAvailable()} sx={{ minHeight: 48 }}>
-            Preview voice
-          </Button>
-
-          {!isSpeechAvailable() && (
-            <Alert severity="info" sx={{ mt: 2, borderRadius: 2 }}>
-              Speech synthesis is not available on this device. Lessons still work without spoken words.
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography variant="h5" component="h2" sx={{ fontWeight: 700, mb: 2 }}>Appearance</Typography>
-
-          <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-            <InputLabel id="theme-label">Theme</InputLabel>
+        {isSpeechAvailable() && (
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel id="voice-label">Voice</InputLabel>
             <Select
-              labelId="theme-label"
-              value={settings.theme}
-              onChange={(e) => updateSettings({ theme: e.target.value as 'light' | 'dark' | 'system' })}
-              label="Theme"
+              labelId="voice-label"
+              value={settings.selectedVoice || ''}
+              onChange={(e) => updateSettings({ selectedVoice: e.target.value || null })}
+              label="Voice"
             >
-              <MenuItem value="light">Light</MenuItem>
-              <MenuItem value="dark">Dark</MenuItem>
-              <MenuItem value="system">System</MenuItem>
+              <MenuItem value="">{RECOMMENDED_VOICE_LABEL}</MenuItem>
+              {settings.selectedVoice && savedVoiceMissing && (
+                <MenuItem value={settings.selectedVoice}>{settings.selectedVoice} (not on this device)</MenuItem>
+              )}
+              {voices.map((voice) => (
+                <MenuItem key={voice.name} value={voice.name}>{voiceMenuLabel(voice)}</MenuItem>
+              ))}
             </Select>
           </FormControl>
+        )}
 
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
-            <Typography>Reduced motion</Typography>
-            <Switch
-              checked={settings.reducedMotion}
-              onChange={(e) => updateSettings({ reducedMotion: e.target.checked })}
-              slotProps={{ input: { 'aria-label': 'Reduced motion' } }}
-            />
-          </Box>
-        </CardContent>
-      </Card>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          The recommended choice uses the softest clear English voice installed on this device. A voice is marked youthful only when the device describes it that way. Voices that need a network are not used unless a parent selects one.
+        </Typography>
 
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography variant="h5" component="h2" sx={{ fontWeight: 700, mb: 2 }}>Data & progress</Typography>
-
-          <Alert severity="info" sx={{ mb: 2, borderRadius: 2 }}>
-            Learning progress and these settings stay on this device. Nothing is sent to a server. Reset clears progress, the answer streak, achievements, and today’s daily challenge. It does not change these sound and speech settings.
+        {savedVoiceMissing && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            The saved voice is not on this device, so a soft on-device voice is used until you choose another.
           </Alert>
+        )}
 
-          <Button component={RouterLink} to="/privacy" variant="text" sx={{ mb: 1, minHeight: 48 }}>
-            Read the privacy page
-          </Button>
+        <Button variant="outlined" startIcon={<PlayArrowRounded />} onClick={previewVoice} disabled={!settings.speechEnabled || !isSpeechAvailable()}>
+          Preview voice
+        </Button>
 
-          <Divider sx={{ my: 2 }} />
+        {!isSpeechAvailable() && (
+          <Alert severity="info" sx={{ mt: 2 }}>
+            Speech synthesis is not available on this device. Lessons still work without spoken words.
+          </Alert>
+        )}
+      </Section>
 
-          <Button variant="outlined" color="error" onClick={() => setGateOpen(true)} sx={{ borderRadius: 3, minHeight: 48 }}>
-            Reset all progress
-          </Button>
-        </CardContent>
-      </Card>
+      <Section world="pink" icon={<PaletteRounded />} title="Appearance">
+        <FormControl fullWidth sx={{ mb: 1.5 }}>
+          <InputLabel id="theme-label">Theme</InputLabel>
+          <Select
+            labelId="theme-label"
+            value={settings.theme}
+            onChange={(e) => updateSettings({ theme: e.target.value as 'light' | 'dark' | 'system' })}
+            label="Theme"
+          >
+            <MenuItem value="light">Light</MenuItem>
+            <MenuItem value="dark">Dark</MenuItem>
+            <MenuItem value="system">System</MenuItem>
+          </Select>
+        </FormControl>
+
+        <SettingRow emoji="🧘" label="Reduced motion">
+          <Switch
+            checked={settings.reducedMotion}
+            onChange={(e) => updateSettings({ reducedMotion: e.target.checked })}
+            slotProps={{ input: { 'aria-label': 'Reduced motion' } }}
+          />
+        </SettingRow>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          Reduced motion stops floating, confetti, and other moving decorations.
+        </Typography>
+      </Section>
+
+      <Section world="slate" icon={<LockRounded />} title="Data & progress">
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Learning progress and these settings stay on this device. Nothing is sent to a server. Reset clears progress, the answer streak, achievements, and today’s daily challenge. It does not change these sound and speech settings.
+        </Alert>
+
+        <Button component={RouterLink} to="/privacy" variant="text" sx={{ mb: 1 }}>
+          Read the privacy page
+        </Button>
+
+        <Divider sx={{ my: 2, borderBottomWidth: 2 }} />
+
+        <Button variant="outlined" color="error" startIcon={<RestartAltRounded />} onClick={() => setGateOpen(true)}>
+          Reset all progress
+        </Button>
+      </Section>
 
       <ParentGate
         open={gateOpen}
@@ -267,11 +281,29 @@ export default function ParentSettings() {
             This erases explored letters, numbers, animals, words, game scores, the answer streak, today’s daily challenge, and earned achievements on this device. Sound and speech settings stay as they are. This cannot be undone.
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
           <Button onClick={closeReset}>Cancel</Button>
           <Button onClick={handleReset} color="error" variant="contained">Reset everything</Button>
         </DialogActions>
       </Dialog>
+    </Page>
+  );
+}
+
+function AreaBar({ label, value, total }: { label: string; value: number; total: number }) {
+  const w = useWorld(areaWorlds[label] ?? 'violet');
+  return (
+    <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mb: 0.5 }}>
+        <Typography variant="body2" sx={{ fontWeight: 900, color: w.text }}>{label}</Typography>
+        <Typography variant="body2">{value} of {total}</Typography>
+      </Box>
+      <LinearProgress
+        variant="determinate"
+        value={total === 0 ? 0 : (value / total) * 100}
+        aria-label={`${label}, ${value} of ${total}`}
+        sx={{ height: 12, bgcolor: alpha(w.main, 0.15), '& .MuiLinearProgress-bar': { bgcolor: w.main } }}
+      />
     </Box>
   );
 }

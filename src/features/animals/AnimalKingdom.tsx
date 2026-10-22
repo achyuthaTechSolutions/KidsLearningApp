@@ -1,10 +1,43 @@
-import { useState } from 'react';
-import { Box, Typography, Grid, Card, CardContent, CardActionArea, Button, IconButton, Chip } from '@mui/material';
-import { VolumeUp, Replay, NavigateBefore, NavigateNext } from '@mui/icons-material';
+import { useState, type ReactNode } from 'react';
+import { Box, Button, Grid, Typography } from '@mui/material';
+import { VolumeUpRounded, ReplayRounded, NavigateBefore, NavigateNext } from '@mui/icons-material';
 import { animalData } from '../../data/animals';
+import { ANIMAL_TOTAL } from '../../services/progressStats';
 import { useAppStore } from '../../store/useAppStore';
 import { speak, cancelSpeech, speakAnimal } from '../../services/speech';
 import { playConfirmation } from '../../services/audio';
+import Page from '../../components/ui/Page';
+import PageHero from '../../components/ui/PageHero';
+import LearnTile from '../../components/ui/LearnTile';
+import DetailStage from '../../components/ui/DetailStage';
+import IllustrationBubble from '../../components/ui/IllustrationBubble';
+import RoundIconButton from '../../components/ui/RoundIconButton';
+import Mascot, { SpeechBubble } from '../../components/ui/Mascot';
+import { useWorld } from '../../components/ui/world';
+import { fonts, type WorldKey } from '../../theme/tokens';
+import Illustration from '../../components/ui/Illustration';
+
+const habitatWorld: Record<string, WorldKey> = {
+  Home: 'pink',
+  Farm: 'sun',
+  Savanna: 'orange',
+  Jungle: 'green',
+  Pond: 'blue',
+  Sky: 'blue',
+  Forest: 'green',
+  Antarctic: 'teal',
+};
+
+const worldFor = (habitat: string): WorldKey => habitatWorld[habitat] ?? 'orange';
+
+function Pill({ world, children }: { world: WorldKey; children: ReactNode }) {
+  const w = useWorld(world);
+  return (
+    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, px: 1.75, py: 0.75, borderRadius: '999px', bgcolor: w.tint, color: w.text, fontWeight: 800 }}>
+      {children}
+    </Box>
+  );
+}
 
 export default function AnimalKingdom() {
   const [selected, setSelected] = useState<number | null>(null);
@@ -30,89 +63,99 @@ export default function AnimalKingdom() {
   };
 
   const animal = selected !== null ? animalData[selected] : null;
+  const world = animal ? worldFor(animal.habitat) : 'orange';
 
   return (
-    <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1100, mx: 'auto' }}>
-      <Box sx={{ textAlign: 'center', mb: 3 }}>
-        <Typography variant="h2" sx={{ fontWeight: 800, color: 'primary.main', fontSize: { xs: '1.5rem', md: '2rem' } }}>
-          🐾 Animal Kingdom
-        </Typography>
-        <Typography variant="body1" color="text.secondary">Discover amazing animals and hear their sounds!</Typography>
-        <Typography variant="caption" color="text.secondary">{progress.animalsDiscovered.length}/{animalData.length} animals discovered</Typography>
-      </Box>
+    <Page>
+      <PageHero
+        world="orange"
+        title="Animal Kingdom"
+        subtitle="Meet the animals and hear what they say."
+        emoji="🦁"
+        progress={{ value: progress.animalsDiscovered.length, total: ANIMAL_TOTAL, label: 'Animals discovered', ariaLabel: `${progress.animalsDiscovered.length} of ${ANIMAL_TOTAL} animals discovered` }}
+      />
 
-      {/* Animal Grid */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        {animalData.map((a, i) => {
-          const discovered = progress.animalsDiscovered.includes(a.name);
-          const isSelected = selected === i;
-          return (
-            <Grid size={{ xs: 6, sm: 4, md: 3 }} key={a.name}>
-              <Card sx={{
-                border: isSelected ? '3px solid' : '1px solid',
-                borderColor: isSelected ? 'primary.main' : 'divider',
-                bgcolor: isSelected ? 'primary.main' : 'background.paper',
-                color: isSelected ? 'white' : 'text.primary',
-                transition: 'all 0.2s',
-              }}>
-                <CardActionArea onClick={() => handleSelect(i)} sx={{ p: 2, textAlign: 'center' }}>
-                  <Typography sx={{ fontSize: '3rem', mb: 0.5 }}>{a.emoji}</Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>{a.name}</Typography>
-                  <Typography variant="caption" sx={{ opacity: 0.8 }}>{a.sound}</Typography>
-                  {discovered && !isSelected && (
-                    <Chip label="Discovered" size="small" color="success" sx={{ mt: 0.5, fontSize: '0.65rem' }} />
-                  )}
-                </CardActionArea>
-              </Card>
-            </Grid>
-          );
-        })}
+      <Grid container spacing={{ xs: 3, md: 4 }}>
+        <Grid size={{ xs: 12, md: 7 }} sx={{ order: { xs: 2, md: 1 } }}>
+          <Grid container spacing={{ xs: 1.5, md: 2 }}>
+            {animalData.map((a, i) => {
+              const discovered = progress.animalsDiscovered.includes(a.name);
+              return (
+                <Grid size={{ xs: 6, sm: 4 }} key={a.name}>
+                  <LearnTile
+                    shape="wide"
+                    world={worldFor(a.habitat)}
+                    selected={selected === i}
+                    done={discovered}
+                    ariaLabel={`${a.name}${discovered ? ', discovered' : ''}`}
+                    onClick={() => handleSelect(i)}
+                  >
+                    <Box sx={{ py: 1.75, px: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.25 }}>
+                      <Box aria-hidden sx={{ fontSize: { xs: '2.6rem', md: '3rem' }, lineHeight: 1.1, filter: 'drop-shadow(0 3px 3px rgba(0,0,0,0.15))' }}><Illustration emoji={a.emoji} /></Box>
+                      <Typography component="span" sx={{ fontFamily: fonts.display, fontWeight: 600, fontSize: '1.15rem', color: 'inherit' }}>{a.name}</Typography>
+                      <Typography component="span" sx={{ fontSize: '0.82rem', fontWeight: 800, opacity: 0.85, color: 'inherit' }}>“{a.sound}”</Typography>
+                    </Box>
+                  </LearnTile>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Grid>
+
+        <Grid size={{ xs: 12, md: 5 }} sx={{ order: { xs: 1, md: 2 } }}>
+          <Box sx={{ position: { md: 'sticky' }, top: { md: 24 } }}>
+            {animal ? (
+              <DetailStage
+                world={world}
+                popKey={animal.name}
+                art={<IllustrationBubble emoji={animal.emoji} world={world} size="lg" popKey={animal.name} label={animal.name} />}
+                heading={animal.name}
+                controls={
+                  <>
+                    <Button startIcon={<NavigateBefore />} onClick={() => handleNav(-1)} variant="outlined" aria-label="Previous animal">Back</Button>
+                    <RoundIconButton
+                      label="Repeat the animal"
+                      world={world}
+                      onClick={() => {
+                        if (settings.speechEnabled) { cancelSpeech(); speakAnimal(animal.name, animal.description, animal.sound, settings.speechRate); }
+                      }}
+                    >
+                      <ReplayRounded />
+                    </RoundIconButton>
+                    <RoundIconButton
+                      label="Hear the animal sound"
+                      world={world}
+                      filled
+                      onClick={() => { if (settings.speechEnabled) speak(`The ${animal.name} says ${animal.sound}!`, { rate: settings.speechRate }); }}
+                    >
+                      <VolumeUpRounded />
+                    </RoundIconButton>
+                    <Button endIcon={<NavigateNext />} onClick={() => handleNav(1)} variant="contained" color="error" aria-label="Next animal">Next</Button>
+                  </>
+                }
+              >
+                <Typography variant="body1" sx={{ mt: 0.75 }}>{animal.description}</Typography>
+                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap', mt: 1.5 }}>
+                  <Pill world={world}><Illustration emoji="🔊" size="1.25em" /> Says “{animal.sound}”</Pill>
+                  <Pill world="slate"><Illustration emoji="🏡" size="1.25em" /> Lives: {animal.habitat}</Pill>
+                </Box>
+                <Box sx={{ mt: 2, p: 2, borderRadius: '22px', bgcolor: 'action.hover', textAlign: 'left', display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+                  <Box aria-hidden sx={{ fontSize: '1.6rem', lineHeight: 1 }}><Illustration emoji="💡" /></Box>
+                  <Box>
+                    <Typography variant="body2" sx={{ fontWeight: 900 }}>Fun fact</Typography>
+                    <Typography variant="body1">{animal.funFact}</Typography>
+                  </Box>
+                </Box>
+              </DetailStage>
+            ) : (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: { xs: 1, md: 4 }, px: 1 }}>
+                <Mascot size={110} mood="think" />
+                <SpeechBubble>Tap an animal. Can you guess what it says?</SpeechBubble>
+              </Box>
+            )}
+          </Box>
+        </Grid>
       </Grid>
-
-      {/* Animal Detail */}
-      {animal && (
-        <Card sx={{ maxWidth: 600, mx: 'auto', borderTop: '4px solid', borderColor: 'primary.main' }}>
-          <CardContent sx={{ textAlign: 'center', p: { xs: 3, md: 4 } }}>
-            <Typography sx={{ fontSize: { xs: '4rem', md: '6rem' }, lineHeight: 1, mb: 1 }}>{animal.emoji}</Typography>
-            <Typography variant="h2" sx={{ fontWeight: 800, color: 'primary.main', mb: 0.5, fontSize: { xs: '2rem', md: '2.5rem' } }}>
-              {animal.name}
-            </Typography>
-            <Typography variant="h5" sx={{ mb: 1 }}>{animal.description}</Typography>
-
-            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap', mb: 2 }}>
-              <Chip label={`Sound: "${animal.sound}"`} color="primary" variant="outlined" sx={{ fontWeight: 600 }} />
-              <Chip label={`Habitat: ${animal.habitat}`} color="secondary" variant="outlined" sx={{ fontWeight: 600 }} />
-            </Box>
-
-            <Box sx={{ bgcolor: 'action.hover', p: 2, borderRadius: 3, mb: 2 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>Fun Fact</Typography>
-              <Typography variant="body1">{animal.funFact}</Typography>
-            </Box>
-
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
-              <Button startIcon={<NavigateBefore />} onClick={() => handleNav(-1)} variant="outlined" sx={{ borderRadius: 3 }}>Prev</Button>
-              <IconButton aria-label="Repeat the animal" onClick={() => {
-                if (settings.speechEnabled) { cancelSpeech(); speakAnimal(animal.name, animal.description, animal.sound, settings.speechRate); }
-              }} color="primary" sx={{ bgcolor: 'action.hover' }}>
-                <Replay />
-              </IconButton>
-              <IconButton aria-label="Hear the animal sound" onClick={() => {
-                if (settings.speechEnabled) speak(`The ${animal.name} says ${animal.sound}!`, { rate: settings.speechRate });
-              }} color="secondary" sx={{ bgcolor: 'action.hover' }}>
-                <VolumeUp />
-              </IconButton>
-              <Button endIcon={<NavigateNext />} onClick={() => handleNav(1)} variant="outlined" sx={{ borderRadius: 3 }}>Next</Button>
-            </Box>
-          </CardContent>
-        </Card>
-      )}
-
-      {!animal && (
-        <Box sx={{ textAlign: 'center', p: 4 }}>
-          <Typography sx={{ fontSize: '3rem', mb: 1 }}>🦁</Typography>
-          <Typography variant="h4" color="text.secondary">Click an animal to learn about it!</Typography>
-        </Box>
-      )}
-    </Box>
+    </Page>
   );
 }
