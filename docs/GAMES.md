@@ -14,6 +14,7 @@ The hub groups games by category. The list lives in `src/features/learning-games
 | | Balloon Pop | `/balloons` | `features/balloon-pop` |
 | Logic and Puzzles | Little Robot Adventure | `/games/robot` | `features/robot-adventure` |
 | | Puzzle Planet | `/games/puzzle` | `features/puzzle-planet` |
+| | My Photo Puzzle | `/games/photo-puzzle` | `features/photo-puzzle` |
 | | Shadow Detective | `/games/shadow` | `features/shadow-detective` |
 | | Memory Match | `/memory` | `features/memory-match` |
 | Music and Sounds | Rhythm Hero | `/games/rhythm` | `features/rhythm-hero` |
@@ -25,7 +26,7 @@ The hub groups games by category. The list lives in `src/features/learning-games
 
 The five quiz games (Find the Letter, Guess the Animal, Count, Match the Word, Listen and Choose, plus Odd One Out and What Comes Next) still start inside the hub.
 
-The ten `/games/*` games load on first visit (`React.lazy` in `src/App.tsx`), with a short "Getting the game ready" screen while the code loads.
+The `/games/*` games load on first visit (`React.lazy` in `src/App.tsx`), with a short "Getting the game ready" screen while the code loads.
 
 ## Shared pieces
 
@@ -61,6 +62,14 @@ Stroke order and direction are shown but not enforced. Drawing uses pointer even
 **Little Robot Adventure.** Grid levels with Forward, Turn left, and Turn right. Turns are the robot's own left and right. `engine.ts` runs a whole program without any timing and returns every step. The screen then replays those steps slowly, so the result never depends on animation. Bumping a rock or the edge names the command to fix. The plan has Undo, Clear, Reset robot, and Hint (Hint compares the plan with the stored solution). There are nine levels, three per difficulty. Champion levels add a star to collect and a command limit. Tests check that every level is solvable within its limit.
 
 **Puzzle Planet.** A bundled picture is cut into 4, 6, or 12 pieces with CSS background positioning, so there is no image-slicing code and nothing loads from the network. Pieces can be dragged, or tapped and then their space tapped. The keyboard works too (Enter on a piece). Pieces snap into their own space only and then lock. Undo takes the last piece back. A faint picture helper can be switched off, and it is off by default at Champion level.
+
+**My Photo Puzzle.** The Puzzle Planet board (`puzzle-planet/PuzzleBoard.tsx`, shared by both games), using a family photo instead of a bundled picture.
+
+- **Adding photos:** a grown-up adds or deletes photos after the existing parent check. They come from the device's own picture picker; the app requests no camera permission (the Android manifest removes it).
+- **Processing (`photo-puzzle/photos.ts`):** the photo is checked (image types only, up to 25 MB), cropped to its centred square, and resized to 600 × 600. It is re-encoded as JPEG, which drops EXIF metadata such as GPS location. A real-browser test confirmed that a photo with GPS data is stored without it.
+- **Storage:** up to 8 photos, each about 10 to 60 KB, are kept under `kids-learning-photos` in this app's local storage with an optional name that Pip reads out. They are never uploaded. Damaged or non-JPEG entries are ignored when loading.
+- **Deleting:** a grown-up can delete photos one at a time or all at once, and Reset All Progress deletes them too.
+- **Playing:** a photo is shown through a short-lived object URL so the pieces share one image.
 
 **Shadow Detective.** The silhouette is the same bundled picture with a CSS `brightness(0)` filter, so its shape and proportions always match the answer. Items are hand-picked so outlines are distinct, and round look-alikes such as apple, orange, and ball are left out. Choices are 2, 4, and 4 by level, with two shadows at once at Champion. Wrong picks are greyed out without penalty, and the round is always 3 stars.
 
@@ -111,4 +120,5 @@ Badge rules count only real level ids, so a damaged or unknown id never unlocks 
 - Sound Safari has no real animal, vehicle, or everyday recordings. Adding them needs licensed audio files. Add each one as a new `SoundSource` kind and keep the label honest.
 - Rhythm Hero and Sound Safari instruments are synthesised, the same as Music Studio. They are not recorded instrument samples.
 - Tracing judges path coverage only, not stroke order, direction, or letter quality.
+- My Photo Puzzle was tested with file uploads in desktop Chromium. The Android WebView picture picker still needs checking on a real device. Some browsers cannot open HEIC photos; the game then asks for a JPEG or PNG.
 - Speech depends on the voices installed on the device. Quality was not checked on a real tablet or phone.

@@ -35,15 +35,24 @@ export default function PrivacyPage() {
         </Typography>
       </Block>
 
+      <Block world="pink" emoji="📸" title="Photos for My Photo Puzzle">
+        <Typography variant="body1" sx={{ mb: 1 }}>
+          A grown-up can add up to 8 photos from this device to turn into puzzles, after answering a short parent question. The app opens the device’s own picture picker; it does not use the camera and does not look through other photos.
+        </Typography>
+        <Typography variant="body1">
+          Each photo is cropped to a square, made smaller, and saved without its original details, such as where it was taken. Photos and their names stay in this app’s storage on this device. They are never uploaded or shared. A grown-up can delete them in the game, and Reset All Progress deletes them too.
+        </Typography>
+      </Block>
+
       <Block world="blue" emoji="🚫" title="What this app does not use">
         <Typography variant="body1">
-          There is no sign-in, cloud sync, microphone, camera, location, social sharing, or purchase flow. Spoken words use the device’s own speech, and sounds are created on the device. Lessons work without an internet connection.
+          There is no sign-in, cloud sync, microphone, camera, location, photo upload, social sharing, or purchase flow. Spoken words use the device’s own speech, and sounds are created on the device. Lessons work without an internet connection.
         </Typography>
       </Block>
 
       <Block world="orange" emoji="🧹" title="Reset and uninstall">
         <Typography variant="body1" sx={{ mb: 1 }}>
-          Reset All Progress in Parent Settings asks a parent to answer a short question first. Reset clears explored content, scores (including Dino Dash), the answer streak, achievements, and today’s daily challenge. It does not change sound or speech settings.
+          Reset All Progress in Parent Settings asks a parent to answer a short question first. Reset clears explored content, scores (including Dino Dash), the answer streak, achievements, today’s daily challenge, and puzzle photos. It does not change sound or speech settings.
         </Typography>
         <Typography variant="body1">
           Uninstalling the app, or clearing the app’s storage, removes this saved learning. Android backup of this app’s data is turned off, so the progress is not copied to a cloud backup.

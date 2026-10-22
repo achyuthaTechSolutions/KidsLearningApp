@@ -127,3 +127,16 @@ export function pieceLabel(pieceId: number, cols: number): string {
 export function puzzleId(picture: PuzzlePicture, size: PuzzleSize): string {
   return `${picture.id}-${size}`;
 }
+
+/** Three stars for a careful puzzle, never fewer than one. */
+export function puzzleStars(state: PuzzleState): number {
+  if (state.mistakes <= 1) return 3;
+  return state.mistakes <= state.size / 2 ? 2 : 1;
+}
+
+export const sizeOptions = [
+  { value: '4' as const, label: '4 pieces' },
+  { value: '6' as const, label: '6 pieces' },
+  { value: '12' as const, label: '12 pieces' },
+];
+export type SizeOption = (typeof sizeOptions)[number]['value'];

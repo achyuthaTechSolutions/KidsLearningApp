@@ -15,7 +15,8 @@ export type GameId =
   | 'chef'
   | 'space'
   | 'emotions'
-  | 'tracing';
+  | 'tracing'
+  | 'photo-puzzle';
 
 export type GameCategory = 'letters' | 'logic' | 'music' | 'pretend' | 'discovery' | 'action';
 
@@ -45,6 +46,7 @@ export const gameCatalog: GameEntry[] = [
   { id: 'balloons', path: '/balloons', title: 'Balloon Pop', description: 'Pop the letters, numbers, and colours you hear!', emoji: '🎈', world: 'blue', category: 'letters' },
   { id: 'robot', path: '/games/robot', title: 'Little Robot', description: 'Plan the moves and guide the robot home!', emoji: '🤖', world: 'teal', category: 'logic' },
   { id: 'puzzle', path: '/games/puzzle', title: 'Puzzle Planet', description: 'Put the picture pieces back together!', emoji: '🪐', world: 'orange', category: 'logic' },
+  { id: 'photo-puzzle', path: '/games/photo-puzzle', title: 'My Photo Puzzle', description: 'Turn a family photo into a puzzle!', emoji: '📸', world: 'pink', category: 'logic' },
   { id: 'shadow', path: '/games/shadow', title: 'Shadow Detective', description: 'Whose shadow is this?', emoji: '🔦', world: 'slate', category: 'logic' },
   { id: 'memory', path: '/memory', title: 'Memory Match', description: 'Flip the cards and find the pairs!', emoji: '🃏', world: 'violet', category: 'logic' },
   { id: 'rhythm', path: '/games/rhythm', title: 'Rhythm Hero', description: 'Listen to the beat, then tap it back!', emoji: '🥁', world: 'red', category: 'music' },

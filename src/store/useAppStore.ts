@@ -4,6 +4,7 @@ import { loadProgress, saveProgress, loadSettings, saveSettings, defaultProgress
 import { achievementsList } from '../data/achievements';
 import { animalData } from '../data/animals';
 import { vocabularyData } from '../data/vocabulary';
+import { clearPhotos } from '../features/photo-puzzle/photos';
 
 // Only real catalogue entries count, so games cannot inflate the learning totals.
 const animalNames = new Set(animalData.map((animal) => animal.name));
@@ -185,6 +186,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     saveProgress(progress);
     resetDailyChallenge();
     resetDinoScores();
+    clearPhotos();
     set({ progress });
   },
 

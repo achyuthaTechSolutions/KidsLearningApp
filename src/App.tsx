@@ -28,6 +28,7 @@ const LetterTracing = lazy(() => import('./features/letter-tracing/LetterTracing
 const AlphabetCatcher = lazy(() => import('./features/alphabet-catcher/AlphabetCatcher'));
 const RobotAdventure = lazy(() => import('./features/robot-adventure/RobotAdventure'));
 const PuzzlePlanet = lazy(() => import('./features/puzzle-planet/PuzzlePlanet'));
+const PhotoPuzzle = lazy(() => import('./features/photo-puzzle/PhotoPuzzle'));
 const ShadowDetective = lazy(() => import('./features/shadow-detective/ShadowDetective'));
 const SoundSafari = lazy(() => import('./features/sound-safari/SoundSafari'));
 const RhythmHero = lazy(() => import('./features/rhythm-hero/RhythmHero'));
@@ -40,6 +41,7 @@ const playRoutes = [
   { path: '/games/alphabet-catcher', Component: AlphabetCatcher },
   { path: '/games/robot', Component: RobotAdventure },
   { path: '/games/puzzle', Component: PuzzlePlanet },
+  { path: '/games/photo-puzzle', Component: PhotoPuzzle },
   { path: '/games/shadow', Component: ShadowDetective },
   { path: '/games/sound-safari', Component: SoundSafari },
   { path: '/games/rhythm', Component: RhythmHero },
