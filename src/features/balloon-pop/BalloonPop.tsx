@@ -14,6 +14,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { playConfirmation, playError, playNote, playSuccess } from '../../services/audio';
 import { GameHeader, GameResults } from '../learning-games/GameChrome';
 import { useGameFeedback } from '../learning-games/useGameFeedback';
+import { prefersReducedMotion } from '../learning-games/motion';
 import {
   ROUND_POPS, balloonColors, balloonStars, colorIndex, createBalloonGame, popBalloon, stepBalloons, targetPhrase, valuePhrase,
   type BalloonGame, type BalloonMode,
@@ -32,10 +33,6 @@ interface Burst {
   x: number;
   y: number;
   color: string;
-}
-
-function prefersReducedMotion(setting: boolean): boolean {
-  return setting || (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 }
 
 function BalloonShape({ fill, dark }: { fill: string; dark: string }) {

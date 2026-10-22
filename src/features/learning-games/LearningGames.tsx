@@ -17,6 +17,7 @@ import { generateQuestion, type QuizGameType, type QuizQuestion } from './questi
 import { replayQuizWord, speakQuizQuestion } from './quizSpeech';
 import QuestionCard from './QuestionCard';
 import Illustration from '../../components/ui/Illustration';
+import { gameCatalog, gameCategories } from './catalog';
 
 const QUESTIONS_PER_GAME = 5;
 
@@ -30,13 +31,7 @@ const gameList: { type: QuizGameType; title: string; description: string; emoji:
   { type: 'pattern', title: 'What Comes Next?', description: 'Finish the picture pattern!', emoji: '🧠', world: 'red' },
 ];
 
-/** Tap-and-play games with their own screens, in the spirit of popular early-learning apps. */
-const actionGames: { path: string; title: string; description: string; emoji: string; world: WorldKey }[] = [
-  { path: '/balloons', title: 'Balloon Pop', description: 'Pop the letters, numbers, and colours you hear!', emoji: '🎈', world: 'blue' },
-  { path: '/memory', title: 'Memory Match', description: 'Flip the cards and find the pairs!', emoji: '🃏', world: 'violet' },
-  { path: '/spell', title: 'Word Builder', description: 'Tap the letters to spell the word!', emoji: '🧩', world: 'pink' },
-  { path: '/dino', title: 'Dino Dash', description: 'Run, jump, and catch letters. Endless levels!', emoji: '🦖', world: 'green' },
-];
+
 
 export default function LearningGames() {
   const [gameType, setGameType] = useState<QuizGameType | 'select'>('select');
@@ -127,15 +122,23 @@ export default function LearningGames() {
   if (gameType === 'select') {
     return (
       <Page>
-        <PageHero world="teal" title="Learning Games" subtitle="Pop, match, spell, and answer. Pick a game!" emoji="🎮" />
-        <Typography variant="h2" sx={{ fontSize: { xs: '1.4rem', md: '1.7rem' }, mb: 2 }}>Tap and play</Typography>
-        <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mb: 4 }}>
-          {actionGames.map((game, index) => (
-            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={game.path}>
-              <ActivityCard world={game.world} emoji={game.emoji} title={game.title} subtitle={game.description} delay={index * 60} onClick={() => navigate(game.path)} />
-            </Grid>
-          ))}
-        </Grid>
+        <PageHero world="teal" title="Learning Games" subtitle="Trace, build, listen, solve, and explore. Pick a game!" emoji="🎮" />
+        {gameCategories.map((category) => {
+          const games = gameCatalog.filter((game) => game.category === category.id);
+          if (games.length === 0) return null;
+          return (
+            <Box component="section" aria-labelledby={`games-${category.id}`} key={category.id} sx={{ mb: 4 }}>
+              <Typography id={`games-${category.id}`} variant="h2" sx={{ fontSize: { xs: '1.4rem', md: '1.7rem' }, mb: 2 }}>{category.title}</Typography>
+              <Grid container spacing={{ xs: 2, md: 3 }}>
+                {games.map((game, index) => (
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }} key={game.id}>
+                    <ActivityCard world={game.world} emoji={game.emoji} title={game.title} subtitle={game.description} delay={index * 50} onClick={() => navigate(game.path)} />
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          );
+        })}
         <Typography variant="h2" sx={{ fontSize: { xs: '1.4rem', md: '1.7rem' }, mb: 2 }}>Quiz games · five questions each</Typography>
         <Grid container spacing={{ xs: 2, md: 3 }}>
           {gameList.map((game, index) => (

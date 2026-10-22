@@ -202,7 +202,7 @@ export default function AppLayout() {
                 <NavItem
                   key={section.path}
                   section={section}
-                  active={location.pathname === section.path}
+                  active={current.path === section.path}
                   collapsed={showCollapsed}
                   onClick={() => handleNav(section.path)}
                 />
@@ -322,7 +322,7 @@ export default function AppLayout() {
         >
           <Box sx={{ height: BOTTOM_BAR, display: 'flex', alignItems: 'center', px: 0.5 }}>
             {bottomPaths.map((path) => (
-              <BottomItem key={path} section={sectionFor(path)} active={location.pathname === path} onClick={() => handleNav(path)} />
+              <BottomItem key={path} section={sectionFor(path)} active={current.path === path} onClick={() => handleNav(path)} />
             ))}
             <ButtonBase
               onClick={() => setMobileOpen(true)}

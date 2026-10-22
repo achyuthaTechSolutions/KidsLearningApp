@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Box, Button, LinearProgress, Typography } from '@mui/material';
 import { ArrowBackRounded, ReplayRounded, SportsEsportsRounded, StarRounded } from '@mui/icons-material';
 import Page from '../../components/ui/Page';
@@ -21,8 +21,20 @@ interface HeaderProps {
   actions?: ReactNode;
 }
 
+/**
+ * Starting a game or reaching the results changes the screen without changing the route,
+ * so the layout's own scroll reset does not run. Without this, a phone would stay
+ * scrolled down where the Start button was, with the game board out of view.
+ */
+function useScrollToTop() {
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, []);
+}
+
 /** Back button, title, score chip, and progress bar shared by the Play games. */
 export function GameHeader({ title, emoji, world, backLabel, onBack, score, scoreLabel, progress, actions }: HeaderProps) {
+  useScrollToTop();
   const w = useWorld(world);
   const gold = useWorld('gold');
   return (
@@ -72,6 +84,7 @@ interface ResultsProps {
 
 /** The end-of-round card: Pip, a cheer, stars, and what to do next. */
 export function GameResults({ stars, total = 3, message, celebrate, onPlayAgain, onChooseGame }: ResultsProps) {
+  useScrollToTop();
   const gold = useWorld('gold');
   const ratio = stars / total;
   const title = ratio >= 1 ? 'Amazing!' : ratio >= 0.6 ? 'Great Job!' : 'Good Try!';

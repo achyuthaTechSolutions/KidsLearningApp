@@ -1,5 +1,12 @@
 import type { Achievement } from '../types';
 import { NUMBER_TOTAL } from '../services/progressStats';
+import { ADVENTURE_GAME_IDS } from '../features/learning-games/catalog';
+import { recipes } from '../features/little-chef/recipes';
+import { destinations } from '../features/space-explorer/destinations';
+import { robotLevels } from '../features/robot-adventure/engine';
+
+const levelsDone = (p: { gameLevels?: Record<string, string[]> }, gameId: string, valid: string[]) =>
+  (p.gameLevels?.[gameId] ?? []).filter((id) => valid.includes(id)).length;
 
 export const PERFECT_SCORE_STREAK = 10;
 
@@ -111,5 +118,40 @@ export const achievementsList: Achievement[] = [
       p.lettersExplored.length >= 5 &&
       p.numbersExplored.length >= 5 &&
       p.animalsDiscovered.length >= 3,
+  },
+  {
+    id: 'letter-tracer',
+    title: 'Letter Tracer',
+    description: 'Traced 10 different letters!',
+    emoji: '✍️',
+    condition: (p) => (p.gameLevels?.tracing ?? []).length >= 10,
+  },
+  {
+    id: 'robot-coder',
+    title: 'Robot Coder',
+    description: 'Guided the robot through 3 levels!',
+    emoji: '🤖',
+    condition: (p) => levelsDone(p, 'robot', robotLevels.map((level) => level.id)) >= 3,
+  },
+  {
+    id: 'master-chef',
+    title: 'Little Chef',
+    description: 'Made every recipe in the pretend kitchen!',
+    emoji: '🧑‍🍳',
+    condition: (p) => levelsDone(p, 'chef', recipes.map((recipe) => recipe.id)) >= recipes.length,
+  },
+  {
+    id: 'space-explorer',
+    title: 'Space Explorer',
+    description: 'Visited every place on the space map!',
+    emoji: '🚀',
+    condition: (p) => levelsDone(p, 'space', destinations.map((destination) => destination.id)) >= destinations.length,
+  },
+  {
+    id: 'game-adventurer',
+    title: 'Game Adventurer',
+    description: 'Finished a round in 5 different new games!',
+    emoji: '🗺️',
+    condition: (p) => ADVENTURE_GAME_IDS.filter((id) => (p.gameRounds?.[id] ?? 0) > 0).length >= 5,
   },
 ];

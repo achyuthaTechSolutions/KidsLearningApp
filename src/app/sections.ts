@@ -45,14 +45,18 @@ export const sections: Section[] = [
   { path: '/animals', label: 'Animal Kingdom', shortLabel: 'Animals', tagline: 'Hear what animals say', world: 'orange', Icon: PetsRounded, emoji: '🦁', group: 'learn' },
   { path: '/words', label: 'My First Words', shortLabel: 'Words', tagline: 'Fruits, cars, colours and more', world: 'pink', Icon: MenuBookRounded, emoji: '📚', group: 'learn' },
   { path: '/music', label: 'Music Studio', shortLabel: 'Music', tagline: 'Piano, drums, and more', world: 'blue', Icon: MusicNoteRounded, emoji: '🎹', group: 'play' },
-  { path: '/games', label: 'Learning Games', shortLabel: 'Games', tagline: 'Pop, match, spell, and quiz', world: 'teal', Icon: SportsEsportsRounded, emoji: '🎮', group: 'play' },
+  { path: '/games', label: 'Learning Games', shortLabel: 'Games', tagline: 'Trace, build, listen, and explore', world: 'teal', Icon: SportsEsportsRounded, emoji: '🎮', group: 'play' },
   { path: '/achievements', label: 'My Achievements', shortLabel: 'Badges', tagline: 'Stars and badges you earned', world: 'gold', Icon: EmojiEventsRounded, emoji: '🏆', group: 'play' },
   { path: '/settings', label: 'Parent Settings', shortLabel: 'Parents', tagline: 'Sound, speech, and progress', world: 'slate', Icon: SettingsRounded, emoji: '⚙️', group: 'grownups' },
   { path: '/privacy', label: 'Privacy', shortLabel: 'Privacy', tagline: 'What stays on this device', world: 'slate', Icon: PolicyRounded, emoji: '🛡️', group: 'grownups' },
 ];
 
 export function sectionFor(path: string): Section {
-  return sections.find((section) => section.path === path) ?? sections[0];
+  const exact = sections.find((section) => section.path === path);
+  if (exact) return exact;
+  // Games without their own menu entry, such as /games/robot, belong to Learning Games.
+  if (path.startsWith('/games/')) return sections.find((section) => section.path === '/games') ?? sections[0];
+  return sections[0];
 }
 
 /** Maps the store's `lastActivity` value to the screen that recorded it. */

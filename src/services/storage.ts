@@ -1,4 +1,4 @@
-import type { LearningProgress, AppSettings } from '../types';
+import type { LearningProgress, AppSettings, GameDifficulty } from '../types';
 
 const PROGRESS_KEY = 'kids-learning-progress';
 const SETTINGS_KEY = 'kids-learning-settings';
@@ -51,6 +51,8 @@ export const defaultProgress: LearningProgress = {
   musicActivities: 0,
   achievementsEarned: [],
   lastActivity: null,
+  gameRounds: {},
+  gameLevels: {},
 };
 
 export const defaultSettings: AppSettings = {
@@ -61,7 +63,10 @@ export const defaultSettings: AppSettings = {
   theme: 'light',
   reducedMotion: false,
   selectedVoice: null,
+  gameDifficulty: 'beginner',
 };
+
+const GAME_DIFFICULTIES: GameDifficulty[] = ['beginner', 'intermediate', 'advanced'];
 
 function safeGet<T>(key: string, fallback: T): T {
   try {
@@ -84,13 +89,41 @@ function safeSet(key: string, value: unknown): void {
   writeMirror(key, raw);
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** Keeps only whole, positive counts, so a damaged entry cannot break the store. */
+export function cleanGameRounds(value: unknown): Record<string, number> {
+  if (!isRecord(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value).flatMap(([id, count]) => (typeof count === 'number' && Number.isFinite(count) && count > 0 ? [[id, Math.floor(count)]] : [])),
+  );
+}
+
+/** Keeps only unique string ids per game. */
+export function cleanGameLevels(value: unknown): Record<string, string[]> {
+  if (!isRecord(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value).flatMap(([id, levels]) => (Array.isArray(levels)
+      ? [[id, [...new Set(levels.filter((level): level is string => typeof level === 'string'))]]]
+      : [])),
+  );
+}
+
 export function loadProgress(): LearningProgress {
   const stored = safeGet(PROGRESS_KEY, defaultProgress);
   const streak = stored.currentStreak;
   const currentStreak = typeof streak === 'number' && Number.isFinite(streak) && streak > 0
     ? Math.floor(streak)
     : 0;
-  return { ...defaultProgress, ...stored, currentStreak };
+  return {
+    ...defaultProgress,
+    ...stored,
+    currentStreak,
+    gameRounds: cleanGameRounds(stored.gameRounds),
+    gameLevels: cleanGameLevels(stored.gameLevels),
+  };
 }
 
 export function saveProgress(progress: LearningProgress): void {
@@ -98,7 +131,11 @@ export function saveProgress(progress: LearningProgress): void {
 }
 
 export function loadSettings(): AppSettings {
-  return safeGet(SETTINGS_KEY, defaultSettings);
+  const stored = safeGet(SETTINGS_KEY, defaultSettings);
+  return {
+    ...stored,
+    gameDifficulty: GAME_DIFFICULTIES.includes(stored.gameDifficulty) ? stored.gameDifficulty : defaultSettings.gameDifficulty,
+  };
 }
 
 export function saveSettings(settings: AppSettings): void {

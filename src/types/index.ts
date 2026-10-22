@@ -87,7 +87,14 @@ export interface LearningProgress {
   musicActivities: number;
   achievementsEarned: string[];
   lastActivity: string | null;
+  /** Finished rounds per game, keyed by game id, e.g. { robot: 3 }. */
+  gameRounds: Record<string, number>;
+  /** Unique levels, letters, recipes or places finished per game id. */
+  gameLevels: Record<string, string[]>;
 }
+
+/** A parent-chosen starting level for the Play games. Age is only a hint. */
+export type GameDifficulty = 'beginner' | 'intermediate' | 'advanced';
 
 export interface AppSettings {
   speechEnabled: boolean;
@@ -97,4 +104,5 @@ export interface AppSettings {
   theme: 'light' | 'dark' | 'system';
   reducedMotion: boolean;
   selectedVoice: string | null;
+  gameDifficulty: GameDifficulty;
 }
