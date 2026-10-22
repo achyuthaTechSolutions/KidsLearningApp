@@ -1,8 +1,10 @@
 import { alphabetData, letterOrder } from '../../data/alphabet';
 import { animalData } from '../../data/animals';
 import { numberData } from '../../data/numbers';
+import { vocabularyData } from '../../data/vocabulary';
+import type { VocabularyCategory } from '../../types';
 
-export type QuizGameType = 'find-letter' | 'guess-animal' | 'count' | 'match' | 'listen';
+export type QuizGameType = 'find-letter' | 'guess-animal' | 'count' | 'match' | 'listen' | 'odd-one-out' | 'pattern';
 
 export interface QuizQuestion {
   type: QuizGameType;
@@ -11,10 +13,61 @@ export interface QuizQuestion {
   options: string[];
   emoji?: string;
   spokenWord?: string;
+  /** Picture for each answer option, keyed by the option text. */
+  pictures?: Record<string, string>;
+  /** Pictures shown in a row before the missing one, for "What comes next?". */
+  sequence?: string[];
+  /** Said and shown after the answer, to explain it. */
+  explanation?: string;
 }
 
 export const LISTEN_PROMPT = 'Listen carefully and choose the word.';
 export const REPLAY_WORD_LABEL = 'Replay the word';
+export const ODD_ONE_OUT_PROMPT = 'Which one does not belong?';
+export const PATTERN_PROMPT = 'What comes next?';
+
+const categoryNames: Record<VocabularyCategory, string> = {
+  fruits: 'fruits',
+  vegetables: 'vegetables',
+  food: 'food',
+  vehicles: 'vehicles',
+  colors: 'colours',
+  shapes: 'shapes',
+  body: 'body parts',
+  household: 'things at home',
+  nature: 'things in nature',
+};
+
+/** Words that sit in one category only, so the odd one out is never ambiguous. */
+const uniqueWords = vocabularyData.filter(
+  (item) => vocabularyData.filter((other) => other.word === item.word).length === 1,
+);
+
+/** Patterns as positions in a repeating unit, e.g. ABAB, AABB, ABC. */
+const patternShapes = [
+  [0, 1, 0, 1, 0],
+  [0, 1, 0, 1, 0, 1, 0],
+  [0, 0, 1, 0, 0, 1, 0, 0],
+  [0, 1, 1, 0, 1, 1, 0],
+  [0, 1, 2, 0, 1, 2, 0, 1],
+];
+
+const patternPictures = [
+  ...animalData.map((animal) => ({ name: animal.name, emoji: animal.emoji })),
+  ...uniqueWords
+    .filter((item) => ['fruits', 'vehicles', 'shapes', 'nature'].includes(item.category))
+    .map((item) => ({ name: item.word, emoji: item.emoji })),
+];
+
+/** The pattern each shape continues with, so tests can check the answer. */
+export function nextInShape(shape: number[]): number {
+  const period = Math.max(...shape) + 1;
+  for (let length = period; length <= shape.length; length += 1) {
+    const unit = shape.slice(0, length);
+    if (shape.every((value, index) => value === unit[index % length])) return unit[shape.length % length];
+  }
+  return shape[0];
+}
 
 export const DAILY_GAME_TYPES: QuizGameType[] = [
   'find-letter',
@@ -93,6 +146,42 @@ export function generateQuestion(type: QuizGameType, random: () => number = Math
       correctAnswer: content.word,
       options: shuffle([content.word, ...wrong], random),
       emoji: content.emoji,
+    };
+  }
+
+  if (type === 'odd-one-out') {
+    const categories = [...new Set(uniqueWords.map((item) => item.category))]
+      .filter((category) => uniqueWords.filter((item) => item.category === category).length >= 3);
+    const group = categories[pickIndex(categories.length, random)];
+    const same = shuffle(uniqueWords.filter((item) => item.category === group), random).slice(0, 3);
+    const others = uniqueWords.filter((item) => item.category !== group);
+    const odd = others[pickIndex(others.length, random)];
+    const items = shuffle([...same, odd], random);
+    return {
+      type,
+      prompt: ODD_ONE_OUT_PROMPT,
+      correctAnswer: odd.word,
+      options: items.map((item) => item.word),
+      pictures: Object.fromEntries(items.map((item) => [item.word, item.emoji])),
+      explanation: `The others are ${categoryNames[group]}.`,
+    };
+  }
+
+  if (type === 'pattern') {
+    const shape = patternShapes[pickIndex(patternShapes.length, random)];
+    const period = Math.max(...shape) + 1;
+    const chosen = shuffle(patternPictures, random);
+    const used = chosen.slice(0, period);
+    const extra = chosen.slice(period, period + Math.max(1, 4 - period));
+    const answer = used[nextInShape(shape)];
+    const options = shuffle([...used, ...extra], random);
+    return {
+      type,
+      prompt: PATTERN_PROMPT,
+      correctAnswer: answer.name,
+      options: options.map((item) => item.name),
+      pictures: Object.fromEntries(options.map((item) => [item.name, item.emoji])),
+      sequence: shape.map((index) => used[index].emoji),
     };
   }
 

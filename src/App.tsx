@@ -18,6 +18,9 @@ import Achievements from './features/achievements/Achievements';
 import ParentSettings from './features/parent-settings/ParentSettings';
 import PrivacyPage from './features/privacy/PrivacyPage';
 import DinoDash from './features/dino-dash/DinoDash';
+import BalloonPop from './features/balloon-pop/BalloonPop';
+import MemoryMatch from './features/memory-match/MemoryMatch';
+import WordBuilder from './features/word-builder/WordBuilder';
 
 export default function App() {
   const themeMode = useAppStore((s) => s.settings.theme);
@@ -62,6 +65,9 @@ export default function App() {
             <Route path="/games" element={<LearningGames />} />
             <Route path="/daily" element={<DailyChallenge />} />
             <Route path="/dino" element={<DinoDash />} />
+            <Route path="/balloons" element={<BalloonPop />} />
+            <Route path="/memory" element={<MemoryMatch />} />
+            <Route path="/spell" element={<WordBuilder />} />
             <Route path="/achievements" element={<Achievements />} />
             <Route path="/settings" element={<ParentSettings />} />
             <Route path="/privacy" element={<PrivacyPage />} />

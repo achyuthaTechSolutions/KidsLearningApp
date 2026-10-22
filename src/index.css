@@ -112,3 +112,8 @@ html[data-reduced-motion='true'] .kl-motion-only {
     display: none !important;
   }
 }
+
+@keyframes kl-burst {
+  0% { transform: translate(-50%, -50%) scale(0.4); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.7); opacity: 0; }
+}

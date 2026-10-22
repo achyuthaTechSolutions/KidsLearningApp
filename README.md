@@ -1,6 +1,6 @@
 # Kids Learning
 
-Kids Learning is a local-first app for early letters, numbers, animals, words, music, quizzes, a daily challenge, and achievements. Progress stays on the device. The web app and the Android app use the same React project.
+Kids Learning is a local-first app for early letters, numbers, animals, words, music, tap-and-play games (Balloon Pop, Memory Match, Word Builder, Dino Dash), quizzes, a daily challenge, and achievements. Progress stays on the device. The web app and the Android app use the same React project.
 
 ## Web
 
