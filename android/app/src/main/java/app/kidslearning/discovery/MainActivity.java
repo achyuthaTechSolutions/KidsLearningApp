@@ -1,0 +1,5 @@
+package app.kidslearning.discovery;
+
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {}
