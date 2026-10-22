@@ -11,6 +11,8 @@ import {
 import { useAppStore } from '../store/useAppStore';
 import { useLearning } from '../hooks/useLearning';
 import { getInstalledVoices, refreshVoices, speak } from '../services/speech';
+import { useAuth } from '../auth/AuthProvider';
+import { useLocale } from '../i18n';
 import { BigButton, Body, Hero, Screen, Title } from '../ui/components';
 import { usePalette } from '../ui/theme';
 
@@ -29,6 +31,8 @@ export default function SettingsScreen() {
   const updateSettings = useAppStore((state) => state.updateSettings);
   const resetAllProgress = useAppStore((state) => state.resetAllProgress);
   const { say } = useLearning();
+  const { signOut } = useAuth();
+  const { t } = useLocale();
   const [voices, setVoices] = useState(getInstalledVoices());
   const [gate, setGate] = useState<ReturnType<typeof createParentChallenge> | null>(null);
   const [answer, setAnswer] = useState('');
@@ -143,6 +147,7 @@ export default function SettingsScreen() {
           </View>
         ) : null}
         <BigButton label="Privacy" world="slate" onPress={() => router.push('/privacy')} />
+        <BigButton label={t('signOut')} world="slate" onPress={() => void signOut()} />
       </View>
     </Screen>
   );

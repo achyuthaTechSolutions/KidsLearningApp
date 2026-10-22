@@ -1,6 +1,26 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { AccessibilityInfo, useColorScheme } from 'react-native';
-import { colors, worlds, type WorldKey } from '@kids/learning-core';
+import { colors, radii, worlds, type WorldKey } from '@kids/learning-core';
+
+export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
+
+export const controls = { minTouch: 48, button: 56, input: 56 } as const;
+
+/** Auth screens use the shared palette, with a warm storybook background. */
+export const authColors = {
+  primary: colors.primary,
+  primaryDark: colors.primaryDark,
+  green: colors.secondary,
+  amber: colors.warning,
+  cream: '#FFF9EF',
+  surface: colors.surface,
+  text: colors.text,
+  muted: colors.textSecondary,
+  error: worlds.red.ink,
+  errorSoft: worlds.red.soft,
+  outline: colors.outline,
+  radius: radii.lg,
+} as const;
 import { useAppStore } from '../store/useAppStore';
 
 export interface Palette {

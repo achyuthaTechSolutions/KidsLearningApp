@@ -91,13 +91,40 @@ Progress and settings are stored with AsyncStorage under the same keys the websi
 
 Malformed data falls back to the empty lesson state. Reset asks a grown-up a short addition question, then confirms. Reset clears lessons, scores, the streak, badges, today's challenge, and Dino Dash scores. It keeps the dinosaur colour and the sound settings.
 
-There is no account, cloud sync, analytics, or microphone permission.
+Learning progress still has no cloud sync. The app does not ask for the microphone.
+
+## Parent accounts
+
+Sign-in is for a parent or guardian. The phone calls these paths when `EXPO_PUBLIC_API_BASE_URL` is an `https://` address:
+
+- `POST /v1/auth/login`
+- `POST /v1/auth/register`
+- `POST /v1/auth/forgot`
+- `POST /v1/auth/verify`
+- `POST /v1/auth/resend`
+- `POST /v1/auth/refresh`
+- `POST /v1/auth/logout`
+- `POST /v1/children`
+- `POST /v1/session/child`
+
+No server in this project implements them. A production build, where `__DEV__` is false, reports that account services are unavailable and does not accept a practice login. Tokens are stored with `expo-secure-store`, not AsyncStorage. Passwords are not stored.
+
+`npm start` reads `.env.development`, which sets `EXPO_PUBLIC_AUTH_MODE=mock`. That practice account lives in memory, is not a real login, and is ignored when `__DEV__` is false. The EAS production profile does not set the mock flag.
+
+Welcome, sign in, registration, password help, verification, and child nicknames are translated in English, Telugu, and Hindi. Telugu uses Noto Sans Telugu. Hindi uses Noto Sans Devanagari. Those fonts were not checked on a physical phone or emulator in this environment.
+
+Child profiles store a nickname, an age group, and an animal picture. They do not ask for a child’s email, phone, school, or birth date. Parent settings and sign-out stay behind the existing grown-up question, and that question locks again when the app leaves the foreground.
+
+Before a store release, the product owner still needs a published privacy policy and contact method, a review of India’s DPDP rules, and the Google Play Families and Apple kids requirements. The in-app terms are not that policy.
 
 ## Checks already run
 
-- `npm test` (Jest and React Native Testing Library)
-- `npm run typecheck`
-- `npx expo export` for Android and for iOS (JavaScript bundles only), from the earlier copy of this app
-- `npx expo prebuild --no-install --platform android` (generated the native Android project; Gradle was not run)
+On this parent-account change:
 
-Not run here: Gradle, an Android emulator, an iOS simulator, a physical device, or an EAS store build. Do not treat the export or the prebuild folder as a Play or App Store binary.
+- `npm test -- --watchman=false --forceExit` — 10 suites, 29 tests, all passed
+- `npm run typecheck` (`tsc --noEmit`) — passed
+- `npx expo export --platform android --platform ios` — wrote JavaScript bundles (Android Hermes bytecode about 3.1 MB, iOS about 3.2 MB). That is not an installed app.
+
+Earlier, before these account screens, `npx expo prebuild --no-install --platform android` generated an Android project. Gradle was not run. That folder is not a store binary.
+
+Not run in this environment: Gradle, an Android emulator, an iOS simulator, a physical device, or an EAS store build. Telugu and Hindi fonts are bundled and were not drawn on a device or emulator here.
