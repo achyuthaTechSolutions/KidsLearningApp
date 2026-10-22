@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { AccessibilityInfo, useColorScheme } from 'react-native';
 import { colors, radii, worlds, type WorldKey } from '@kids/learning-core';
+import { useAppStore } from '../store/useAppStore';
 
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
 
@@ -21,7 +22,6 @@ export const authColors = {
   outline: colors.outline,
   radius: radii.lg,
 } as const;
-import { useAppStore } from '../store/useAppStore';
 
 export interface Palette {
   mode: 'light' | 'dark';
