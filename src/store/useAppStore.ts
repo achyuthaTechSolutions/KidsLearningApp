@@ -1,7 +1,16 @@
 import { create } from 'zustand';
+import {
+  commitProgress,
+  completeGame,
+  discoverAnimal,
+  exploreLetter,
+  exploreNumber,
+  learnWord,
+  recordAnswer as applyAnswer,
+  recordMusicActivity,
+} from '../../packages/learning-core/src/progress/actions';
 import type { LearningProgress, AppSettings } from '../types';
 import { loadProgress, saveProgress, loadSettings, saveSettings, defaultProgress, resetDailyChallenge, resetDinoScores } from '../services/storage';
-import { achievementsList } from '../data/achievements';
 
 interface AppState {
   progress: LearningProgress;
@@ -19,114 +28,79 @@ interface AppState {
   checkAchievements: () => void;
 }
 
-export const useAppStore = create<AppState>((set, get) => ({
+function writeProgress(current: LearningProgress, next: LearningProgress | null): LearningProgress | null {
+  const committed = commitProgress(current, next);
+  if (committed === current) return null;
+  saveProgress(committed);
+  return committed;
+}
+
+export const useAppStore = create<AppState>((set) => ({
   progress: loadProgress(),
   settings: loadSettings(),
 
   updateProgress: (updates) => {
     set((state) => {
-      const newProgress = { ...state.progress, ...updates };
-      saveProgress(newProgress);
-      return { progress: newProgress };
+      const committed = writeProgress(state.progress, { ...state.progress, ...updates });
+      if (!committed) return state;
+      return { progress: committed };
     });
-    get().checkAchievements();
   },
 
   addLetterExplored: (letter) => {
     set((state) => {
-      if (state.progress.lettersExplored.includes(letter)) return state;
-      const newProgress = {
-        ...state.progress,
-        lettersExplored: [...state.progress.lettersExplored, letter],
-        lastActivity: 'keyboard',
-      };
-      saveProgress(newProgress);
-      return { progress: newProgress };
+      const committed = writeProgress(state.progress, exploreLetter(state.progress, letter));
+      if (!committed) return state;
+      return { progress: committed };
     });
-    get().checkAchievements();
   },
 
   addNumberExplored: (num) => {
     set((state) => {
-      if (state.progress.numbersExplored.includes(num)) return state;
-      const newProgress = {
-        ...state.progress,
-        numbersExplored: [...state.progress.numbersExplored, num],
-        lastActivity: 'numbers',
-      };
-      saveProgress(newProgress);
-      return { progress: newProgress };
+      const committed = writeProgress(state.progress, exploreNumber(state.progress, num));
+      if (!committed) return state;
+      return { progress: committed };
     });
-    get().checkAchievements();
   },
 
   addAnimalDiscovered: (animal) => {
     set((state) => {
-      if (state.progress.animalsDiscovered.includes(animal)) return state;
-      const newProgress = {
-        ...state.progress,
-        animalsDiscovered: [...state.progress.animalsDiscovered, animal],
-        lastActivity: 'animals',
-      };
-      saveProgress(newProgress);
-      return { progress: newProgress };
+      const committed = writeProgress(state.progress, discoverAnimal(state.progress, animal));
+      if (!committed) return state;
+      return { progress: committed };
     });
-    get().checkAchievements();
   },
 
   addWordLearned: (word) => {
     set((state) => {
-      if (state.progress.wordsLearned.includes(word)) return state;
-      const newProgress = {
-        ...state.progress,
-        wordsLearned: [...state.progress.wordsLearned, word],
-        lastActivity: 'vocabulary',
-      };
-      saveProgress(newProgress);
-      return { progress: newProgress };
+      const committed = writeProgress(state.progress, learnWord(state.progress, word));
+      if (!committed) return state;
+      return { progress: committed };
     });
-    get().checkAchievements();
   },
 
   incrementGamesCompleted: () => {
     set((state) => {
-      const newProgress = {
-        ...state.progress,
-        gamesCompleted: state.progress.gamesCompleted + 1,
-        lastActivity: 'games',
-      };
-      saveProgress(newProgress);
-      return { progress: newProgress };
+      const committed = writeProgress(state.progress, completeGame(state.progress));
+      if (!committed) return state;
+      return { progress: committed };
     });
-    get().checkAchievements();
   },
 
   recordAnswer: (correct) => {
     set((state) => {
-      const previousStreak = state.progress.currentStreak ?? 0;
-      const newProgress = {
-        ...state.progress,
-        totalAnswers: state.progress.totalAnswers + 1,
-        correctAnswers: state.progress.correctAnswers + (correct ? 1 : 0),
-        currentStreak: correct ? previousStreak + 1 : 0,
-      };
-      saveProgress(newProgress);
-      return { progress: newProgress };
+      const committed = writeProgress(state.progress, applyAnswer(state.progress, correct));
+      if (!committed) return state;
+      return { progress: committed };
     });
-    get().checkAchievements();
   },
 
   incrementMusicActivities: () => {
     set((state) => {
-      const newProgress = {
-        ...state.progress,
-        musicActivities: state.progress.musicActivities + 1,
-        lastActivity: 'music',
-      };
-      saveProgress(newProgress);
-      return { progress: newProgress };
+      const committed = writeProgress(state.progress, recordMusicActivity(state.progress));
+      if (!committed) return state;
+      return { progress: committed };
     });
-    get().checkAchievements();
   },
 
   updateSettings: (updates) => {
@@ -147,18 +121,9 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   checkAchievements: () => {
     set((state) => {
-      const earned = achievementsList
-        .filter((a) => a.condition(state.progress) && !state.progress.achievementsEarned.includes(a.id))
-        .map((a) => a.id);
-
-      if (earned.length === 0) return state;
-
-      const newProgress = {
-        ...state.progress,
-        achievementsEarned: [...state.progress.achievementsEarned, ...earned],
-      };
-      saveProgress(newProgress);
-      return { progress: newProgress };
+      const committed = writeProgress(state.progress, null);
+      if (!committed) return state;
+      return { progress: committed };
     });
   },
 }));

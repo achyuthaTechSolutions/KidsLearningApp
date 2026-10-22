@@ -12,7 +12,11 @@
     "illustrations": "node scripts/build-illustrations.mjs",
     "cap:sync": "npm run build && cap sync android",
     "android:run": "npm run build && cap run android",
-    "android:bundle": "npm run build && cap sync android && cd android && gradlew.bat bundleRelease"
+    "android:bundle": "npm run build && cap sync android && cd android && gradlew.bat bundleRelease",
+    "mobile": "npm --prefix mobile start",
+    "mobile:test": "npm --prefix mobile test",
+    "mobile:typecheck": "npm --prefix mobile run typecheck",
+    "mobile:export": "npm --prefix mobile run export"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.3",

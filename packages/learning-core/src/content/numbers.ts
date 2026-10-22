@@ -1,0 +1,25 @@
+import type { NumberContent } from '../types';
+
+export const numberData: NumberContent[] = [
+  { value: 0, word: 'Zero', description: 'Zero means nothing at all!', objects: 'nothing', emoji: '🔲' },
+  { value: 1, word: 'One', description: 'One bright sun in the sky!', objects: 'sun', emoji: '☀️' },
+  { value: 2, word: 'Two', description: 'Two beautiful butterflies!', objects: 'butterflies', emoji: '🦋' },
+  { value: 3, word: 'Three', description: 'Three red apples!', objects: 'apples', emoji: '🍎' },
+  { value: 4, word: 'Four', description: 'Four colourful flowers!', objects: 'flowers', emoji: '🌸' },
+  { value: 5, word: 'Five', description: 'Five shining stars!', objects: 'stars', emoji: '⭐' },
+  { value: 6, word: 'Six', description: 'Six happy fish!', objects: 'fish', emoji: '🐟' },
+  { value: 7, word: 'Seven', description: 'Seven rainbow colours!', objects: 'colours', emoji: '🌈' },
+  { value: 8, word: 'Eight', description: 'Eight tiny ants!', objects: 'ants', emoji: '🐜' },
+  { value: 9, word: 'Nine', description: 'Nine fluffy clouds!', objects: 'clouds', emoji: '☁️' },
+  { value: 10, word: 'Ten', description: 'Ten flying birds!', objects: 'birds', emoji: '🐦' },
+  { value: 11, word: 'Eleven', description: 'Eleven bouncing balls!', objects: 'balls', emoji: '⚽' },
+  { value: 12, word: 'Twelve', description: 'Twelve little hearts!', objects: 'hearts', emoji: '❤️' },
+  { value: 13, word: 'Thirteen', description: 'Thirteen dancing leaves!', objects: 'leaves', emoji: '🍂' },
+  { value: 14, word: 'Fourteen', description: 'Fourteen bright candles!', objects: 'candles', emoji: '🕯️' },
+  { value: 15, word: 'Fifteen', description: 'Fifteen coloured pencils!', objects: 'pencils', emoji: '✏️' },
+  { value: 16, word: 'Sixteen', description: 'Sixteen musical notes!', objects: 'notes', emoji: '🎵' },
+  { value: 17, word: 'Seventeen', description: 'Seventeen snowflakes!', objects: 'snowflakes', emoji: '❄️' },
+  { value: 18, word: 'Eighteen', description: 'Eighteen buzzing bees!', objects: 'bees', emoji: '🐝' },
+  { value: 19, word: 'Nineteen', description: 'Nineteen small stones!', objects: 'stones', emoji: '🪨' },
+  { value: 20, word: 'Twenty', description: 'Twenty sparkling gems!', objects: 'gems', emoji: '💎' },
+];

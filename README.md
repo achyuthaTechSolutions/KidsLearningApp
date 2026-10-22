@@ -35,6 +35,14 @@ npm run illustrations
 
 The script prints any emoji without a Fluent illustration, and `src/data/illustrations.test.ts` fails if a letter, number, animal, word, category, badge, or section has no picture.
 
+## Native mobile app
+
+The installable React Native app lives in `mobile/`. It is a separate Expo project, not a WebView around this site. The Capacitor Android shell in `android/` is unchanged.
+
+Shared lessons, quiz rules, achievement checks, and progress parsing live in `packages/learning-core`. The website re-exports that package, so the web app and the phone app use the same content and scoring. Progress saved in a browser does not appear on the phone.
+
+Setup, run, test, and store-build commands are in `mobile/README.md`.
+
 ## Android
 
 The Android app is a Capacitor 8 shell around the built web app. The application ID is `app.kidslearning.discovery`. Change that ID only before the first Play upload. After an artifact is uploaded, Play Console keeps the ID.
