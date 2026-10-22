@@ -1,0 +1,15 @@
+---
+description: Child-friendly speaking voice for Kids Learning App speech
+alwaysApply: true
+---
+
+# Child-friendly voice
+
+Use a soft, cute, friendly feminine voice that sounds appropriate for a young child. Prefer a naturally youthful voice available through the device’s speech voices; select the closest suitable voice and keep the speaking rate gentle and clear. Don’t imitate or clone a real person’s voice. If no suitable voice is available, use the softest, clearest available voice and let a parent choose another voice in settings. Keep the existing speech enable/disable, speed, and volume controls working.
+
+When adding or changing spoken audio:
+
+- Choose the voice with `pickKidsVoice` in `packages/learning-core/src/speech/voices.ts`. `src/services/speech.ts` speaks that choice with Expo Speech. Prefer a youthful or soft feminine English voice. Avoid deep adult male voices when a clearer alternative exists.
+- Keep the default Parent Settings choice as “Soft voice (recommended)” (`selectedVoice` empty). A parent’s explicit voice choice still wins when that voice is installed. If it is missing, use `resolveVoice` and the on-device fallback. Do not label a voice as a child’s voice unless its name says it is one.
+- Pass the existing `speechEnabled`, `speechRate`, and volume settings through. Do not add a new speech on/off, speed, or volume control. Volume applies to narration as well as sound effects.
+- Do not raise pitch so far that the voice becomes a cartoon imitation, and do not clone or name a real person.
