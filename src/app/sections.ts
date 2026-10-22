@@ -9,6 +9,7 @@ import {
   MenuBookRounded,
   MusicNoteRounded,
   SportsEsportsRounded,
+  DirectionsRunRounded,
   EmojiEventsRounded,
   SettingsRounded,
   PolicyRounded,
@@ -31,6 +32,7 @@ export interface Section {
 export const sections: Section[] = [
   { path: '/', label: 'Home', shortLabel: 'Home', tagline: 'Pick something fun', world: 'violet', Icon: HomeRounded, emoji: '🏡', group: 'home' },
   { path: '/daily', label: 'Daily Challenge', shortLabel: 'Daily', tagline: 'Five questions for today', world: 'red', Icon: StarRounded, emoji: '🌟', group: 'play' },
+  { path: '/dino', label: 'Dino Dash', shortLabel: 'Dino', tagline: 'Run, jump, and catch letters', world: 'green', Icon: DirectionsRunRounded, emoji: '🦖', group: 'play' },
   { path: '/keyboard', label: 'Keyboard Explorer', shortLabel: 'Keys', tagline: 'Tap a key, hear a word', world: 'violet', Icon: KeyboardRounded, emoji: '⌨️', group: 'learn' },
   { path: '/alphabet', label: 'Alphabet World', shortLabel: 'ABC', tagline: 'Meet all 26 letters', world: 'green', Icon: AbcRounded, emoji: '🔤', group: 'learn' },
   { path: '/numbers', label: 'Number World', shortLabel: '123', tagline: 'Count from 0 to 20', world: 'sun', Icon: NumbersRounded, emoji: '🔢', group: 'learn' },

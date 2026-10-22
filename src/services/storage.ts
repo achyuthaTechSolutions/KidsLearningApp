@@ -3,7 +3,8 @@ import type { LearningProgress, AppSettings } from '../types';
 const PROGRESS_KEY = 'kids-learning-progress';
 const SETTINGS_KEY = 'kids-learning-settings';
 const DAILY_KEY = 'kids-learning-daily';
-const STORAGE_KEYS = [PROGRESS_KEY, SETTINGS_KEY, DAILY_KEY];
+const DINO_KEY = 'kids-learning-dino';
+const STORAGE_KEYS = [PROGRESS_KEY, SETTINGS_KEY, DAILY_KEY, DINO_KEY];
 
 export interface StorageMirror {
   get(key: string): Promise<string | null>;
@@ -154,4 +155,30 @@ export function resetDailyChallenge(): void {
     // Storage unavailable
   }
   writeMirror(DAILY_KEY, null);
+}
+
+export interface DinoRecord {
+  bestScore: number;
+  bestLevel: number;
+  color: string;
+}
+
+export const defaultDinoRecord: DinoRecord = { bestScore: 0, bestLevel: 1, color: 'green' };
+
+export function loadDinoRecord(): DinoRecord {
+  const stored = safeGet<Partial<DinoRecord>>(DINO_KEY, defaultDinoRecord);
+  return {
+    bestScore: asCount(stored.bestScore),
+    bestLevel: Math.max(1, asCount(stored.bestLevel)),
+    color: typeof stored.color === 'string' ? stored.color : defaultDinoRecord.color,
+  };
+}
+
+export function saveDinoRecord(record: DinoRecord): void {
+  safeSet(DINO_KEY, record);
+}
+
+/** Clears Dino Dash scores but keeps the dinosaur color a child picked. */
+export function resetDinoScores(): void {
+  saveDinoRecord({ ...defaultDinoRecord, color: loadDinoRecord().color });
 }

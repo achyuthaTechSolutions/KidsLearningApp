@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { LearningProgress, AppSettings } from '../types';
-import { loadProgress, saveProgress, loadSettings, saveSettings, defaultProgress, resetDailyChallenge } from '../services/storage';
+import { loadProgress, saveProgress, loadSettings, saveSettings, defaultProgress, resetDailyChallenge, resetDinoScores } from '../services/storage';
 import { achievementsList } from '../data/achievements';
 
 interface AppState {
@@ -141,6 +141,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     const progress = { ...defaultProgress };
     saveProgress(progress);
     resetDailyChallenge();
+    resetDinoScores();
     set({ progress });
   },
 

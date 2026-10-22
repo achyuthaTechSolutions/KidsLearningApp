@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Grid, Button, LinearProgress } from '@mui/material';
 import { ReplayRounded, SportsEsportsRounded, ArrowBackRounded, StarRounded } from '@mui/icons-material';
 import Page from '../../components/ui/Page';
@@ -36,6 +37,7 @@ export default function LearningGames() {
   const [gameComplete, setGameComplete] = useState(false);
   const [celebrate, setCelebrate] = useState(0);
   const teal = useWorld('teal');
+  const navigate = useNavigate();
   const gold = useWorld('gold');
 
   const settings = useAppStore((s) => s.settings);
@@ -117,6 +119,9 @@ export default function LearningGames() {
       <Page>
         <PageHero world="teal" title="Learning Games" subtitle="Pick a game. Every round has five questions." emoji="🎮" />
         <Grid container spacing={{ xs: 2, md: 3 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+            <ActivityCard world="green" emoji="🦖" title="Dino Dash" subtitle="Run, jump, and catch letters. Endless levels!" onClick={() => navigate('/dino')} />
+          </Grid>
           {gameList.map((game, index) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={game.type}>
               <ActivityCard

@@ -249,7 +249,7 @@ export default function ParentSettings() {
 
       <Section world="slate" icon={<LockRounded />} title="Data & progress">
         <Alert severity="info" sx={{ mb: 2 }}>
-          Learning progress and these settings stay on this device. Nothing is sent to a server. Reset clears progress, the answer streak, achievements, and today’s daily challenge. It does not change these sound and speech settings.
+          Learning progress and these settings stay on this device. Nothing is sent to a server. Reset clears progress, the answer streak, achievements, Dino Dash scores, and today’s daily challenge. It does not change these sound and speech settings.
         </Alert>
 
         <Button component={RouterLink} to="/privacy" variant="text" sx={{ mb: 1 }}>
@@ -278,7 +278,7 @@ export default function ParentSettings() {
         <DialogTitle id="reset-progress-title">Reset learning progress?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            This erases explored letters, numbers, animals, words, game scores, the answer streak, today’s daily challenge, and earned achievements on this device. Sound and speech settings stay as they are. This cannot be undone.
+            This erases explored letters, numbers, animals, words, game scores, Dino Dash scores, the answer streak, today’s daily challenge, and earned achievements on this device. Sound and speech settings stay as they are. This cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>

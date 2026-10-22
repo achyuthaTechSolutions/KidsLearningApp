@@ -91,6 +91,7 @@ export default function HomePage() {
     { path: '/animals', title: 'Meet the animals', subtitle: 'Who says moo?', progress: { value: summary.animals, total: ANIMAL_TOTAL } },
     { path: '/words', title: 'My first words', subtitle: 'Fruits, cars, colours', progress: { value: summary.words, total: WORD_TOTAL } },
     { path: '/music', title: 'Make some music', subtitle: 'Piano, drums, and more' },
+    { path: '/dino', title: 'Dino Dash', subtitle: 'Run, jump, and catch letters' },
     { path: '/games', title: 'Play a game', subtitle: 'Guess, count, and match' },
     { path: '/achievements', title: 'My badges', subtitle: `${totalStars} of ${achievementsList.length} earned` },
   ];
@@ -266,7 +267,7 @@ export default function HomePage() {
         {cards.map((card, index) => {
           const section = sectionFor(card.path);
           return (
-            <Grid key={card.path} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+            <Grid key={card.path} size={{ xs: 12, sm: 6, md: 4 }}>
               <ActivityCard
                 world={section.world}
                 emoji={section.emoji}
