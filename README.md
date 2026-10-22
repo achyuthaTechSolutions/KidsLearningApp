@@ -37,11 +37,19 @@ The script prints any emoji without a Fluent illustration, and `src/data/illustr
 
 ## Native mobile app
 
-The installable React Native app lives in `mobile/`. It is a separate Expo project, not a WebView around this site. The Capacitor Android shell in `android/` is unchanged.
+The React Native app is a separate project and is not part of this repository. Its application id is `app.kidslearning.native`, so it can be installed beside the Capacitor shell in `android/` (`app.kidslearning.discovery`).
 
-Shared lessons, quiz rules, achievement checks, and progress parsing live in `packages/learning-core`. The website re-exports that package, so the web app and the phone app use the same content and scoring. Progress saved in a browser does not appear on the phone.
+Lesson content, quiz rules, and achievement checks for this website live in `packages/learning-core`. The phone app vendors its own copy of that package. Progress saved in the browser does not appear on the phone.
 
-Setup, run, test, and store-build commands are in `mobile/README.md`.
+The standalone phone project is on branch `cursor/mobile-app-export-8089` until a new GitHub repository is created. Creating that repository needs an owner account. This repository's connection cannot create other repositories.
+
+```bash
+gh repo create achyuthaTechSolutions/KidsLearningMobile --private --description "Native Android and iOS app for Kids Learning"
+git clone -b cursor/mobile-app-export-8089 https://github.com/achyuthaTechSolutions/KidsLearningApp.git KidsLearningMobile
+cd KidsLearningMobile
+git remote set-url origin https://github.com/achyuthaTechSolutions/KidsLearningMobile.git
+git push -u origin cursor/mobile-app-export-8089:main
+```
 
 ## Android
 
