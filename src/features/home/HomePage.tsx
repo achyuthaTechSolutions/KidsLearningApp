@@ -85,6 +85,7 @@ export default function HomePage() {
       : 'Five fresh questions are waiting for you.';
 
   const cards: { path: string; title: string; subtitle: string; progress?: { value: number; total: number } }[] = [
+    { path: '/stories', title: 'Story Time', subtitle: 'Animal stories with maths and morals' },
     { path: '/keyboard', title: 'Explore the keyboard', subtitle: 'Tap a key, see a picture' },
     { path: '/alphabet', title: "Let's learn ABC", subtitle: 'All 26 letters', progress: { value: summary.letters, total: LETTER_TOTAL } },
     { path: '/numbers', title: 'Count the stars', subtitle: 'Numbers 0 to 20', progress: { value: summary.numbers, total: NUMBER_TOTAL } },

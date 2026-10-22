@@ -1,10 +1,13 @@
 import type { LearningProgress, AppSettings, GameDifficulty } from '../types';
+import { emptyStoryProgress, type StoryProgressData } from '../features/stories/engine/progress';
+import { LANGUAGES } from '../features/stories/engine/types';
 
 const PROGRESS_KEY = 'kids-learning-progress';
 const SETTINGS_KEY = 'kids-learning-settings';
 const DAILY_KEY = 'kids-learning-daily';
 const DINO_KEY = 'kids-learning-dino';
-const STORAGE_KEYS = [PROGRESS_KEY, SETTINGS_KEY, DAILY_KEY, DINO_KEY];
+const STORY_KEY = 'kids-learning-stories';
+const STORAGE_KEYS = [PROGRESS_KEY, SETTINGS_KEY, DAILY_KEY, DINO_KEY, STORY_KEY];
 
 export interface StorageMirror {
   get(key: string): Promise<string | null>;
@@ -64,6 +67,9 @@ export const defaultSettings: AppSettings = {
   reducedMotion: false,
   selectedVoice: null,
   gameDifficulty: 'beginner',
+  storyLanguage: 'en',
+  storyNarration: true,
+  storyCaptions: true,
 };
 
 const GAME_DIFFICULTIES: GameDifficulty[] = ['beginner', 'intermediate', 'advanced'];
@@ -135,6 +141,9 @@ export function loadSettings(): AppSettings {
   return {
     ...stored,
     gameDifficulty: GAME_DIFFICULTIES.includes(stored.gameDifficulty) ? stored.gameDifficulty : defaultSettings.gameDifficulty,
+    storyLanguage: LANGUAGES.includes(stored.storyLanguage) ? stored.storyLanguage : defaultSettings.storyLanguage,
+    storyNarration: typeof stored.storyNarration === 'boolean' ? stored.storyNarration : defaultSettings.storyNarration,
+    storyCaptions: typeof stored.storyCaptions === 'boolean' ? stored.storyCaptions : defaultSettings.storyCaptions,
   };
 }
 
@@ -218,4 +227,32 @@ export function saveDinoRecord(record: DinoRecord): void {
 /** Clears Dino Dash scores but keeps the dinosaur color a child picked. */
 export function resetDinoScores(): void {
   saveDinoRecord({ ...defaultDinoRecord, color: loadDinoRecord().color });
+}
+
+/**
+ * Story playback positions and learning events. Damaged parts are dropped:
+ * a bad story record restarts that story, and bad events are skipped.
+ */
+export function loadStoryProgress(): StoryProgressData {
+  const stored = safeGet<Partial<StoryProgressData>>(STORY_KEY, emptyStoryProgress);
+  const stories = isRecord(stored.stories)
+    ? Object.fromEntries(Object.entries(stored.stories).filter(([, record]) => isRecord(record) && Array.isArray((record as { completedRuns?: unknown }).completedRuns)))
+    : {};
+  const events = Array.isArray(stored.events)
+    ? stored.events.filter((event) => isRecord(event) && typeof event.activityId === 'string' && typeof event.runId === 'string' && Array.isArray(event.objectives))
+    : [];
+  return { schema: 1, stories: stories as StoryProgressData['stories'], events: events as StoryProgressData['events'] };
+}
+
+export function saveStoryProgress(data: StoryProgressData): void {
+  safeSet(STORY_KEY, data);
+}
+
+export function resetStoryProgress(): void {
+  try {
+    localStorage.removeItem(STORY_KEY);
+  } catch {
+    // Storage unavailable
+  }
+  writeMirror(STORY_KEY, null);
 }

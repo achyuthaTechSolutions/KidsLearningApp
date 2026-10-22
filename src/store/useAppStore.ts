@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { LearningProgress, AppSettings } from '../types';
-import { loadProgress, saveProgress, loadSettings, saveSettings, defaultProgress, resetDailyChallenge, resetDinoScores } from '../services/storage';
+import { loadProgress, saveProgress, loadSettings, saveSettings, defaultProgress, resetDailyChallenge, resetDinoScores, resetStoryProgress } from '../services/storage';
 import { achievementsList } from '../data/achievements';
 import { animalData } from '../data/animals';
 import { vocabularyData } from '../data/vocabulary';
@@ -187,6 +187,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     resetDailyChallenge();
     resetDinoScores();
     clearPhotos();
+    resetStoryProgress();
     set({ progress });
   },
 

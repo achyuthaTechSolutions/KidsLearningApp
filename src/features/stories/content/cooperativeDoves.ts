@@ -1,0 +1,147 @@
+import type { StoryManifest } from '../engine/types';
+
+/** Story 5: equal groups, a bar graph, and the power of working together. */
+export const cooperativeDoves: StoryManifest = {
+  id: 'cooperative-doves',
+  version: 1,
+  status: 'published',
+  emoji: '🕊️',
+  backdrop: 'sky',
+  title: { en: 'The Doves Who Worked Together', te: 'కలిసి పని చేసిన పావురాలు', hi: 'मिलकर काम करने वाले कबूतर' },
+  summary: {
+    en: 'A flock of doves is caught in a net. Build a graph of the rice they found, make equal groups, and help them fly free together!',
+    te: 'ఒక పావురాల గుంపు వలలో చిక్కుకుంటుంది. అవి కనుక్కున్న బియ్యంతో గ్రాఫ్ తయారు చెయ్యి, సమాన గుంపులు చెయ్యి, కలిసి ఎగరడానికి సహాయం చెయ్యి!',
+    hi: 'कबूतरों का झुंड जाल में फँस जाता है। उनके मिले चावल का ग्राफ़ बनाओ, बराबर समूह बनाओ, और उन्हें साथ मिलकर उड़ने में मदद करो!',
+  },
+  tradition: 'Panchatantra, Book 2 (Mitra-samprapti): Chitragriva and the doves',
+  provenance: 'Original retelling written for this app in 2026. The Panchatantra is a traditional, public-domain collection. No modern translation or illustration was copied. The grain counts are invented for the graph activity.',
+  ageRange: [5, 9],
+  minutes: 8,
+  objectives: ['graphs', 'comparing', 'counting', 'subtraction', 'equal-groups', 'cause-effect', 'comprehension', 'values'],
+  languages: ['en', 'te', 'hi'],
+  translation: { en: 'source', te: 'draft-needs-native-review', hi: 'draft-needs-native-review' },
+  startScene: 'flock',
+  scenes: [
+    {
+      id: 'flock',
+      backdrop: 'sky',
+      characters: [{ id: 'doves', position: 'left', expression: 'happy' }, { id: 'dove-king', position: 'right', expression: 'thinking' }],
+      lines: [
+        { id: 'dov-1', speaker: 'narrator', text: { en: 'A flock of doves flew over the forest with their king, Chitragriva.', te: 'చిత్రగ్రీవుడు అనే రాజుతో కలిసి ఒక పావురాల గుంపు అడవి మీదుగా ఎగురుతోంది.', hi: 'कबूतरों का एक झुंड अपने राजा चित्रग्रीव के साथ जंगल के ऊपर उड़ रहा था।' } },
+        { id: 'dov-2', speaker: 'doves', expression: 'happy', text: { en: 'Look! Rice grains on the ground! Let’s eat!', te: 'చూడండి! నేల మీద బియ్యం గింజలు! తిందాం!', hi: 'देखो! ज़मीन पर चावल के दाने! चलो खाते हैं!' } },
+        { id: 'dov-3', speaker: 'dove-king', expression: 'thinking', text: { en: 'Rice in the middle of a forest? Be careful, friends.', te: 'అడవి మధ్యలో బియ్యమా? జాగ్రత్త, మిత్రులారా.', hi: 'जंगल के बीच में चावल? सावधान रहो, दोस्तों।' } },
+      ],
+      next: 'grains',
+    },
+    {
+      id: 'grains',
+      backdrop: 'meadow',
+      characters: [{ id: 'doves', position: 'center', expression: 'happy' }],
+      props: [{ id: 'rice', emoji: '🌾', x: 78, size: 'md' }],
+      lines: [
+        { id: 'dov-4', speaker: 'narrator', text: { en: 'The doves landed in three groups and counted the grains they found.', te: 'పావురాలు మూడు గుంపులుగా వాలి, తమకు దొరికిన గింజలను లెక్కపెట్టాయి.', hi: 'कबूतर तीन समूहों में उतरे और जो दाने मिले उन्हें गिना।' } },
+      ],
+      activity: {
+        kind: 'bar-graph',
+        id: 'grain-graph',
+        objectives: ['graphs', 'comparing', 'counting', 'subtraction'],
+        itemEmoji: '🌾',
+        categories: [
+          { id: 'white', emoji: '🕊️', value: 6, label: { en: 'White doves', te: 'తెల్ల పావురాలు', hi: 'सफ़ेद कबूतर' } },
+          { id: 'blue', emoji: '🐦', value: 3, label: { en: 'Blue doves', te: 'నీలి పావురాలు', hi: 'नीले कबूतर' } },
+          { id: 'dark', emoji: '🐦‍⬛', value: 4, label: { en: 'Dark doves', te: 'నల్ల పావురాలు', hi: 'काले कबूतर' } },
+        ],
+        questions: [
+          { kind: 'most', prompt: { en: 'Which group found the most grains?', te: 'ఏ గుంపుకు ఎక్కువ గింజలు దొరికాయి?', hi: 'किस समूह को सबसे ज़्यादा दाने मिले?' } },
+          { kind: 'least', prompt: { en: 'Which group found the fewest grains?', te: 'ఏ గుంపుకు తక్కువ గింజలు దొరికాయి?', hi: 'किस समूह को सबसे कम दाने मिले?' } },
+          { kind: 'difference', a: 'white', b: 'blue', prompt: { en: 'How many more grains did the white doves find than the blue doves?', te: 'నీలి పావురాల కంటే తెల్ల పావురాలకు ఎన్ని గింజలు ఎక్కువ దొరికాయి?', hi: 'नीले कबूतरों से सफ़ेद कबूतरों को कितने दाने ज़्यादा मिले?' } },
+        ],
+        prompt: { en: 'Each group counted its rice grains.', te: 'ప్రతి గుంపు తమ బియ్యం గింజలను లెక్కపెట్టింది.', hi: 'हर समूह ने अपने चावल के दाने गिने।' },
+        hint: { en: 'Look at the tallest and shortest bars. To find how many more, count the gap between two bars.', te: 'పొడవైన, పొట్టి పట్టీలను చూడు. ఎన్ని ఎక్కువో తెలుసుకోవడానికి రెండు పట్టీల మధ్య తేడాను లెక్కపెట్టు.', hi: 'सबसे लंबी और सबसे छोटी पट्टी देखो। कितने ज़्यादा, यह जानने के लिए दो पट्टियों का अंतर गिनो।' },
+        explanation: { en: 'White doves found 6, blue doves 3, and dark doves 4. 6 is the most, 3 is the fewest, and 6 − 3 = 3 more.', te: 'తెల్ల పావురాలకు 6, నీలి పావురాలకు 3, నల్ల పావురాలకు 4 దొరికాయి. 6 ఎక్కువ, 3 తక్కువ, 6 − 3 = 3 ఎక్కువ.', hi: 'सफ़ेद कबूतरों को 6, नीले कबूतरों को 3 और काले कबूतरों को 4 दाने मिले। 6 सबसे ज़्यादा है, 3 सबसे कम, और 6 − 3 = 3 ज़्यादा।' },
+      },
+      next: 'trapped',
+    },
+    {
+      id: 'trapped',
+      backdrop: 'meadow',
+      characters: [{ id: 'doves', position: 'center', expression: 'sad' }, { id: 'dove-king', position: 'right', expression: 'thinking' }],
+      props: [{ id: 'net', emoji: '🕸️', x: 50, size: 'lg' }],
+      lines: [
+        { id: 'dov-5', speaker: 'narrator', text: { en: 'Suddenly… whoosh! A hunter’s net fell over all the doves.', te: 'అకస్మాత్తుగా… వూష్! ఒక వేటగాడి వల పావురాలన్నింటి మీద పడింది.', hi: 'अचानक… सर्र! एक शिकारी का जाल सारे कबूतरों पर गिर गया।' } },
+        { id: 'dov-6', speaker: 'doves', expression: 'sad', text: { en: 'We are trapped! What will we do?', te: 'మనం చిక్కుకుపోయాం! ఇప్పుడు ఏం చేద్దాం?', hi: 'हम फँस गए! अब क्या करें?' } },
+      ],
+      choices: [
+        { id: 'alone', emoji: '🐦', next: 'alone', text: { en: 'Each dove pulls on its own', te: 'ప్రతి పావురం ఒంటరిగా లాగుతుంది', hi: 'हर कबूतर अकेले-अकेले खींचे' } },
+        { id: 'together', emoji: '🕊️', next: 'groups', text: { en: 'All fly up together at the same time', te: 'అన్నీ ఒకేసారి కలిసి పైకి ఎగురుతాయి', hi: 'सब एक साथ मिलकर ऊपर उड़ें' } },
+      ],
+    },
+    {
+      id: 'alone',
+      backdrop: 'meadow',
+      characters: [{ id: 'doves', position: 'left', expression: 'sad' }, { id: 'dove-king', position: 'right', expression: 'speaking' }],
+      props: [{ id: 'net', emoji: '🕸️', x: 30, size: 'lg' }],
+      lines: [
+        { id: 'dov-7', speaker: 'narrator', text: { en: 'The doves pulled this way and that. The net did not move at all!', te: 'పావురాలు అటూ ఇటూ లాగాయి. వల కొంచెం కూడా కదలలేదు!', hi: 'कबूतरों ने इधर-उधर खींचा। जाल ज़रा भी नहीं हिला!' } },
+        { id: 'dov-8', speaker: 'dove-king', expression: 'speaking', text: { en: 'Friends, let us try together!', te: 'మిత్రులారా, మనందరం కలిసి ప్రయత్నిద్దాం!', hi: 'दोस्तों, आओ सब मिलकर कोशिश करें!' } },
+      ],
+      next: 'groups',
+    },
+    {
+      id: 'groups',
+      backdrop: 'meadow',
+      characters: [{ id: 'dove-king', position: 'center', expression: 'speaking' }],
+      props: [{ id: 'net', emoji: '🕸️', x: 80, size: 'md' }],
+      lines: [
+        { id: 'dov-9', speaker: 'dove-king', expression: 'speaking', text: { en: 'Get into 4 groups of 3. On my count, everyone flies up!', te: '3 చొప్పున 4 గుంపులుగా చేరండి. నేను లెక్కపెట్టగానే అందరూ పైకి ఎగరండి!', hi: '3-3 के 4 समूह बना लो। मेरी गिनती पर सब ऊपर उड़ना!' } },
+      ],
+      activity: {
+        kind: 'equal-groups',
+        id: 'dove-groups',
+        objectives: ['equal-groups', 'counting'],
+        groups: 4,
+        perGroup: 3,
+        emoji: '🕊️',
+        choices: [10, 12, 14],
+        prompt: { en: 'Help the doves get ready. Tap each group to add 3 doves.', te: 'పావురాలను సిద్ధం చెయ్యి. ప్రతి గుంపును నొక్కి 3 పావురాలను చేర్చు.', hi: 'कबूतरों को तैयार करो। हर समूह को दबाकर 3 कबूतर जोड़ो।' },
+        totalPrompt: { en: '4 groups of 3 doves. How many doves are there in all?', te: '3 పావురాల చొప్పున 4 గుంపులు. మొత్తం ఎన్ని పావురాలు ఉన్నాయి?', hi: '3-3 कबूतरों के 4 समूह। कुल कितने कबूतर हैं?' },
+        hint: { en: 'Count by threes: 3, 6, 9, 12.', te: 'మూడేసి లెక్కపెట్టు: 3, 6, 9, 12.', hi: 'तीन-तीन करके गिनो: 3, 6, 9, 12।' },
+        explanation: { en: '4 groups of 3 make 12. 3 + 3 + 3 + 3 = 12, or 4 × 3 = 12.', te: '3 చొప్పున 4 గుంపులు కలిపితే 12. 3 + 3 + 3 + 3 = 12, అంటే 4 × 3 = 12.', hi: '3-3 के 4 समूह मिलकर 12 होते हैं। 3 + 3 + 3 + 3 = 12, यानी 4 × 3 = 12।' },
+      },
+      next: 'fly',
+    },
+    {
+      id: 'fly',
+      backdrop: 'sky',
+      characters: [{ id: 'doves', position: 'left', expression: 'action' }, { id: 'dove-king', position: 'center', expression: 'happy' }, { id: 'mouse', position: 'right', expression: 'happy' }],
+      lines: [
+        { id: 'dov-10', speaker: 'narrator', text: { en: 'One, two, three… FLY! The doves flew up together, carrying the net high into the sky!', te: 'ఒకటి, రెండు, మూడు… ఎగరండి! పావురాలన్నీ కలిసి వలతో సహా ఆకాశంలోకి ఎగిరాయి!', hi: 'एक, दो, तीन… उड़ो! सारे कबूतर मिलकर जाल समेत आसमान में उड़ गए!' } },
+        { id: 'dov-11', speaker: 'narrator', text: { en: 'They flew to their friend, the mouse, who chewed the net and set them free.', te: 'అవి తమ స్నేహితుడైన ఎలుక దగ్గరకి ఎగిరి వెళ్లాయి. ఎలుక వలను కొరికి వాటిని విడిపించింది.', hi: 'वे अपने दोस्त चूहे के पास उड़कर गए। चूहे ने जाल कुतरकर उन्हें आज़ाद कर दिया।' } },
+      ],
+      activity: {
+        kind: 'question',
+        id: 'why-lift',
+        objectives: ['comprehension', 'cause-effect'],
+        prompt: { en: 'Why could the doves lift the heavy net?', te: 'బరువైన వలను పావురాలు ఎలా ఎత్తగలిగాయి?', hi: 'भारी जाल को कबूतर कैसे उठा पाए?' },
+        hint: { en: 'What happened when each dove pulled alone?', te: 'ప్రతి పావురం ఒంటరిగా లాగినప్పుడు ఏం జరిగింది?', hi: 'जब हर कबूतर ने अकेले खींचा, तब क्या हुआ था?' },
+        explanation: { en: 'Alone, each dove was too small. Together, all their strength added up and lifted the net.', te: 'ఒంటరిగా ప్రతి పావురం చాలా చిన్నది. కలిసి ఉన్నప్పుడు వాటి బలం అంతా కలిసి వలను ఎత్తింది.', hi: 'अकेले हर कबूतर बहुत छोटा था। साथ मिलकर उनकी ताकत जुड़ गई और जाल उठ गया।' },
+        options: [
+          { id: 'together', emoji: '🕊️', text: { en: 'They all worked together', te: 'అన్నీ కలిసి పని చేశాయి', hi: 'सबने मिलकर काम किया' } },
+          { id: 'strong', emoji: '💪', text: { en: 'One dove was very strong', te: 'ఒక పావురం చాలా బలంగా ఉంది', hi: 'एक कबूतर बहुत ताकतवर था' } },
+          { id: 'wind', emoji: '🌬️', text: { en: 'The wind blew it away', te: 'గాలి దాన్ని ఎగరగొట్టింది', hi: 'हवा उसे उड़ा ले गई' } },
+        ],
+        correct: ['together'],
+      },
+      next: 'thanks',
+    },
+    {
+      id: 'thanks',
+      backdrop: 'meadow',
+      characters: [{ id: 'dove-king', position: 'left', expression: 'happy' }, { id: 'doves', position: 'center', expression: 'happy' }, { id: 'mouse', position: 'right', expression: 'happy' }],
+      lines: [
+        { id: 'dov-12', speaker: 'dove-king', expression: 'happy', text: { en: 'Thank you, friends. Together we are strong!', te: 'ధన్యవాదాలు మిత్రులారా. కలిసి ఉంటే మనం బలంగా ఉంటాం!', hi: 'धन्यवाद दोस्तों। साथ मिलकर हम मज़बूत हैं!' } },
+      ],
+      moral: { en: 'When we work together, we can do things none of us could do alone.', te: 'మనం కలిసి పని చేస్తే, ఒంటరిగా ఎవరూ చేయలేని పనులు చేయగలం.', hi: 'जब हम मिलकर काम करते हैं, तो वह कर पाते हैं जो कोई अकेले नहीं कर सकता।' },
+    },
+  ],
+};

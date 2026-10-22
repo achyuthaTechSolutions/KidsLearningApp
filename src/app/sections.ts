@@ -11,6 +11,7 @@ import {
   SportsEsportsRounded,
   DirectionsRunRounded,
   EmojiEventsRounded,
+  AutoStoriesRounded,
   CelebrationRounded,
   StyleRounded,
   ExtensionRounded,
@@ -39,6 +40,7 @@ export const sections: Section[] = [
   { path: '/balloons', label: 'Balloon Pop', shortLabel: 'Balloons', tagline: 'Pop the right balloons', world: 'blue', Icon: CelebrationRounded, emoji: '🎈', group: 'play' },
   { path: '/memory', label: 'Memory Match', shortLabel: 'Memory', tagline: 'Flip cards, find pairs', world: 'violet', Icon: StyleRounded, emoji: '🃏', group: 'play' },
   { path: '/spell', label: 'Word Builder', shortLabel: 'Spell', tagline: 'Tap letters to spell words', world: 'pink', Icon: ExtensionRounded, emoji: '🧩', group: 'play' },
+  { path: '/stories', label: 'Story Time', shortLabel: 'Stories', tagline: 'Animal stories with maths and morals', world: 'orange', Icon: AutoStoriesRounded, emoji: '📖', group: 'learn' },
   { path: '/keyboard', label: 'Keyboard Explorer', shortLabel: 'Keys', tagline: 'Tap a key, hear a word', world: 'violet', Icon: KeyboardRounded, emoji: '⌨️', group: 'learn' },
   { path: '/alphabet', label: 'Alphabet World', shortLabel: 'ABC', tagline: 'Meet all 26 letters', world: 'green', Icon: AbcRounded, emoji: '🔤', group: 'learn' },
   { path: '/numbers', label: 'Number World', shortLabel: '123', tagline: 'Count from 0 to 20', world: 'sun', Icon: NumbersRounded, emoji: '🔢', group: 'learn' },
@@ -56,6 +58,7 @@ export function sectionFor(path: string): Section {
   if (exact) return exact;
   // Games without their own menu entry, such as /games/robot, belong to Learning Games.
   if (path.startsWith('/games/')) return sections.find((section) => section.path === '/games') ?? sections[0];
+  if (path.startsWith('/stories/')) return sections.find((section) => section.path === '/stories') ?? sections[0];
   return sections[0];
 }
 

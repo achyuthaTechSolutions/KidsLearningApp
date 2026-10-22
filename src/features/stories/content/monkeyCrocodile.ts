@@ -1,0 +1,177 @@
+import type { StoryManifest } from '../engine/types';
+
+/**
+ * Story 4: thinking calmly in trouble. The lesson is about one character's actions,
+ * never that a kind of animal, or a stranger, is bad.
+ */
+export const monkeyCrocodile: StoryManifest = {
+  id: 'monkey-crocodile',
+  version: 1,
+  status: 'published',
+  emoji: '🐊',
+  backdrop: 'tree-river',
+  title: { en: 'The Monkey and the Crocodile', te: 'కోతి, మొసలి', hi: 'बंदर और मगरमच्छ' },
+  summary: {
+    en: 'A monkey shares sweet jamuns with a crocodile. When trouble comes in the middle of the river, can the monkey stay calm and think?',
+    te: 'కోతి మొసలితో తియ్యటి నేరేడు పండ్లను పంచుకుంటుంది. నది మధ్యలో కష్టం వచ్చినప్పుడు కోతి ప్రశాంతంగా ఆలోచించగలదా?',
+    hi: 'बंदर मगरमच्छ के साथ मीठे जामुन बाँटता है। नदी के बीच मुसीबत आने पर क्या बंदर शांत रहकर सोच पाएगा?',
+  },
+  tradition: 'Panchatantra, Book 4 (Labdha-pranasha): “The Monkey and the Crocodile”',
+  provenance: 'Original retelling written for this app in 2026. The Panchatantra is a traditional, public-domain collection. No modern translation or illustration was copied. The jamun fruit is shown with the closest bundled picture (a blueberry) and named jamun in the text.',
+  ageRange: [5, 8],
+  minutes: 8,
+  objectives: ['subtraction', 'number-line', 'comparing', 'sequencing', 'comprehension', 'vocabulary', 'values'],
+  languages: ['en', 'te', 'hi'],
+  translation: { en: 'source', te: 'draft-needs-native-review', hi: 'draft-needs-native-review' },
+  startScene: 'jamun-tree',
+  scenes: [
+    {
+      id: 'jamun-tree',
+      backdrop: 'tree-river',
+      characters: [{ id: 'monkey', position: 'left', expression: 'happy' }, { id: 'crocodile', position: 'right', expression: 'idle' }],
+      lines: [
+        { id: 'cro-1', speaker: 'narrator', text: { en: 'A monkey lived in a jamun tree by the river. He shared sweet jamun fruits with his friend, the crocodile.', te: 'నది ఒడ్డున ఒక నేరేడు చెట్టు మీద ఒక కోతి ఉండేది. అది తన స్నేహితుడైన మొసలితో తియ్యటి నేరేడు పండ్లను పంచుకునేది.', hi: 'नदी किनारे जामुन के एक पेड़ पर एक बंदर रहता था। वह अपने दोस्त मगरमच्छ के साथ मीठे जामुन बाँटता था।' } },
+        { id: 'cro-2', speaker: 'monkey', expression: 'happy', text: { en: 'Here, friend! Take some jamuns home.', te: 'ఇదిగో మిత్రమా! కొన్ని నేరేడు పండ్లు ఇంటికి తీసుకెళ్ళు.', hi: 'लो दोस्त! कुछ जामुन घर ले जाओ।' } },
+      ],
+      activity: {
+        kind: 'arithmetic',
+        id: 'jamuns-left',
+        objectives: ['subtraction'],
+        op: 'subtract',
+        a: 7,
+        b: 3,
+        emoji: '🫐',
+        choices: [3, 4, 5],
+        prompt: { en: 'The monkey gave the crocodile 7 jamuns. The crocodile ate 3 on the way. How many are left?', te: 'కోతి మొసలికి 7 నేరేడు పండ్లు ఇచ్చింది. దారిలో మొసలి 3 తినేసింది. ఎన్ని మిగిలాయి?', hi: 'बंदर ने मगरमच्छ को 7 जामुन दिए। रास्ते में मगरमच्छ ने 3 खा लिए। कितने बचे?' },
+        hint: { en: 'Cover the 3 that were eaten and count the ones left.', te: 'తినేసిన 3 పండ్లను దాచి, మిగిలినవి లెక్కపెట్టు.', hi: 'खाए गए 3 जामुन ढक दो और बचे हुए गिनो।' },
+        explanation: { en: '7 take away 3 leaves 4. 7 − 3 = 4.', te: '7 లోంచి 3 తీసేస్తే 4 మిగులుతాయి. 7 − 3 = 4.', hi: '7 में से 3 निकालने पर 4 बचते हैं। 7 − 3 = 4।' },
+      },
+      next: 'wife',
+    },
+    {
+      id: 'wife',
+      backdrop: 'river',
+      characters: [{ id: 'crocodile', position: 'center', expression: 'sad' }],
+      lines: [
+        { id: 'cro-3', speaker: 'narrator', text: { en: 'The crocodile’s wife tasted the jamuns. She said, “If the fruit is so sweet, the monkey’s heart must be sweeter. Bring me his heart!”', te: 'మొసలి భార్య నేరేడు పండ్లను రుచి చూసింది. “పండ్లు ఇంత తియ్యగా ఉంటే, కోతి గుండె ఇంకా తియ్యగా ఉంటుంది. అది నాకు తెచ్చి ఇవ్వు!” అంది.', hi: 'मगरमच्छ की पत्नी ने जामुन चखे। उसने कहा, “अगर फल इतने मीठे हैं, तो बंदर का दिल और भी मीठा होगा। मुझे उसका दिल लाकर दो!”' } },
+        { id: 'cro-4', speaker: 'crocodile', expression: 'sad', text: { en: 'Oh no. The monkey is my friend… but I will do what my wife says.', te: 'అయ్యో. కోతి నా స్నేహితుడు… కానీ నా భార్య చెప్పినట్టే చేస్తాను.', hi: 'अरे नहीं। बंदर मेरा दोस्त है… पर मैं वही करूँगा जो मेरी पत्नी कहती है।' } },
+      ],
+      next: 'ride',
+    },
+    {
+      id: 'ride',
+      backdrop: 'river',
+      characters: [{ id: 'crocodile', position: 'center', expression: 'action' }, { id: 'monkey', position: 'center', expression: 'happy' }],
+      lines: [
+        { id: 'cro-5', speaker: 'narrator', text: { en: 'The crocodile invited the monkey home. He carried the monkey across the river on his back.', te: 'మొసలి కోతిని ఇంటికి ఆహ్వానించింది. తన వీపు మీద ఎక్కించుకుని నది దాటిస్తోంది.', hi: 'मगरमच्छ ने बंदर को घर बुलाया। वह बंदर को अपनी पीठ पर बिठाकर नदी पार कराने लगा।' } },
+      ],
+      activity: {
+        kind: 'number-line',
+        id: 'swim-steps',
+        objectives: ['number-line', 'addition'],
+        min: 0,
+        max: 10,
+        start: 2,
+        steps: 5,
+        emoji: '🐊',
+        prompt: { en: 'The crocodile is at 2. He swims 5 steps forward. Move him to where he stops.', te: 'మొసలి 2 దగ్గర ఉంది. అది 5 అడుగులు ముందుకు ఈదుతుంది. అది ఆగే చోటికి దాన్ని జరుపు.', hi: 'मगरमच्छ 2 पर है। वह 5 कदम आगे तैरता है। उसे वहाँ ले जाओ जहाँ वह रुकेगा।' },
+        hint: { en: 'Count 5 jumps from 2: 3, 4, 5, 6, 7.', te: '2 నుంచి 5 గెంతులు లెక్కపెట్టు: 3, 4, 5, 6, 7.', hi: '2 से 5 छलाँग गिनो: 3, 4, 5, 6, 7।' },
+        explanation: { en: 'Starting at 2 and moving 5 steps forward lands on 7. 2 + 5 = 7.', te: '2 నుంచి 5 అడుగులు ముందుకు వెళితే 7 దగ్గర ఆగుతుంది. 2 + 5 = 7.', hi: '2 से 5 कदम आगे जाने पर हम 7 पर पहुँचते हैं। 2 + 5 = 7।' },
+      },
+      next: 'truth',
+    },
+    {
+      id: 'truth',
+      backdrop: 'river',
+      characters: [{ id: 'crocodile', position: 'left', expression: 'idle' }, { id: 'monkey', position: 'right', expression: 'surprised' }],
+      lines: [
+        { id: 'cro-6', speaker: 'crocodile', expression: 'speaking', text: { en: 'My wife wants your heart, so I am taking you to her.', te: 'నా భార్యకి నీ గుండె కావాలి, అందుకే నిన్ను ఆమె దగ్గరకి తీసుకెళ్తున్నాను.', hi: 'मेरी पत्नी को तुम्हारा दिल चाहिए, इसलिए मैं तुम्हें उसके पास ले जा रहा हूँ।' } },
+        { id: 'cro-7', speaker: 'monkey', expression: 'surprised', text: { en: 'Oh! What should I do?', te: 'అయ్యో! ఇప్పుడు నేనేం చేయాలి?', hi: 'अरे! अब मैं क्या करूँ?' } },
+      ],
+      choices: [
+        { id: 'panic', emoji: '🌊', next: 'panic', text: { en: 'Shout and jump into the deep water', te: 'అరిచి లోతైన నీళ్లలోకి దూకు', hi: 'चिल्लाकर गहरे पानी में कूद जाओ' } },
+        { id: 'calm', emoji: '💭', next: 'plan', text: { en: 'Stay calm and think of a plan', te: 'ప్రశాంతంగా ఉండి ఉపాయం ఆలోచించు', hi: 'शांत रहो और उपाय सोचो' } },
+      ],
+    },
+    {
+      id: 'panic',
+      backdrop: 'river',
+      characters: [{ id: 'monkey', position: 'center', expression: 'thinking' }],
+      lines: [
+        { id: 'cro-8', speaker: 'monkey', expression: 'thinking', text: { en: 'Wait! I cannot swim, and the water is deep. Jumping would not be safe. Let me stay calm and think.', te: 'ఆగు! నాకు ఈత రాదు, నీళ్లు లోతుగా ఉన్నాయి. దూకడం సురక్షితం కాదు. ప్రశాంతంగా ఉండి ఆలోచిస్తాను.', hi: 'रुको! मुझे तैरना नहीं आता और पानी गहरा है। कूदना सुरक्षित नहीं है। मैं शांत रहकर सोचता हूँ।' } },
+      ],
+      next: 'plan',
+    },
+    {
+      id: 'plan',
+      backdrop: 'tree-river',
+      characters: [{ id: 'monkey', position: 'left', expression: 'happy' }, { id: 'crocodile', position: 'right', expression: 'surprised' }],
+      lines: [
+        { id: 'cro-9', speaker: 'monkey', expression: 'thinking', text: { en: 'Oh dear friend, I left my heart at home in the jamun tree! Take me back and I will get it.', te: 'అయ్యో మిత్రమా, నా గుండెను నేరేడు చెట్టు మీద ఇంట్లోనే వదిలేశాను! నన్ను తిరిగి తీసుకెళ్ళు, తెచ్చిస్తాను.', hi: 'अरे दोस्त, मैं अपना दिल जामुन के पेड़ पर घर पर ही छोड़ आया! मुझे वापस ले चलो, मैं ले आता हूँ।' } },
+        { id: 'cro-10', speaker: 'narrator', text: { en: 'The crocodile believed him and swam back to the tree. The monkey jumped up to safety!', te: 'మొసలి అది నమ్మి తిరిగి చెట్టు దగ్గరకి ఈదింది. కోతి గెంతి సురక్షితంగా చెట్టు ఎక్కింది!', hi: 'मगरमच्छ ने उसकी बात मान ली और वापस पेड़ की ओर तैरा। बंदर उछलकर सुरक्षित पेड़ पर चढ़ गया!' } },
+      ],
+      activity: {
+        kind: 'question',
+        id: 'back-where',
+        objectives: ['comparing', 'number-line'],
+        prompt: { en: 'The crocodile swam 5 steps out, then 5 steps back. Where is he now?', te: 'మొసలి 5 అడుగులు ముందుకు, తర్వాత 5 అడుగులు వెనక్కి ఈదింది. ఇప్పుడు అది ఎక్కడ ఉంది?', hi: 'मगरमच्छ 5 कदम आगे और फिर 5 कदम पीछे तैरा। अब वह कहाँ है?' },
+        hint: { en: 'If you take 5 steps forward and 5 steps back, where are you?', te: 'నువ్వు 5 అడుగులు ముందుకి, 5 అడుగులు వెనక్కి వేస్తే ఎక్కడ ఉంటావు?', hi: 'अगर तुम 5 कदम आगे और 5 कदम पीछे चलो, तो कहाँ पहुँचोगे?' },
+        explanation: { en: '5 steps out and 5 steps back bring him back where he started, at the tree.', te: '5 అడుగులు ముందుకి, 5 అడుగులు వెనక్కి వెళితే మళ్ళీ మొదటి చోటికే వస్తాం. అది చెట్టు దగ్గరే ఉంది.', hi: '5 कदम आगे और 5 कदम पीछे जाने से वह वहीं लौट आता है जहाँ से चला था, पेड़ के पास।' },
+        options: [
+          { id: 'start', emoji: '🌳', text: { en: 'Back where he started', te: 'మొదలుపెట్టిన చోటే', hi: 'वहीं, जहाँ से शुरू किया था' } },
+          { id: 'far', emoji: '🌊', text: { en: 'Far from the tree', te: 'చెట్టుకు చాలా దూరంగా', hi: 'पेड़ से बहुत दूर' } },
+          { id: 'middle', emoji: '🐊', text: { en: 'In the middle of the river', te: 'నది మధ్యలో', hi: 'नदी के बीच में' } },
+        ],
+        correct: ['start'],
+      },
+      next: 'retell',
+    },
+    {
+      id: 'retell',
+      backdrop: 'tree-river',
+      characters: [{ id: 'monkey', position: 'left', expression: 'idle' }],
+      lines: [
+        { id: 'cro-11', speaker: 'monkey', expression: 'speaking', text: { en: 'A real friend would not try to trick me. I will stay safe in my tree.', te: 'నిజమైన స్నేహితుడు నన్ను మోసం చేయాలని చూడడు. నేను నా చెట్టు మీదే సురక్షితంగా ఉంటాను.', hi: 'सच्चा दोस्त मुझे धोखा देने की कोशिश नहीं करेगा। मैं अपने पेड़ पर सुरक्षित रहूँगा।' } },
+      ],
+      activity: {
+        kind: 'sequence',
+        id: 'retell-order',
+        objectives: ['sequencing', 'comprehension'],
+        prompt: { en: 'Can you tell the story in order?', te: 'కథను వరుసలో చెప్పగలవా?', hi: 'क्या तुम कहानी को क्रम से बता सकते हो?' },
+        hint: { en: 'The story began with sharing fruit, and ended with the monkey safe in his tree.', te: 'కథ పండ్లు పంచుకోవడంతో మొదలై, కోతి చెట్టు మీద సురక్షితంగా ఉండటంతో ముగిసింది.', hi: 'कहानी फल बाँटने से शुरू हुई और बंदर के अपने पेड़ पर सुरक्षित होने पर खत्म हुई।' },
+        explanation: { en: 'The monkey shared jamuns, rode on the crocodile, heard the plan, said his heart was in the tree, and jumped to safety.', te: 'కోతి నేరేడు పండ్లు పంచింది, మొసలి వీపు మీద వెళ్ళింది, ఆ ఉపాయం విన్నది, గుండె చెట్టు మీద ఉందని చెప్పింది, సురక్షితంగా గెంతింది.', hi: 'बंदर ने जामुन बाँटे, मगरमच्छ की पीठ पर बैठा, उसकी योजना सुनी, कहा कि दिल पेड़ पर है, और उछलकर सुरक्षित हो गया।' },
+        events: [
+          { id: 'shared', emoji: '🫐', text: { en: 'The monkey shared jamuns', te: 'కోతి నేరేడు పండ్లు పంచింది', hi: 'बंदर ने जामुन बाँटे' } },
+          { id: 'rode', emoji: '🐊', text: { en: 'The monkey rode on the crocodile', te: 'కోతి మొసలి వీపు మీద వెళ్ళింది', hi: 'बंदर मगरमच्छ की पीठ पर बैठा' } },
+          { id: 'heard', emoji: '😮', text: { en: 'The monkey heard the crocodile’s plan', te: 'కోతి మొసలి ఉపాయం విన్నది', hi: 'बंदर ने मगरमच्छ की योजना सुनी' } },
+          { id: 'heart', emoji: '🌳', text: { en: 'The monkey said his heart was in the tree', te: 'గుండె చెట్టు మీద ఉందని కోతి చెప్పింది', hi: 'बंदर ने कहा कि उसका दिल पेड़ पर है' } },
+          { id: 'safe', emoji: '🐒', text: { en: 'The monkey jumped to safety', te: 'కోతి సురక్షితంగా గెంతింది', hi: 'बंदर उछलकर सुरक्षित हो गया' } },
+        ],
+      },
+      next: 'trust',
+    },
+    {
+      id: 'trust',
+      backdrop: 'tree-river',
+      characters: [{ id: 'monkey', position: 'center', expression: 'thinking' }],
+      lines: [
+        { id: 'cro-12', speaker: 'narrator', text: { en: 'Let us think about why the monkey decided to stay away.', te: 'కోతి ఎందుకు దూరంగా ఉండాలని నిర్ణయించుకుందో ఆలోచిద్దాం.', hi: 'आओ सोचें कि बंदर ने दूर रहने का फ़ैसला क्यों किया।' } },
+      ],
+      activity: {
+        kind: 'question',
+        id: 'why-trust',
+        objectives: ['comprehension', 'values'],
+        prompt: { en: 'Why did the monkey stop trusting the crocodile?', te: 'కోతి మొసలిని నమ్మడం ఎందుకు మానేసింది?', hi: 'बंदर ने मगरमच्छ पर भरोसा करना क्यों छोड़ दिया?' },
+        hint: { en: 'Think about what the crocodile did, not how he looks.', te: 'మొసలి ఎలా ఉందో కాదు, అది ఏం చేసిందో ఆలోచించు.', hi: 'मगरमच्छ कैसा दिखता है, यह नहीं, उसने क्या किया, यह सोचो।' },
+        explanation: { en: 'The monkey decided because of what the crocodile did, not because of how he looks. We learn who to trust by watching what people do.', te: 'మొసలి ఎలా ఉందో చూసి కాదు, అది ఏం చేసిందో చూసి కోతి నిర్ణయించుకుంది. ఎవరిని నమ్మాలో వాళ్ళ పనులను చూసి తెలుసుకుంటాం.', hi: 'बंदर ने मगरमच्छ के रूप को देखकर नहीं, उसके काम को देखकर फ़ैसला किया। हम लोगों के कामों को देखकर ही समझते हैं कि किस पर भरोसा करें।' },
+        options: [
+          { id: 'trick', emoji: '🐊', text: { en: 'The crocodile tried to trick him', te: 'మొసలి దాన్ని మోసం చేయాలని చూసింది', hi: 'मगरमच्छ ने उसे धोखा देने की कोशिश की' } },
+          { id: 'green', emoji: '🟢', text: { en: 'The crocodile was green', te: 'మొసలి ఆకుపచ్చగా ఉంది', hi: 'मगरमच्छ हरा था' } },
+          { id: 'all', emoji: '🌊', text: { en: 'All crocodiles are bad', te: 'మొసళ్ళన్నీ చెడ్డవి', hi: 'सारे मगरमच्छ बुरे होते हैं' } },
+        ],
+        correct: ['trick'],
+      },
+      moral: { en: 'Stay calm and think when there is trouble. Trust others because of what they do.', te: 'కష్టం వచ్చినప్పుడు ప్రశాంతంగా ఉండి ఆలోచించు. ఎవరిని నమ్మాలో వాళ్ళ పనులను చూసి నిర్ణయించు.', hi: 'मुसीबत में शांत रहो और सोचो। दूसरों पर उनके कामों को देखकर भरोसा करो।' },
+    },
+  ],
+};
