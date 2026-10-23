@@ -1,0 +1,1 @@
+import{t as e}from"./index-BmJhH4IV.js";import{l as t}from"./illustrations-CScOQrof.js";var n=e();function r({message:e}){return(0,n.jsx)(t,{role:`status`,"aria-live":`polite`,sx:{position:`absolute`,width:1,height:1,overflow:`hidden`,clip:`rect(0 0 0 0)`,whiteSpace:`nowrap`},children:e})}export{r as t};
