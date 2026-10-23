@@ -91,6 +91,8 @@ export interface LearningProgress {
   gameRounds: Record<string, number>;
   /** Unique levels, letters, recipes or places finished per game id. */
   gameLevels: Record<string, string[]>;
+  /** Current endless level per game id, which rises and falls with how the child plays. */
+  gameSkill: Record<string, number>;
 }
 
 /** A parent-chosen starting level for the Play games. Age is only a hint. */
@@ -109,4 +111,6 @@ export interface AppSettings {
   storyLanguage: 'en' | 'te' | 'hi';
   storyNarration: boolean;
   storyCaptions: boolean;
+  /** Quiet music while playing games, activities, and stories. */
+  backgroundMusic: boolean;
 }

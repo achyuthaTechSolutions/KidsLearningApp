@@ -62,19 +62,24 @@ describe('Game routes and hub', () => {
 });
 
 describe('Alphabet Catcher', () => {
-  it('counts a correct catch once and moves to the next letter', () => {
+  it('counts a correct catch once, levels up after 3 first tries, and finishes when the child stops', () => {
     renderGame(<AlphabetCatcher />);
+    expect(screen.getByTestId('endless-level').textContent).toContain('Level 1');
     fireEvent.click(screen.getByRole('button', { name: "Let's play!" }));
-    const prompt = screen.getAllByText(/^Catch the letter [A-Z]!$/)[0].textContent!;
-    const target = prompt.match(/letter ([A-Z])/)![1];
-    const choices = within(screen.getByRole('group', { name: 'Letters' })).getAllByRole('button');
-    expect(choices).toHaveLength(3);
-    fireEvent.click(screen.getByRole('button', { name: `Letter ${target}` }));
-    expect(screen.getByText('1 of 10', { exact: false })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: `Letter ${target}` }));
+    const target = () => screen.getAllByText(/^Catch the letter [A-Z]!$/)[0].textContent!.match(/letter ([A-Z])/)![1];
+    expect(within(screen.getByRole('group', { name: 'Letters' })).getAllByRole('button')).toHaveLength(3);
+    const first = target();
+    fireEvent.click(screen.getByRole('button', { name: `Letter ${first}` }));
+    fireEvent.click(screen.getByRole('button', { name: `Letter ${first}` }));
     expect(screen.getByLabelText('1 letters caught')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Next Letter' }));
-    expect(screen.getByText(/Letter 2 of 10/)).toBeTruthy();
+    for (let i = 0; i < 2; i += 1) {
+      fireEvent.click(screen.getByRole('button', { name: 'Next Letter' }));
+      fireEvent.click(screen.getByRole('button', { name: `Letter ${target()}` }));
+    }
+    expect(screen.getByTestId('game-level').textContent).toBe('Level 2');
+    expect(useAppStore.getState().progress.gameSkill['alphabet-catcher']).toBe(2);
+    fireEvent.click(screen.getByRole('button', { name: 'Finish' }));
+    expect(screen.getByText(/You caught 3 letters and reached Level 2! 3 on the first try\./)).toBeTruthy();
   });
 
   it('lets a keyboard user press the letter key', () => {

@@ -30,21 +30,28 @@ async function beginnerAnswer(page: Page): Promise<string> {
 }
 
 test.describe('Number Racer', () => {
-  test('is listed with the games, and a whole race can be driven by tapping lanes', async ({ page }) => {
+  test('is listed with the games, levels up after 3 first tries, and carries on from the saved level', async ({ page }) => {
     const errors = await openRacer(page);
     await page.goto('/games');
     await page.getByRole('button', { name: 'Number Racer' }).click();
-    await page.getByRole('button', { name: '5 gates' }).click();
+    await expect(page.getByTestId('endless-level')).toContainText('Level 1');
     await page.getByRole('button', { name: 'Start the race!' }).click();
+    await expect(page.getByTestId('game-level')).toHaveText('Level 1');
     for (let gate = 0; gate < 5; gate += 1) {
       const answer = await beginnerAnswer(page);
       await page.getByRole('button', { name: new RegExp(`^Lane \\d: ${answer}$`) }).click();
       await expect(await driveToGate(page)).toContainText('Zoom!');
-      await page.clock.runFor(2000);
+      if (gate === 2) await expect(page.getByTestId('level-up')).toHaveText('Level up! Level 2');
+      await page.clock.runFor(3000);
     }
-    await expect(page.getByText('You drove through 5 gates! 5 on the first try.')).toBeVisible();
-    const levels = await page.evaluate(() => JSON.parse(localStorage.getItem('kids-learning-progress') ?? '{}').gameLevels);
-    expect(levels.racer).toEqual(['beginner-5']);
+    await expect(page.getByTestId('game-level')).toHaveText('Level 2');
+    await page.getByRole('button', { name: 'Finish' }).click();
+    await expect(page.getByText('You reached Level 2 and drove through 5 gates! 5 on the first try.')).toBeVisible();
+    const progress = await page.evaluate(() => JSON.parse(localStorage.getItem('kids-learning-progress') ?? '{}'));
+    expect(progress.gameSkill.racer).toBe(2);
+    expect(progress.gameLevels.racer).toEqual(['level-2']);
+    await page.goto('/games/racer');
+    await expect(page.getByTestId('endless-level')).toContainText('Level 2');
     expect(errors).toEqual([]);
   });
 
