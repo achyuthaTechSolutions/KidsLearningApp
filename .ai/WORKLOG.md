@@ -163,3 +163,55 @@ Nothing was pushed or merged.
 **Not done, and needs a person:** see `docs/qa/RELEASE_VERIFICATION.md`.
 
 Nothing was pushed, merged, or opened as a PR in this pass.
+
+## 2026-10-23: Number Racer
+
+The owner asked for a car racing game in the games section.
+
+**Built:** Number Racer (`/games/racer`, id `racer`, Move and Play category). A learning racer:
+
+- steer into the lane whose gate holds the right answer;
+- Beginner asks to find or count up to 5, Explorer adds and takes away within 10, and Champion works within 20 and adds missing numbers;
+- no crashes and no game over: a miss shows the answer, repeats the question more slowly, and makes the right gate glow after two misses;
+- the car is a top-down SVG in 4 colours, because the emoji car is a side view.
+
+**Files:**
+
+- `features/number-racer/{engine.ts, engine.test.ts, NumberRacer.tsx}`;
+- the catalog entry, the lazy route in `App.tsx`, and the `kl-road` keyframes;
+- the racing-car illustration.
+
+**Found and fixed: the illustration script.**
+
+- `npm run illustrations` deleted 45 bundled pictures still used by `packages/learning-core` (moved there by PR #2), because it scanned only `src/`.
+- Restored them from git.
+- The script now also scans `packages/`, skipping `node_modules`. A rerun writes all 222 pictures and deletes none.
+
+**Phone layout fixes from screenshots:**
+
+- The road height scales with the screen.
+- The counting sign is one line.
+- The road and steer buttons scroll above the bottom menu.
+- The car sits higher, so it is not clipped.
+
+**Tests:**
+
+- 10 engine tests.
+- 3 E2E tests on a fake clock, on desktop and phone:
+  - a full 5-gate race recorded as `gameLevels.racer = ['beginner-5']`;
+  - two misses keep the question, and the right gate glows;
+  - arrow and number keys steer, and Pause holds the gate.
+- My first E2E timing was wrong (fixed jumps overshot the 1.6–2.6 s feedback). The tests now advance in small steps.
+
+**Checks:**
+
+- tsc passes.
+- 41 files and 285 tests pass.
+- Lint: 2 pre-existing warnings.
+- The build succeeds (NumberRacer chunk 12.7 kB).
+- E2E: 34 of 34 pass.
+- The GitHub Pages build (`GITHUB_PAGES=true npm run build`) also succeeds.
+
+This entry is on branch `claude/number-racer`, from `main` at `2824b3e`, with Number Racer only.
+
+**Not done:** no achievement badge for the racer, and no real-device check.

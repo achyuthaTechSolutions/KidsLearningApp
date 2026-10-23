@@ -35,6 +35,7 @@ const RhythmHero = lazy(() => import('./features/rhythm-hero/RhythmHero'));
 const LittleChef = lazy(() => import('./features/little-chef/LittleChef'));
 const EmotionExplorer = lazy(() => import('./features/emotion-explorer/EmotionExplorer'));
 const SpaceExplorer = lazy(() => import('./features/space-explorer/SpaceExplorer'));
+const NumberRacer = lazy(() => import('./features/number-racer/NumberRacer'));
 const StoryLibrary = lazy(() => import('./features/stories/StoryLibrary'));
 const StoryPlayer = lazy(() => import('./features/stories/player/StoryPlayer'));
 
@@ -52,6 +53,7 @@ const playRoutes = [
   { path: '/games/chef', Component: LittleChef },
   { path: '/games/emotions', Component: EmotionExplorer },
   { path: '/games/space', Component: SpaceExplorer },
+  { path: '/games/racer', Component: NumberRacer },
   { path: '/stories', Component: StoryLibrary },
   { path: '/stories/:storyId', Component: StoryPlayer },
 ];

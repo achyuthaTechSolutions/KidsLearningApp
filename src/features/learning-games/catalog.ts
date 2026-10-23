@@ -16,7 +16,8 @@ export type GameId =
   | 'space'
   | 'emotions'
   | 'tracing'
-  | 'photo-puzzle';
+  | 'photo-puzzle'
+  | 'racer';
 
 export type GameCategory = 'letters' | 'logic' | 'music' | 'pretend' | 'discovery' | 'action';
 
@@ -54,6 +55,7 @@ export const gameCatalog: GameEntry[] = [
   { id: 'chef', path: '/games/chef', title: 'Little Chef', description: 'Follow the recipe and count the food!', emoji: '🥗', world: 'green', category: 'pretend' },
   { id: 'emotions', path: '/games/emotions', title: 'Emotion Explorer', description: 'How might our friends feel?', emoji: '😊', world: 'pink', category: 'pretend' },
   { id: 'space', path: '/games/space', title: 'Space Explorer', description: 'Fly to the Moon, Mars, and beyond!', emoji: '🚀', world: 'blue', category: 'discovery' },
+  { id: 'racer', path: '/games/racer', title: 'Number Racer', description: 'Steer your car into the lane with the right answer!', emoji: '🏎️', world: 'red', category: 'action' },
   { id: 'dino', path: '/dino', title: 'Dino Dash', description: 'Run, jump, and catch letters. Endless levels!', emoji: '🦖', world: 'green', category: 'action' },
 ];
 
