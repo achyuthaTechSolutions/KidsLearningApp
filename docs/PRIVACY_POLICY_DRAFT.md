@@ -27,7 +27,8 @@ The app saves the following on the device where it is installed:
 - which letters, numbers, animals, and words have been explored
 - quiz counts, the current run of correct answers, and earned achievements
 - the current day’s daily challenge progress
-- parent settings, including sound, speech on or off, speech speed, volume, a selected device voice, theme, and reduced motion
+- Story Time positions, so a story can be resumed, and a record of each story activity answered (tries, whether a hint or demonstration was used, and the day), used only for the parent summary on the device
+- parent settings, including sound, speech on or off, speech speed, volume, a selected device voice, theme, reduced motion, game level, and story language
 - up to 8 photos that a parent chooses for My Photo Puzzle, with an optional name for each. A parent adds them through the device's own picture picker after a parent check. The app crops each photo to a square, makes it smaller, and saves it without its original metadata, such as location
 
 On Android, this information is stored in the app’s private storage. The app does not send it to the developer, a server, an analytics service, or an advertising service.

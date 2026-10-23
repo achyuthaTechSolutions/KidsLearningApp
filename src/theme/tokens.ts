@@ -75,9 +75,12 @@ export const radii = {
   full: 9999,
 } as const;
 
+// Telugu and Devanagari fall through to the bundled Noto fonts, since Fredoka and Nunito do not cover them.
+const indic = '"Noto Sans Telugu", "Noto Sans Devanagari"';
+
 export const fonts = {
-  display: '"Fredoka", "Nunito", "Segoe UI", Roboto, sans-serif',
-  body: '"Nunito", "Segoe UI", Roboto, sans-serif',
+  display: `"Fredoka", "Nunito", ${indic}, "Segoe UI", Roboto, sans-serif`,
+  body: `"Nunito", ${indic}, "Segoe UI", Roboto, sans-serif`,
 } as const;
 
 export const typography = {

@@ -105,4 +105,8 @@ export interface AppSettings {
   reducedMotion: boolean;
   selectedVoice: string | null;
   gameDifficulty: GameDifficulty;
+  /** Language for Story Time text and narration: en, te, or hi. */
+  storyLanguage: 'en' | 'te' | 'hi';
+  storyNarration: boolean;
+  storyCaptions: boolean;
 }

@@ -1,6 +1,6 @@
 # Kids Learning
 
-Kids Learning is a local-first app for early letters, numbers, animals, words, music, Play games (letter tracing, robot coding, puzzles, rhythm, sound listening, a pretend kitchen, feelings, space, and more; see [docs/GAMES.md](docs/GAMES.md)), quizzes, a daily challenge, and achievements. Progress stays on the device. The web app and the Android app use the same React project.
+Kids Learning is a local-first app for early letters, numbers, animals, words, music, Story Time (five interactive animal stories with maths and morals in English, Telugu, and Hindi; see [docs/STORIES.md](docs/STORIES.md)), Play games (letter tracing, robot coding, puzzles, rhythm, sound listening, a pretend kitchen, feelings, space, and more; see [docs/GAMES.md](docs/GAMES.md)), quizzes, a daily challenge, and achievements. Progress stays on the device. The web app and the Android app use the same React project.
 
 ## Web
 
@@ -25,7 +25,8 @@ Everything the app shows is bundled, so it looks the same on every device and wo
 
 - **Illustrations:** [Fluent Emoji](https://github.com/microsoft/fluentui-emoji), flat style, © Microsoft Corporation, MIT License. One SVG per picture lives in `src/assets/illustrations/`, with the licence notice in `src/assets/illustrations/LICENSE.txt`. They come from the `@iconify-json/fluent-emoji-flat` dev dependency.
 - **Mascot and decorations:** Pip the owl and the background shapes are inline SVG drawn for this app.
-- **Fonts:** Fredoka and Nunito, both SIL Open Font License 1.1, through `@fontsource`.
+- **Fonts:** Fredoka and Nunito, plus Noto Sans Telugu and Noto Sans Devanagari for Story Time (script subsets only), all SIL Open Font License 1.1, through `@fontsource`.
+- **Story Time scenes:** the picture-book backdrops are drawn in code. Story characters use the bundled Fluent pictures as development artwork.
 
 The app's data and screens still name each picture with an emoji character, and `src/data/illustrations.ts` maps it to the bundled SVG. If no SVG exists, the emoji itself is shown. After adding or changing an emoji anywhere in `src/`, regenerate the files:
 

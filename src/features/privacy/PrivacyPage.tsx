@@ -28,7 +28,7 @@ export default function PrivacyPage() {
 
       <Block world="green" emoji="💾" title="What is saved here">
         <Typography variant="body1" sx={{ mb: 1 }}>
-          Letters, numbers, animals, and words a child has explored, game counts, Dino Dash best scores and dino colour, the answer streak, earned achievements, today’s daily challenge, and parent settings (sound, speech, voice, theme, and reduced motion) are saved on this device.
+          Letters, numbers, animals, and words a child has explored, game counts, Dino Dash best scores and dino colour, the answer streak, earned achievements, today’s daily challenge, Story Time positions and which story activities were answered (with how many tries and hints), and parent settings (sound, speech, voice, theme, reduced motion, game level, and story language) are saved on this device.
         </Typography>
         <Typography variant="body1">
           The Android app stores the same information in the app’s private storage. It is not sent to a server, an account, or an analytics service. This app does not include ads.

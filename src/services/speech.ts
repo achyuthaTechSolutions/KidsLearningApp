@@ -78,9 +78,39 @@ export function getVoices(): SpeechSynthesisVoice[] {
   return synth.getVoices().filter((voice) => isEnglishVoice(voice.lang));
 }
 
+/**
+ * Device voices for a language such as "te" or "hi", on-device first. English uses
+ * the soft-voice choice below instead, so a parent's English voice setting still wins.
+ */
+export function voicesForLanguage(voices: SpeechSynthesisVoice[], lang: string): SpeechSynthesisVoice[] {
+  const code = lang.toLowerCase();
+  return voices
+    .filter((voice) => voice.lang.toLowerCase().replace('_', '-').split('-')[0] === code)
+    .sort((a, b) => Number(b.localService !== false) - Number(a.localService !== false) || a.name.localeCompare(b.name));
+}
+
+/** True when this device can speak the language. Voices may load a moment after start-up. */
+export function hasVoiceForLanguage(lang: string): boolean {
+  if (lang === 'en') return isSpeechAvailable();
+  const synth = getSynth();
+  return synth ? voicesForLanguage(synth.getVoices(), lang).length > 0 : false;
+}
+
 export function speak(
   text: string,
-  options?: { rate?: number; pitch?: number; voice?: string; volume?: number; onEnd?: () => void },
+  options?: {
+    rate?: number;
+    pitch?: number;
+    voice?: string;
+    volume?: number;
+    onEnd?: () => void;
+    /** Language code such as "te" or "hi". Omitted or "en" keeps the English soft voice. */
+    lang?: string;
+    /** BCP 47 tag for the utterance, such as "te-IN". */
+    langTag?: string;
+    /** Called instead of speaking when no voice for `lang` is installed. */
+    onUnavailable?: () => void;
+  },
 ): void {
   const synth = getSynth();
   if (!synth) return;
@@ -97,10 +127,27 @@ export function speak(
     utterance.onend = options.onEnd;
   }
 
+  const otherLanguage = options?.lang && options.lang !== 'en' ? options.lang : undefined;
+  if (options?.langTag) utterance.lang = options.langTag;
+
   let started = false;
   const begin = (voices: SpeechSynthesisVoice[]) => {
     if (token !== speakToken || started) return;
     started = true;
+    if (otherLanguage) {
+      // Never read Telugu or Hindi with an English voice: say so and let the text carry the story.
+      const match = voicesForLanguage(voices, otherLanguage)[0];
+      if (!match) {
+        options?.onUnavailable?.();
+        options?.onEnd?.();
+        return;
+      }
+      utterance.voice = match;
+      utterance.pitch = options?.pitch ?? GENTLE_PITCH;
+      if (utterance.volume <= 0) return;
+      synth.speak(utterance);
+      return;
+    }
     const voice = resolveVoice(voices, options?.voice);
     if (voice) utterance.voice = voice;
     utterance.pitch = options?.pitch ?? pitchForVoice(voice);
