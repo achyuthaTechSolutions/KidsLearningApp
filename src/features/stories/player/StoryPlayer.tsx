@@ -17,11 +17,13 @@ import { playSuccess } from '../../../services/audio';
 import type { Attempt } from '../engine/activities';
 import { currentScene, phaseOf, playerReducer, resumePlayback, startPlayback, storyFraction, type Playback, type PlayerAction } from '../engine/player';
 import { recordActivity, savePlayback } from '../engine/progress';
+import { AFTER_SPEECH_MS, STORY_MODES, autoStep, readingTimeMs, speechTimeoutMs, type StoryMode } from '../engine/pacing';
 import { LANGUAGES, languageInfo, type Lang, type StoryManifest } from '../engine/types';
 import { characters } from '../content/characters';
 import { storyById } from '../content/library';
 import { scriptFont, ui } from '../content/uiText';
 import ActivityView from '../activities/ActivityView';
+import { AutoFinishContext } from '../activities/autoFinish';
 import { Stage } from './Stage';
 import { useNarration } from './useNarration';
 import { narrationId } from '../assets';
@@ -59,9 +61,17 @@ function StoryPlayer({ story }: { story: StoryManifest }) {
     const saved = loadStoryProgress().stories[story.id]?.playback;
     return params.get('restart') ? startPlayback(story) : resumePlayback(story, saved);
   });
-  const [autoRead, setAutoRead] = useState(false);
+  const mode: StoryMode = settings.storyMode;
+  // The story moves on by itself unless the child presses Pause.
+  const [playing, setPlaying] = useState(true);
   const [celebrate, setCelebrate] = useState(0);
   const playbackRef = useRef(playback);
+  const autoTimer = useRef<number | undefined>(undefined);
+  const clearAuto = useCallback(() => {
+    window.clearTimeout(autoTimer.current);
+    autoTimer.current = undefined;
+  }, []);
+  useEffect(() => clearAuto, [clearAuto]);
 
   const scene = currentScene(story, playback);
   const phase = phaseOf(story, playback);
@@ -80,7 +90,6 @@ function StoryPlayer({ story }: { story: StoryManifest }) {
     setPlayback(next);
     persist(next);
     if (next.finished && !before.finished) {
-      setAutoRead(false);
       setCelebrate((count) => count + 1);
       if (settings.soundEnabled) playSuccess(settings.volume * 0.3);
     }
@@ -91,31 +100,48 @@ function StoryPlayer({ story }: { story: StoryManifest }) {
     persist(playbackRef.current);
   }, [persist]);
 
-  // Narrate what is on screen. Read-to-me mode turns the page after each line.
+  /*
+   * Narrate what is on screen and, unless paused, move on by itself:
+   * a line turns after it has been read aloud, or after reading time when nothing
+   * was heard (no voice for the language, or Voice off). Story mode also passes over
+   * activities and takes the main choice; Puzzle mode waits there for the child.
+   */
   const narrate = useEffectEvent(() => {
+    clearAuto();
+    const later = (action: PlayerAction, ms: number) => {
+      const at = `${playbackRef.current.sceneId}:${playbackRef.current.lineIndex}:${phase}`;
+      clearAuto();
+      autoTimer.current = window.setTimeout(() => {
+        const current = playbackRef.current;
+        if (`${current.sceneId}:${current.lineIndex}:${phaseOf(story, current)}` === at) dispatch(action);
+      }, ms);
+    };
+    const step = playing ? autoStep(story, playback, phase, mode) : { kind: 'paused' as const };
     if (phase === 'line' && line) {
-      const at = `${playback.sceneId}:${playback.lineIndex}`;
-      say(line.text[lang], () => {
-        if (!autoRead) return;
-        window.setTimeout(() => {
-          const current = playbackRef.current;
-          if (`${current.sceneId}:${current.lineIndex}` === at) dispatch({ type: 'next-line' });
-        }, 700);
+      const text = line.text[lang];
+      const started = Date.now();
+      if (step.kind === 'wait-line') later({ type: 'next-line' }, speechTimeoutMs(text));
+      say(text, (spoken) => {
+        if (step.kind !== 'wait-line') return;
+        const reading = readingTimeMs(text, settings.speechRate) - (Date.now() - started);
+        later({ type: 'next-line' }, spoken ? AFTER_SPEECH_MS : Math.max(AFTER_SPEECH_MS, reading));
       }, lineAudio);
     } else if (phase === 'activity' && scene.activity) {
-      say(scene.activity.prompt[lang], undefined, narrationId(lang, `${story.id}/${scene.id}/${scene.activity.id}.prompt`));
+      if (step.kind === 'skip-activity') later({ type: 'skip-activity', activityId: step.activityId }, 400);
+      else say(scene.activity.prompt[lang], undefined, narrationId(lang, `${story.id}/${scene.id}/${scene.activity.id}.prompt`));
     } else if (phase === 'choice') {
-      say(ui(lang, 'whatNext'), undefined, narrationId(lang, 'ui.whatNext'));
-    } else if (phase === 'continue' && autoRead) {
-      window.setTimeout(() => dispatch({ type: 'continue' }), 500);
+      if (step.kind === 'choose') later({ type: 'choose', choiceId: step.choiceId }, 400);
+      else say(ui(lang, 'whatNext'), undefined, narrationId(lang, 'ui.whatNext'));
+    } else if (phase === 'continue' && step.kind === 'continue') {
+      later({ type: 'continue' }, 500);
     } else if (phase === 'end' && scene.moral) {
       say(`${ui(lang, 'moral')}: ${scene.moral[lang]}`, undefined, narrationId(lang, `${story.id}/${scene.id}.moral`));
     }
   });
-  // Speak again only when the position, phase, language, or reading mode changes.
+  // Speak again only when the position, phase, language, mode, or play state changes.
   useEffect(() => {
     narrate();
-  }, [playback.sceneId, playback.lineIndex, phase, lang, autoRead]);
+  }, [playback.sceneId, playback.lineIndex, phase, lang, mode, playing]);
 
   const solve = (attempt: Attempt) => {
     if (!scene.activity) return;
@@ -144,22 +170,34 @@ function StoryPlayer({ story }: { story: StoryManifest }) {
           <Illustration emoji={story.emoji} sx={{ mr: 1 }} />{story.title[lang]}
         </Typography>
         <Button
-          variant={autoRead ? 'contained' : 'outlined'}
-          startIcon={autoRead ? <PauseRounded /> : <PlayArrowRounded />}
+          variant={playing ? 'outlined' : 'contained'}
+          startIcon={playing ? <PauseRounded /> : <PlayArrowRounded />}
           onClick={() => {
-            if (autoRead) stop();
-            setAutoRead(!autoRead);
+            if (playing) {
+              stop();
+              clearAuto();
+            }
+            setPlaying(!playing);
           }}
-          disabled={!narrationOn || phase === 'end'}
+          disabled={phase === 'end'}
           lang={lang}
         >
-          {autoRead ? ui(lang, 'pause') : ui(lang, 'readToMe')}
+          {playing ? ui(lang, 'pause') : ui(lang, 'play')}
         </Button>
       </Box>
 
       <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', mb: 1.5 }}>
         <Box sx={{ '& > div': { mb: 0 } }}>
           <PillPicker value={lang} options={languageOptions} onChange={(value) => updateSettings({ storyLanguage: value as Lang })} world="violet" ariaLabel={ui(lang, 'language')} />
+        </Box>
+        <Box sx={{ '& > div': { mb: 0 } }} lang={lang}>
+          <PillPicker
+            value={mode}
+            options={STORY_MODES.map((value) => ({ value, label: `${value === 'puzzle' ? '🧩' : '📖'} ${ui(lang, value === 'puzzle' ? 'modePuzzle' : 'modeStory')}` }))}
+            onChange={(value) => updateSettings({ storyMode: value as StoryMode })}
+            world="violet"
+            ariaLabel={ui(lang, 'mode')}
+          />
         </Box>
         <Tooltip title={ui(lang, 'narration')}>
           <Box component="label" sx={{ display: 'flex', alignItems: 'center', fontWeight: 800 }} lang={lang}>
@@ -175,7 +213,9 @@ function StoryPlayer({ story }: { story: StoryManifest }) {
 
       <LinearProgress variant="determinate" value={fraction * 100} aria-label={`${Math.round(fraction * 100)}%`} sx={{ mb: 2, '& .MuiLinearProgress-bar': { bgcolor: gold.main } }} />
 
-      {voiceMissing && narrationOn && <Alert severity="info" sx={{ mb: 2 }} lang={lang}>{ui(lang, 'noVoice')}</Alert>}
+      <Typography lang={lang} data-testid="mode-help" sx={{ display: { xs: 'none', sm: 'block' }, fontWeight: 700, color: 'text.secondary', mb: 1.5 }}>
+        {ui(lang, mode === 'puzzle' ? 'modePuzzleHelp' : 'modeStoryHelp')}
+      </Typography>
 
       <Stage
         backdrop={scene.backdrop}
@@ -217,7 +257,9 @@ function StoryPlayer({ story }: { story: StoryManifest }) {
 
       {phase === 'activity' && scene.activity && (
         <Box sx={{ mt: 2, fontFamily: scriptFont }}>
-          <ActivityView key={`${playback.runId}-${scene.activity.id}`} activity={scene.activity} lang={lang} say={say} onSolved={solve} />
+          <AutoFinishContext.Provider value={playing && mode === 'puzzle'}>
+            <ActivityView key={`${playback.runId}-${scene.activity.id}`} activity={scene.activity} lang={lang} say={say} onSolved={solve} />
+          </AutoFinishContext.Provider>
         </Box>
       )}
 
@@ -246,6 +288,13 @@ function StoryPlayer({ story }: { story: StoryManifest }) {
             {ui(lang, 'next')}
           </Button>
         </Box>
+      )}
+
+      {voiceMissing && narrationOn && (
+        <Alert severity="info" sx={{ mt: 2 }} lang={lang}>
+          {ui(lang, 'noVoice')}
+          <Box component="span" sx={{ display: 'block', mt: 0.5, fontSize: '0.9em' }}>{ui(lang, 'noVoiceHelp')}</Box>
+        </Alert>
       )}
 
       {phase === 'end' && (

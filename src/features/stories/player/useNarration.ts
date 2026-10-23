@@ -42,21 +42,27 @@ export function useNarration(lang: Lang) {
   /**
    * Speaks `text`. `audio` is a narration id: the line's own `audio` entry, or
    * `<lang>/<text key>` by convention. A bundled recording plays instead of the voice.
+   * `onEnd` is told whether anything was heard, so a page turned by the player waits
+   * for reading time when nothing was read aloud.
    */
-  const say = useCallback((text: string, onEnd?: () => void, audio?: string) => {
+  const say = useCallback((text: string, onEnd?: (spoken: boolean) => void, audio?: string) => {
     const current = settingsRef.current;
     if (!current.speechEnabled || !current.storyNarration || current.volume <= 0) {
-      onEnd?.();
+      onEnd?.(false);
       return;
     }
     stopAll();
+    let missing = false;
     const voice = () => speak(text, {
       rate: current.speechRate,
       voice: lang === 'en' ? current.selectedVoice || undefined : undefined,
       lang,
       langTag: languageInfo[lang].speechTag,
-      onEnd,
-      onUnavailable: () => setUnavailable(lang),
+      onEnd: () => onEnd?.(!missing),
+      onUnavailable: () => {
+        missing = true;
+        setUnavailable(lang);
+      },
     });
     const url = audio ? storyAssets.narrationUrl(audio) : undefined;
     if (!url) {
@@ -66,7 +72,7 @@ export function useNarration(lang: Lang) {
     const player = new Audio(url);
     player.volume = Math.min(1, Math.max(0, current.volume));
     player.onended = () => {
-      if (recording.current === player) onEnd?.();
+      if (recording.current === player) onEnd?.(true);
     };
     recording.current = player;
     // If the file cannot play, fall back to the voice so the child still hears the line.

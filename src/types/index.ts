@@ -109,4 +109,6 @@ export interface AppSettings {
   storyLanguage: 'en' | 'te' | 'hi';
   storyNarration: boolean;
   storyCaptions: boolean;
+  /** Story Time pacing: `puzzle` stops at activities and choices, `story` plays to the end. */
+  storyMode: 'puzzle' | 'story';
 }

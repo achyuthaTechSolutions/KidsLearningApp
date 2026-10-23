@@ -19,7 +19,7 @@ Kids Learning is a local-first React 19, Vite 8, MUI 9, and Zustand 5 app with a
 | Typed content model, player state machine, validation, progress (`src/features/stories/engine`) | Implemented; unit tests pass |
 | Five stories: Thirsty Crow, Clever Rabbit, Lion and Mouse, Monkey and Crocodile, Cooperative Doves | Implemented; validated; every branch tested to the end; played in Chromium |
 | Activities: pebble pot, count, arithmetic, number line, equal groups, pattern, sequence, bar graph, question; branching choices | Implemented; tests pass; played in Chromium |
-| Library (`/stories`): filters, continue card, offline note; player (`/stories/:id`): captions, replay, read-to-me, resume | Implemented and browser-checked at 1280 px and 390 px |
+| Library (`/stories`): filters, continue card, offline note; player (`/stories/:id`): captions, replay, Puzzle and Story modes (auto page turns), resume | Implemented and browser-checked at 1280 px and 390 px |
 | English, Telugu, Hindi: text, interface, language switch, story language setting | Implemented, with automated text checks, a generated review sheet, and a checklist (`docs/localization/`). **Telugu and Hindi are drafts. No native-speaker review has taken place.** |
 | Narration | Uses a recorded file, then the device voice, then text only. The recordings are found by file name (`src/features/stories/assets.ts`), and the recording spec is in `docs/stories/ASSETS.md`. **No recorded narration exists. The recording path has never played a real file.** |
 | Bundled Noto Telugu and Devanagari fonts | Added |

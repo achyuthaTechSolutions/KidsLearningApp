@@ -13,6 +13,8 @@ export interface Playback {
   lineIndex: number;
   completedScenes: string[];
   solvedActivities: string[];
+  /** Activities Story mode passed over. They are not solved, so no learning is recorded for them. */
+  skippedActivities?: string[];
   /** Branch taken in each scene with choices. */
   choices: Record<string, string>;
   finished: boolean;
@@ -69,7 +71,7 @@ export function phaseOf(story: StoryManifest, playback: Playback): Phase {
   if (playback.finished) return 'end';
   const scene = currentScene(story, playback);
   if (playback.lineIndex < scene.lines.length) return 'line';
-  if (scene.activity && !playback.solvedActivities.includes(scene.activity.id)) return 'activity';
+  if (scene.activity && !playback.solvedActivities.includes(scene.activity.id) && !playback.skippedActivities?.includes(scene.activity.id)) return 'activity';
   if (scene.choices?.length) return 'choice';
   return 'continue';
 }
@@ -78,6 +80,7 @@ export type PlayerAction =
   | { type: 'next-line' }
   | { type: 'replay-scene' }
   | { type: 'solve'; activityId: string }
+  | { type: 'skip-activity'; activityId: string }
   | { type: 'choose'; choiceId: string }
   | { type: 'continue' }
   | { type: 'restart' };
@@ -103,6 +106,9 @@ export function playerReducer(story: StoryManifest, playback: Playback, action: 
     case 'solve':
       if (phase !== 'activity' || scene.activity?.id !== action.activityId) return playback;
       return { ...playback, solvedActivities: [...playback.solvedActivities, action.activityId] };
+    case 'skip-activity':
+      if (phase !== 'activity' || scene.activity?.id !== action.activityId) return playback;
+      return { ...playback, skippedActivities: [...(playback.skippedActivities ?? []), action.activityId] };
     case 'choose': {
       if (phase !== 'choice') return playback;
       const choice = scene.choices?.find((item) => item.id === action.choiceId);

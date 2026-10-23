@@ -64,7 +64,7 @@ export const cleverRabbit: StoryManifest = {
       ],
       choices: [
         { id: 'hide', emoji: '🌿', next: 'hide', text: { en: 'Run away and hide', te: 'పారిపోయి దాక్కో', hi: 'भागकर छिप जाओ' } },
-        { id: 'trick', emoji: '🦁', next: 'late', text: { en: 'Tell the lion about another lion', te: 'ఇంకో సింహం గురించి సింహానికి చెప్పు', hi: 'शेर को दूसरे शेर के बारे में बताओ' } },
+        { id: 'trick', main: true, emoji: '🦁', next: 'late', text: { en: 'Tell the lion about another lion', te: 'ఇంకో సింహం గురించి సింహానికి చెప్పు', hi: 'शेर को दूसरे शेर के बारे में बताओ' } },
       ],
     },
     {

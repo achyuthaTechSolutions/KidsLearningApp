@@ -10,4 +10,4 @@ To change a status, edit `translation` in the story file. Mark a language `nativ
 | The Lion and the Mouse (`lion-mouse`) | 35 | 350 | Source text | Draft, needs native review | Draft, needs native review |
 | The Monkey and the Crocodile (`monkey-crocodile`) | 43 | 510 | Source text | Draft, needs native review | Draft, needs native review |
 | The Doves Who Worked Together (`cooperative-doves`) | 36 | 365 | Source text | Draft, needs native review | Draft, needs native review |
-| Shared interface words, goals, and names | 79 | 227 | Source text | Draft, needs native review | Draft, needs native review |
+| Shared interface words, goals, and names | 85 | 267 | Source text | Draft, needs native review | Draft, needs native review |

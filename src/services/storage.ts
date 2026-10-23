@@ -70,6 +70,7 @@ export const defaultSettings: AppSettings = {
   storyLanguage: 'en',
   storyNarration: true,
   storyCaptions: true,
+  storyMode: 'puzzle',
 };
 
 const GAME_DIFFICULTIES: GameDifficulty[] = ['beginner', 'intermediate', 'advanced'];
@@ -144,6 +145,7 @@ export function loadSettings(): AppSettings {
     storyLanguage: LANGUAGES.includes(stored.storyLanguage) ? stored.storyLanguage : defaultSettings.storyLanguage,
     storyNarration: typeof stored.storyNarration === 'boolean' ? stored.storyNarration : defaultSettings.storyNarration,
     storyCaptions: typeof stored.storyCaptions === 'boolean' ? stored.storyCaptions : defaultSettings.storyCaptions,
+    storyMode: stored.storyMode === 'story' || stored.storyMode === 'puzzle' ? stored.storyMode : defaultSettings.storyMode,
   };
 }
 
