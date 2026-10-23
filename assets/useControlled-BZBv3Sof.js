@@ -1,1 +1,0 @@
-import{E as e,O as t}from"./index-BmJhH4IV.js";var n=t(e(),1);function r(e){let{controlled:t,default:r,name:i,state:a=`value`}=e,{current:o}=n.useRef(t!==void 0),[s,c]=n.useState(r);return[o?t:s,n.useCallback(e=>{o||c(e)},[])]}var i=r;export{r as n,i as t};
