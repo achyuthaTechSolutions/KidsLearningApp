@@ -216,7 +216,6 @@ This entry is on branch `claude/number-racer`, from `main` at `2824b3e`, with Nu
 
 **Not done:** no achievement badge for the racer, and no real-device check.
 
-
 ## 2026-10-23: Endless adaptive levels, louder speech, background music
 
 Request: "levels like unlimited", with difficulty that rises by itself during play; speech too quiet; background music during games and activities.
