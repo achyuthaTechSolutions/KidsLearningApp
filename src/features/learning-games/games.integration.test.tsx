@@ -206,6 +206,25 @@ describe('Puzzle Planet', () => {
     fireEvent.click(screen.getByRole('gridcell', { name: 'Empty space, row 2, column 2' }));
     expect(screen.getByText('1 of 4 pieces placed')).toBeTruthy();
   });
+
+  it('keeps dealing puzzles until Finish, and remembers the level', () => {
+    vi.useFakeTimers();
+    renderGame(<PuzzlePlanet />);
+    expect(screen.getByTestId('endless-level').textContent).toContain('Level 1');
+    fireEvent.click(screen.getByRole('button', { name: "Let's play!" }));
+    for (const [row, col] of [[1, 1], [1, 2], [2, 1], [2, 2]]) {
+      fireEvent.keyDown(screen.getByRole('button', { name: `Piece from row ${row}, column ${col}` }), { key: 'Enter' });
+      fireEvent.click(screen.getByRole('gridcell', { name: `Empty space, row ${row}, column ${col}` }));
+    }
+    act(() => { vi.advanceTimersByTime(1000); });
+    expect(screen.getByTestId('puzzle-solved')).toBeTruthy();
+    act(() => { vi.advanceTimersByTime(3000); });
+    expect(screen.getByText('0 of 4 pieces placed')).toBeTruthy();
+    expect(screen.getByTestId('game-level').textContent).toBe('Level 1');
+    fireEvent.click(screen.getByRole('button', { name: 'Finish' }));
+    expect(screen.getByText('You solved 1 puzzle and reached Level 1!')).toBeTruthy();
+    expect(useAppStore.getState().progress.gameSkill.puzzle).toBe(1);
+  });
 });
 
 describe('Letter Tracing', () => {

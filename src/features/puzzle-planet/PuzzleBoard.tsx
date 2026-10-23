@@ -1,4 +1,4 @@
-import { useRef, useState, type PointerEvent } from 'react';
+import { useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import { Box, Button, ButtonBase, FormControlLabel, Switch, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { RestartAltRounded, UndoRounded } from '@mui/icons-material';
@@ -32,6 +32,8 @@ interface Props {
   emoji: string;
   world?: WorldKey;
   helper?: boolean;
+  /** Extra header items, such as the endless level and a Finish button. */
+  actions?: ReactNode;
   onBack: () => void;
   onSolved: (state: PuzzleState) => void;
 }
@@ -41,7 +43,7 @@ interface Props {
  * dragged, tapped then placed, or picked with Enter. Each piece only fits its own
  * space and then locks; Undo takes the last one back.
  */
-export default function PuzzleBoard({ initial, src, title, emoji, world = 'orange', helper = true, onBack, onSolved }: Props) {
+export default function PuzzleBoard({ initial, src, title, emoji, world = 'orange', helper = true, actions, onBack, onSolved }: Props) {
   const theme = useTheme();
   const accent = useWorld(world);
   const green = useWorld('green');
@@ -151,6 +153,7 @@ export default function PuzzleBoard({ initial, src, title, emoji, world = 'orang
         backLabel="Back"
         onBack={onBack}
         progress={{ value: puzzle.history.length, total: puzzle.size, label: `${puzzle.history.length} of ${puzzle.size} pieces placed` }}
+        actions={actions}
       />
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'auto 1fr' }, gap: 3, alignItems: 'start' }}>

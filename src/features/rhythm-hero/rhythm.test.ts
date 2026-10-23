@@ -1,19 +1,19 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mulberry32 } from '../learning-games/questions';
-import { checkRhythm, createRhythmPlayer, generateRhythm, rhythmProfiles, type Beat, type Tap } from './rhythm';
+import { checkRhythm, createRhythmPlayer, generateRhythm, rhythmProfile, type Beat, type Tap } from './rhythm';
 
 afterEach(() => vi.useRealTimers());
 
 const pattern: Beat[] = [{ pad: 'drum', at: 0 }, { pad: 'clap', at: 1 }, { pad: 'drum', at: 3 }];
-const options = { timed: true, beatMs: 600, tolerance: rhythmProfiles.intermediate.tolerance };
+const options = { timed: true, beatMs: 600, tolerance: rhythmProfile(4).tolerance };
 const taps = (times: number[], pads = pattern.map((beat) => beat.pad)): Tap[] => times.map((time, i) => ({ pad: pads[i], time }));
 
 describe('Rhythm patterns', () => {
   it('fits each level: length, sounds, and gaps', () => {
-    for (const difficulty of ['beginner', 'intermediate', 'advanced'] as const) {
-      const profile = rhythmProfiles[difficulty];
+    for (const level of [1, 3, 4, 7, 10, 25, 999]) {
+      const profile = rhythmProfile(level);
       for (let seed = 1; seed <= 40; seed += 1) {
-        const beats = generateRhythm(difficulty, mulberry32(seed));
+        const beats = generateRhythm(level, mulberry32(seed));
         expect(beats.length).toBeGreaterThanOrEqual(profile.minBeats);
         expect(beats.length).toBeLessThanOrEqual(profile.maxBeats);
         expect(beats[0].at).toBe(0);
@@ -22,6 +22,20 @@ describe('Rhythm patterns', () => {
         if (profile.pads.length > 1) expect(new Set(beats.map((beat) => beat.pad)).size).toBeGreaterThan(1);
       }
     }
+  });
+});
+
+describe('Endless rhythm levels', () => {
+  it('grow longer, add sounds, quicken, and tighten timing, each with a limit', () => {
+    expect(rhythmProfile(1)).toMatchObject({ minBeats: 2, maxBeats: 3, pads: ['drum'], beatMs: 720 });
+    expect(rhythmProfile(4).pads).toEqual(['drum', 'clap']);
+    expect(rhythmProfile(7).pads).toEqual(['drum', 'clap', 'bell']);
+    expect(rhythmProfile(10).minBeats).toBeGreaterThan(rhythmProfile(4).minBeats);
+    const top = rhythmProfile(999);
+    expect(top.minBeats).toBe(7);
+    expect(top.maxBeats).toBe(9);
+    expect(top.beatMs).toBe(460);
+    expect(top.tolerance).toEqual({ ratio: 0.32, minMs: 170 });
   });
 });
 
@@ -48,10 +62,10 @@ describe('Checking taps', () => {
   });
 
   it('is more forgiving at Beginner level', () => {
-    const beginner = { ...options, beatMs: 700, tolerance: rhythmProfiles.beginner.tolerance };
+    const beginner = { ...options, beatMs: 700, tolerance: rhythmProfile(1).tolerance };
     const simple: Beat[] = [{ pad: 'drum', at: 0 }, { pad: 'drum', at: 1 }];
     expect(checkRhythm(simple, [{ pad: 'drum', time: 0 }, { pad: 'drum', time: 1050 }], beginner)).toEqual({ status: 'match' });
-    expect(checkRhythm(simple, [{ pad: 'drum', time: 0 }, { pad: 'drum', time: 1050 }], { ...options, tolerance: rhythmProfiles.advanced.tolerance })).toEqual({ status: 'off-beat', index: 1 });
+    expect(checkRhythm(simple, [{ pad: 'drum', time: 0 }, { pad: 'drum', time: 1050 }], { ...options, tolerance: rhythmProfile(7).tolerance })).toEqual({ status: 'off-beat', index: 1 });
   });
 });
 

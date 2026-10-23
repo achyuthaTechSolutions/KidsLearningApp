@@ -2,7 +2,7 @@ import type { GameDifficulty } from '../learning-games/difficulty';
 import { shuffle, type Random } from '../learning-games/random';
 
 export type PuzzleTheme = 'animals' | 'space' | 'fruits' | 'vehicles' | 'nature';
-export type PuzzleSize = 4 | 6 | 12;
+export type PuzzleSize = 4 | 6 | 9 | 12 | 16 | 20 | 25;
 
 export interface PuzzlePicture {
   id: string;
@@ -54,8 +54,19 @@ export const puzzleThemes: { value: PuzzleTheme; label: string; emoji: string }[
 export const gridFor: Record<PuzzleSize, { cols: number; rows: number }> = {
   4: { cols: 2, rows: 2 },
   6: { cols: 3, rows: 2 },
+  9: { cols: 3, rows: 3 },
   12: { cols: 4, rows: 3 },
+  16: { cols: 4, rows: 4 },
+  20: { cols: 5, rows: 4 },
+  25: { cols: 5, rows: 5 },
 };
+
+/** Endless Puzzle Planet: a bigger board every two levels, up to 25 pieces. */
+const LEVEL_SIZES: PuzzleSize[] = [4, 6, 9, 12, 16, 20, 25];
+export function piecesFor(level: number): PuzzleSize {
+  const step = Math.floor((Math.max(1, Math.floor(level)) - 1) / 2);
+  return LEVEL_SIZES[Math.min(step, LEVEL_SIZES.length - 1)];
+}
 
 export const sizeForDifficulty: Record<GameDifficulty, PuzzleSize> = { beginner: 4, intermediate: 6, advanced: 12 };
 
@@ -126,6 +137,11 @@ export function pieceLabel(pieceId: number, cols: number): string {
 
 export function puzzleId(picture: PuzzlePicture, size: PuzzleSize): string {
   return `${picture.id}-${size}`;
+}
+
+/** A puzzle with at most one wrong try counts as "first try" for the endless level. */
+export function puzzleFirstTry(state: PuzzleState): boolean {
+  return state.mistakes <= 1;
 }
 
 /** Three stars for a careful puzzle, never fewer than one. */

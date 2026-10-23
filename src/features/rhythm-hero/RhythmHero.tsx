@@ -17,8 +17,10 @@ import GameIntro from '../learning-games/GameIntro';
 import ScreenReaderStatus from '../learning-games/ScreenReaderStatus';
 import { useGameFeedback } from '../learning-games/useGameFeedback';
 import { isEditableTarget } from '../learning-games/motion';
-import type { GameDifficulty } from '../learning-games/difficulty';
-import { PATTERNS_PER_ROUND, checkRhythm, createRhythmPlayer, generateRhythm, rhythmProfiles, type Beat, type Pad, type Tap } from './rhythm';
+import { useEndlessLevel } from '../learning-games/useEndlessLevel';
+import LevelUpBanner from '../learning-games/LevelUpBanner';
+import EndlessControls from '../learning-games/EndlessControls';
+import { checkRhythm, createRhythmPlayer, generateRhythm, rhythmProfile, type Beat, type Pad, type Tap } from './rhythm';
 
 type Stage = 'ready' | 'playing' | 'your-turn' | 'success' | 'retry';
 
@@ -69,7 +71,9 @@ export default function RhythmHero() {
   const completeGameRound = useAppStore((s) => s.completeGameRound);
 
   const [phase, setPhase] = useState<'intro' | 'play' | 'done'>('intro');
-  const [difficulty, setDifficulty] = useState<GameDifficulty>(settings.gameDifficulty);
+  const endless = useEndlessLevel('rhythm', settings.gameDifficulty);
+  /** The level the current rhythm was made for: its speed and timing window. */
+  const [patternLevel, setPatternLevel] = useState(endless.planned);
   const [mode, setMode] = useState<'practice' | 'timed'>(settings.gameDifficulty === 'beginner' ? 'practice' : 'timed');
   const [pattern, setPattern] = useState<Beat[]>([]);
   const [stage, setStage] = useState<Stage>('ready');
@@ -90,32 +94,33 @@ export default function RhythmHero() {
 
   const sound = soundFor;
 
-  const profile = rhythmProfiles[difficulty];
+  const profile = rhythmProfile(patternLevel);
   const soundOff = !settings.soundEnabled || settings.volume <= 0 || !isAudioAvailable();
 
-  const listen = (target: Beat[] = pattern) => {
+  const listen = (target: Beat[] = pattern, beatMs = profile.beatMs) => {
     cancelSpeech();
     setTaps([]);
     setStage('playing');
     setMessage('Listen and watch the pads…');
-    player.play(target, profile.beatMs, () => {
+    player.play(target, beatMs, () => {
       setStage('your-turn');
       setMessage('Your turn! Tap the pads in the same order.');
     });
   };
 
-  const newPattern = () => {
-    const next = generateRhythm(difficulty);
+  const newPattern = (level: number) => {
+    const next = generateRhythm(level);
+    setPatternLevel(level);
     setPattern(next);
     setAttempts(0);
-    listen(next);
+    listen(next, rhythmProfile(level).beatMs);
   };
 
   const start = () => {
     setDone(0);
     setFirstTry(0);
     setPhase('play');
-    newPattern();
+    newPattern(endless.begin());
   };
 
   const tap = (pad: Pad) => {
@@ -131,7 +136,8 @@ export default function RhythmHero() {
       setDone((count) => count + 1);
       if (attempts === 0) setFirstTry((count) => count + 1);
       setCelebrate((count) => count + 1);
-      const cheer = 'You got the rhythm!';
+      const after = endless.record(attempts === 0);
+      const cheer = `You got the rhythm!${after.change === 'up' ? ` Level up! Level ${after.level}!` : ''}`;
       setMessage(cheer);
       say(cheer);
       return;
@@ -145,16 +151,16 @@ export default function RhythmHero() {
     say(hint);
   };
 
-  const goNext = () => {
-    if (done >= PATTERNS_PER_ROUND) {
-      completeGameRound('rhythm', `${difficulty}-${mode}`);
-      setPhase('done');
-      setCelebrate((count) => count + 1);
-      if (settings.soundEnabled) playSuccess(settings.volume * 0.3);
-      say('You are a rhythm hero!');
-      return;
-    }
-    newPattern();
+  const goNext = () => newPattern(endless.level);
+
+  /** The game never ends by itself: the child stops when they like. */
+  const finish = () => {
+    player.stop();
+    if (done > 0) completeGameRound('rhythm', `level-${endless.level}`);
+    setPhase('done');
+    setCelebrate((count) => count + 1);
+    if (settings.soundEnabled) playSuccess(settings.volume * 0.3);
+    say(done > 0 ? `You are a rhythm hero! You reached level ${endless.level}.` : 'See you next time!');
   };
 
   // Number keys play the pads. One listener, reading the latest tap handler through a ref.
@@ -187,8 +193,9 @@ export default function RhythmHero() {
           { emoji: '🥁', text: 'Tap the same pads in the same order.' },
           { emoji: '🐢', text: 'Practice mode only checks the order. No rush!' },
         ]}
-        difficulty={difficulty}
-        onDifficulty={setDifficulty}
+        difficulty={endless.difficulty}
+        onDifficulty={endless.pickDifficulty}
+        endlessLevel={endless.planned}
         onStart={start}
         onHear={() => say('Listen to the beat and watch the pads light up. Then tap the same pads in the same order.')}
       >
@@ -201,8 +208,8 @@ export default function RhythmHero() {
   if (phase === 'done') {
     return (
       <GameResults
-        stars={firstTry >= PATTERNS_PER_ROUND - 1 ? 3 : firstTry >= 2 ? 2 : 1}
-        message={`You copied ${PATTERNS_PER_ROUND} rhythms!`}
+        stars={done === 0 ? 1 : firstTry / done >= 0.8 ? 3 : firstTry / done >= 0.5 ? 2 : 1}
+        message={`You copied ${done} ${done === 1 ? 'rhythm' : 'rhythms'} and reached Level ${endless.level}!`}
         celebrate={celebrate}
         onPlayAgain={start}
         onChooseGame={() => navigate('/games')}
@@ -223,7 +230,7 @@ export default function RhythmHero() {
         onBack={() => { player.stop(); setPhase('intro'); }}
         score={done}
         scoreLabel={`${done} rhythms copied`}
-        progress={{ value: done, total: PATTERNS_PER_ROUND, label: `Rhythm ${Math.min(done + 1, PATTERNS_PER_ROUND)} of ${PATTERNS_PER_ROUND} · ${mode === 'timed' ? 'Keep the beat' : 'Practice'}` }}
+        actions={<EndlessControls level={endless.level} world="red" onFinish={finish} />}
       />
 
       <Box
@@ -306,12 +313,13 @@ export default function RhythmHero() {
         )}
         {stage === 'success' && (
           <Button variant="contained" color="success" size="large" endIcon={<NavigateNext />} onClick={goNext} sx={{ fontSize: '1.1rem' }}>
-            {done >= PATTERNS_PER_ROUND ? 'See Results' : 'Next Rhythm'}
+            Next Rhythm
           </Button>
         )}
       </Box>
       {soundOff && <Alert severity="info" sx={{ mt: 2 }}>Sound is off. Watch the pads light up, then copy them.</Alert>}
       <ScreenReaderStatus message={message} />
+      <LevelUpBanner change={endless.lastChange} world="red" />
       <Confetti fire={celebrate} />
     </Page>
   );
