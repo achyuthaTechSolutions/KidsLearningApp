@@ -1,5 +1,6 @@
 import { illustrationFor } from '../../../data/illustrations';
 import { storyAssets } from '../assets';
+import type { LearningStage } from '../engine/stages';
 import type { BackdropId, StoryManifest } from '../engine/types';
 import { errorsOf, validateStory, type ValidationContext } from '../engine/validate';
 import { characterIds } from './characters';
@@ -41,12 +42,5 @@ export function storyById(id: string): StoryManifest | undefined {
   return publishedStories().find((story) => story.id === id);
 }
 
-export type AgeFilter = 'all' | '3-5' | '5-7' | '7-9';
-const ageBands: Record<Exclude<AgeFilter, 'all'>, [number, number]> = { '3-5': [3, 5], '5-7': [5, 7], '7-9': [7, 9] };
-
-/** Ages are a starting suggestion: a story shows for any band its range overlaps. */
-export function storiesForAge(stories: StoryManifest[], filter: AgeFilter): StoryManifest[] {
-  if (filter === 'all') return stories;
-  const [low, high] = ageBands[filter];
-  return stories.filter((story) => story.ageRange[0] <= high && story.ageRange[1] >= low);
-}
+/** The library's age filter: a learning stage, or every story. */
+export type AgeFilter = LearningStage | 'all';

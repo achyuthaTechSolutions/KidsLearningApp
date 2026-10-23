@@ -66,7 +66,7 @@ describe('Story library', () => {
 
   it('filters by age and offers to continue a started story', () => {
     renderAt('/stories');
-    fireEvent.click(screen.getByRole('button', { name: 'Ages 7–9' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ages 7–8' }));
     expect(screen.getAllByRole('article')).toHaveLength(4);
     expect(screen.queryByRole('heading', { name: 'Kalu and the Thirsty Crow' })).toBeNull();
   });

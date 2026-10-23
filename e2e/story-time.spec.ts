@@ -5,7 +5,7 @@ test.describe('Story library', () => {
   test('lists the five stories, filters by age, and opens a story', async ({ page }) => {
     await page.goto('/stories');
     await expect(page.getByRole('article')).toHaveCount(5);
-    await page.getByRole('button', { name: 'Ages 7–9' }).click();
+    await page.getByRole('button', { name: 'Ages 7–8' }).click();
     await expect(page.getByRole('article')).toHaveCount(4);
     await expect(page.getByRole('heading', { name: 'Kalu and the Thirsty Crow' })).toHaveCount(0);
     await page.getByRole('button', { name: 'All ages' }).click();

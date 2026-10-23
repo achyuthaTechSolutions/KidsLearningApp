@@ -5,7 +5,8 @@ import {
 import { phaseOf, playerReducer, startPlayback, type Playback } from '../engine/player';
 import { LANGUAGES, type StoryManifest } from '../engine/types';
 import { errorsOf, validateStory } from '../engine/validate';
-import { allStories, publishedStories, storiesForAge, storyValidationContext } from './library';
+import { LEARNING_STAGES, storiesForStage } from '../engine/stages';
+import { allStories, publishedStories, storyValidationContext } from './library';
 import { uiKeys, uiStrings } from './uiText';
 
 /** Every path through a story, following each choice in turn. */
@@ -100,9 +101,11 @@ describe('The five stories', () => {
   });
 
   it('use more than one age band, and the age filter finds them', () => {
-    expect(storiesForAge(allStories, '3-5').map((story) => story.id)).toContain('thirsty-crow');
-    expect(storiesForAge(allStories, '7-9').map((story) => story.id)).toEqual(['clever-rabbit', 'lion-mouse', 'monkey-crocodile', 'cooperative-doves']);
-    expect(storiesForAge(allStories, 'all')).toHaveLength(5);
+    expect(storiesForStage(allStories, '3-4').map((story) => story.id)).toEqual(['thirsty-crow', 'clever-rabbit', 'lion-mouse']);
+    expect(storiesForStage(allStories, '5-6')).toHaveLength(5);
+    expect(storiesForStage(allStories, '7-8').map((story) => story.id)).toEqual(['clever-rabbit', 'lion-mouse', 'monkey-crocodile', 'cooperative-doves']);
+    expect(storiesForStage(allStories, 'all')).toHaveLength(5);
+    for (const story of allStories) expect(LEARNING_STAGES.some((stage) => storiesForStage([story], stage).length > 0), `${story.id} fits a stage`).toBe(true);
   });
 
   it('record honest translation status', () => {

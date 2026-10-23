@@ -106,3 +106,60 @@
 - a server.
 
 Nothing was pushed or merged.
+
+## 2026-10-23: Integration readiness
+
+**Verified at start:**
+
+- On `claude/learning-games-photo-puzzle` at `404132a`, in sync with the remote, clean.
+- 4 commits ahead of `main` (`f9c2e0f`); `main` had not moved.
+- No CI workflows exist.
+- All checks passed before any change:
+  - tsc;
+  - 258 unit tests;
+  - lint, with 2 old warnings;
+  - build;
+  - 28 E2E tests.
+
+**Expo branches:**
+
+- Checked out `cursor/mobile-auth-onboarding-8089` as a detached worktree in the session scratchpad. The working tree here was not touched.
+- `npm ci`, `npx tsc --noEmit`, and Jest passed (10 suites, 29 tests).
+- The branch has no common ancestor with `main`.
+- Its `packages/learning-core` alphabet, numbers, and animals files are byte-identical to `main`'s `src/data`.
+- Its speech filters to English voices only.
+
+**Added:**
+
+- `engine/stages.ts` and its tests. The library filter switched to stages (unit and E2E tests updated from "7–9" to "7–8").
+- `engine/sync.ts` and its tests.
+- `newRunId` in `engine/player.ts`.
+- `engine/portable.test.ts`.
+- Docs:
+  - `docs/architecture/MOBILE_ARCHITECTURE.md`;
+  - `docs/stories/AGE_STAGES.md`;
+  - `docs/stories/SYNC.md`;
+  - `docs/qa/RELEASE_VERIFICATION.md`.
+- Updated `BACKEND_INTEGRATION.md`, `ASSETS.md`, `ANDROID_STORY_TIME_QA.md`, and `STORIES.md`.
+- Pinned `@playwright/test` to exactly 1.56.1. The lockfile entry was already 1.56.1.
+
+**Corrected:**
+
+- The QA doc still said "no React Native code exists".
+
+**Review findings:**
+
+- No secrets or temporary files are tracked.
+- The generated docs reproduce exactly with snapshot updates switched off (`CI=true`).
+
+**Checks (final, actual):**
+
+- tsc passes.
+- 40 files and 274 tests pass.
+- Lint: 2 pre-existing warnings.
+- The build succeeds.
+- E2E: 28 of 28 pass.
+
+**Not done, and needs a person:** see `docs/qa/RELEASE_VERIFICATION.md`.
+
+Nothing was pushed, merged, or opened as a PR in this pass.

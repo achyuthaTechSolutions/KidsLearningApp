@@ -24,7 +24,16 @@ export function sceneById(story: StoryManifest, id: string): Scene | undefined {
   return story.scenes.find((scene) => scene.id === id);
 }
 
-export function startPlayback(story: StoryManifest, runId = `${story.id}-${Date.now()}`): Playback {
+/**
+ * A new run id: story, time, and a random part, so two devices starting the same
+ * story in the same millisecond still get different ids. Older ids without the
+ * random part stay valid.
+ */
+export function newRunId(storyId: string, now = Date.now(), random = Math.random): string {
+  return `${storyId}-${now}-${Math.floor(random() * 36 ** 8).toString(36).padStart(8, '0')}`;
+}
+
+export function startPlayback(story: StoryManifest, runId = newRunId(story.id)): Playback {
   return {
     runId,
     storyId: story.id,
@@ -103,7 +112,7 @@ export function playerReducer(story: StoryManifest, playback: Playback, action: 
     case 'continue':
       return phase === 'continue' ? leave(story, playback, scene.next) : playback;
     case 'restart':
-      return startPlayback(story, `${story.id}-${Date.now()}`);
+      return startPlayback(story, newRunId(story.id));
     default:
       return playback;
   }

@@ -12,6 +12,8 @@ Story Time (`/stories`) is a set of interactive picture-book stories with maths,
 | The Monkey and the Crocodile | Panchatantra, Book 4 | 5–8 | subtraction, number line, a branching choice, distance reasoning, sequencing, a trust question |
 | The Doves Who Worked Together | Panchatantra, Book 2 | 5–9 | interactive bar graph (most, fewest, difference), a branching choice, equal groups (4 × 3), comprehension |
 
+**Ages.** The library filters by learning stage: *Ages 3–4*, *5–6*, or *7–8*. These are the same bands as the parent-account child profiles. A story shows for every stage its age range overlaps. See `docs/stories/AGE_STAGES.md`.
+
 All text is original, written for this app in 2026. The traditional tales are public domain. No modern translation or illustration was copied. Each story records its tradition and provenance in its manifest.
 
 ## How it fits together
@@ -134,7 +136,10 @@ It is generated and checked by `content/assets.test.ts`. See `docs/stories/ASSET
 - **Damaged data:** damaged records are dropped when loading.
 - **Reset:** Reset All Progress clears it.
 - **Contract for later:** `StoryRecord` and `LearningEvent` in `engine/progress.ts` are the contract a future sync service would carry. Events are already one per run per activity, so sending them again would be idempotent.
-- **Backend design:** `docs/stories/BACKEND_INTEGRATION.md` covers auth, entitlements, sync, idempotency, conflicts, parent access, and analytics, plus the client changes sync would need first. It is a design only, and no endpoint exists.
+- **Backend design:** `docs/stories/BACKEND_INTEGRATION.md` covers auth, entitlements, parent access, and analytics. It is a design only, and no endpoint exists.
+- **Sync specification:** `docs/stories/SYNC.md` covers event identity, acknowledgement and retention, retries, conflicts, versions, the proposed API, and a migration plan.
+  - Its client rules are tested in `engine/sync.ts`, which the app does not use yet.
+  - New run ids now include a random part (`newRunId`), so two devices cannot produce the same id.
 
 **Offline.** All five stories, their art, and the fonts are bundled, so Story Time works offline with nothing to download.
 
@@ -148,13 +153,16 @@ The Android app on `main` is the Capacitor shell, which runs this same React cod
 
 `cursor/native-mobile-app-8089` added an Expo app and then removed it again, keeping `packages/learning-core`. None of these branches is on `main`, and none of them contains Story Time.
 
-The `engine/` folder is DOM-free and could be shared with it. The screens (`activities/`, `player/`) use MUI and the DOM, and would need native versions.
+The `engine/` folder and the story files are DOM-free, and `engine/portable.test.ts` keeps them that way. The screens (`activities/`, `player/`) use MUI and the DOM, and would need native versions.
+
+`docs/architecture/MOBILE_ARCHITECTURE.md` compares the two apps and explains how they could share story definitions, accounts, and onboarding.
 
 Device QA and the accessibility review are in `docs/qa/ANDROID_STORY_TIME_QA.md`.
 
 ## Testing
 
 - `engine/engine.test.ts`: pot model, attempts and hints, the player state machine, resume and versioning, progress and mastery, and validation of broken stories.
+- `engine/stages.test.ts`, `engine/sync.test.ts`, `engine/portable.test.ts`: learning stages (boundaries, unknown ages, legacy values), sync identity, merge and retention rules, and a guard that the shareable domain has no platform imports.
 - `content/content.test.ts`: all five stories validate with no warnings, every branch reaches the moral, every activity type is used, numbers match in every language, graph and pattern answers, scripts are correct per language, and every interface string exists in all three languages.
 - `stories.ui.test.tsx`:
   - the library, language switching, and the age filter;

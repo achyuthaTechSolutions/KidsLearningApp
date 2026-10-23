@@ -13,7 +13,8 @@ import { loadStoryProgress } from '../../services/storage';
 import { storyFraction } from './engine/player';
 import { canResume, isCompleted } from './engine/progress';
 import { LANGUAGES, languageInfo, type Lang, type StoryManifest } from './engine/types';
-import { publishedStories, storiesForAge, type AgeFilter } from './content/library';
+import { publishedStories, type AgeFilter } from './content/library';
+import { LEARNING_STAGES, storiesForStage } from './engine/stages';
 import { objectiveLabels, scriptFont, ui } from './content/uiText';
 import { Backdrop } from './player/Stage';
 
@@ -24,7 +25,7 @@ export default function StoryLibrary() {
   const [age, setAge] = useState<AgeFilter>('all');
   const [progress] = useState(loadStoryProgress);
   const stories = publishedStories();
-  const shown = storiesForAge(stories, age);
+  const shown = storiesForStage(stories, age);
 
   const resumable = stories
     .filter((story) => canResume(progress, story))
@@ -32,9 +33,7 @@ export default function StoryLibrary() {
 
   const ageOptions = [
     { value: 'all' as const, label: ui(lang, 'allAges') },
-    { value: '3-5' as const, label: ui(lang, 'ages', { n: '3–5' }) },
-    { value: '5-7' as const, label: ui(lang, 'ages', { n: '5–7' }) },
-    { value: '7-9' as const, label: ui(lang, 'ages', { n: '7–9' }) },
+    ...LEARNING_STAGES.map((stage) => ({ value: stage, label: ui(lang, 'ages', { n: stage.replace('-', '–') }) })),
   ];
 
   return (

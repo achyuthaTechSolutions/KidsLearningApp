@@ -2,7 +2,7 @@
 
 ## The Android app
 
-The Android app is a **Capacitor 8 shell** (`android/`, `capacitor.config.ts`) that runs the same web build in a system WebView. It is **not React Native**, and no React Native code exists.
+The Android app is a **Capacitor 8 shell** (`android/`, `capacitor.config.ts`) that runs the same web build in a system WebView. It is **not React Native**. A separate Expo (React Native) app exists only on unmerged branches, and it has no Story Time (see `docs/architecture/MOBILE_ARCHITECTURE.md`).
 
 What the shell does, from the code:
 

@@ -20,7 +20,7 @@
   - It says itself that no server implements them.
   - That branch is not on `main`, and this Capacitor app does not use it.
   - The design below **reuses that contract's shapes** (`SessionGrant`, `ChildProfile`), so the two apps would not need two account systems.
-  - Its age bands (`3-4`, `5-6`, `7-8`) do not match Story Time's (`3-5`, `5-7`, `7-9`). This must be settled before sync.
+  - Age bands: Story Time now uses the same `3-4`, `5-6`, `7-8` bands as learning stages (`engine/stages.ts`, `docs/stories/AGE_STAGES.md`).
 
 ## Principles
 
@@ -70,68 +70,25 @@ GET /v1/entitlements            (parent token)
 
 ## Progress sync
 
-### Data sent
+The sync design lives in **`docs/stories/SYNC.md`**, which supersedes the earlier version of this section. It covers:
 
-| Data | Shape | Merge rule |
-| --- | --- | --- |
-| Learning events | `LearningEvent`, plus `eventId` and `deviceId` | Append-only. The server keeps one row per `eventId`, and a second upload of the same id is ignored. |
-| Completed runs | `{ storyId, runId, version, completedAt }` | Set union. A run counts once. |
-| Resume point | `{ storyId, playback, lastLang, updatedAt }` | Last writer wins per story, by `updatedAt`. The client also keeps its local one if it is newer. |
+- run and event identity;
+- idempotent uploads;
+- acknowledgement, retention, and deletion rules;
+- retry and offline recovery;
+- conflicts between devices;
+- story version changes;
+- the proposed API contract;
+- a migration plan that keeps today's offline app working.
 
-**Not sent:**
+The client-side rules are tested in `src/features/stories/engine/sync.ts`.
+
+**Never sent:**
 
 - language-switch history;
 - time spent per line;
 - answers chosen, beyond tries, hints, and demonstrations;
 - anything typed.
-
-### Calls (proposals)
-
-```
-POST /v1/children/{childId}/story-events      body: { events: LearningEvent+eventId[] }   → 200 { accepted: [eventId…], duplicate: [eventId…] }
-POST /v1/children/{childId}/story-completions body: { completions: […] }                 → 200 { accepted, duplicate }
-PUT  /v1/children/{childId}/story-playback/{storyId}  body: { playback, lastLang, updatedAt }
-     → 200 { stored }  |  409 { current: {…} }   (server copy is newer; client keeps the newer of the two)
-GET  /v1/children/{childId}/story-progress?since=<cursor>  → { events, completions, playback, cursor }
-```
-
-### Idempotency
-
-- **`eventId`** = `<deviceId>:<runId>:<activityId>`. `recordActivity` already records at most one event per run and activity, so this is unique and stable across retries.
-- **`deviceId`** is a random id the app makes on first sync. It is not a hardware or advertising id.
-- **A batch can be sent many times.** The server inserts with a unique key on `eventId` and reports duplicates as success.
-- **Uploads carry an `Idempotency-Key` header** (a random UUID per batch), so a retried request after a timeout returns the first response.
-
-### Client changes needed before sync
-
-These are not made yet:
-
-1. **`runId` must be unique across devices.**
-   - Today it is `<storyId>-<Date.now()>` (`engine/player.ts`). Two devices could collide in the same millisecond.
-   - Prefix it with `deviceId`, or use a random UUID.
-   - Old run ids stay valid because the server namespaces them by `deviceId`.
-2. **Use an outbox, not trimming.**
-   - The device keeps the last 500 events (`MAX_EVENTS`) and drops older ones.
-   - With sync, an event must not be dropped before upload. Keep an upload cursor, and trim only what the server has accepted.
-3. **Layering.**
-   - `src/services/storage.ts` imports `emptyStoryProgress` and `LANGUAGES` from the stories feature.
-   - A sync service should sit beside storage and depend on the engine types, not on feature UI.
-   - Fix this before adding more callers.
-4. **Permissions.** Re-add `INTERNET` to the Android manifest and add a network security config (HTTPS only, no cleartext). Also update:
-   - the privacy policy;
-   - the Play Data safety form;
-   - the in-app privacy page, which today promises that nothing leaves the device.
-
-### Offline and conflicts
-
-- Uploads are queued in device storage and sent when the app is open, online, and synced. They retry with exponential backoff and jitter.
-- **How each kind of data conflicts:**
-  - Learning events never conflict, because they are append-only.
-  - Completions never conflict, because they merge as a set union.
-  - Resume points can conflict when two devices play the same story. The newest `updatedAt` wins.
-- **Story versions.** A resume point for an older story `version` is kept but not resumed. The existing `canResume` rule already does this.
-- **Clock skew.** The server records its own receive time. `updatedAt` is only compared between copies for the same child and story, and a resume point is the only thing it can override.
-- **Signing out** keeps local progress on the device, unless the parent chooses "remove from this device".
 
 ## Parent access
 
@@ -158,7 +115,7 @@ DELETE /v1/children/{childId}/story-progress    → deletes Story Time data only
   - "no voice for this language" shown;
   - crashes.
 
-  Counts are aggregated per day and per app version, with no `childId`, no `deviceId`, and no free text.
+  Counts are aggregated per day and per app version, with no `childId`, no `installId`, and no free text.
 - **Thresholds.** Report only counts of 10 or more, to make individuals hard to single out.
 - **Purpose.** Product questions only: which stories are too hard, where children get stuck, and whether Telugu and Hindi voices are missing.
 - **Law.** Before launch, review the design against:

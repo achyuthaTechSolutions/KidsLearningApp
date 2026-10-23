@@ -32,3 +32,21 @@
 16. **Number checks allow the Hindi "3-3" form** ("3 each"). It is idiomatic, not a mistranslation.
 17. **Screen-reader labels follow the story language.** Before this, five labels were English-only. Their Telugu and Hindi are drafts like the rest.
 18. **Correction to decision 2.** The account does have Expo (React Native) code, on the unmerged branches `cursor/mobile-app-export-8089` and `cursor/mobile-auth-onboarding-8089`. The Android app on `main` is still the Capacitor shell, and Story Time was not added to the Expo app. The backend design reuses that branch's parent-account contract shapes rather than inventing a second one.
+
+## 2026-10-23: Integration readiness
+
+19. **One age model: learning stages `3-4`, `5-6`, and `7-8`.** These are the same values as the parent-account `AgeBand` on the Expo auth branch.
+    - Stories keep their exact `ageRange`, and suit every stage they overlap.
+    - Unknown, out-of-range, and legacy values (`3-5`, `5-7`, `7-9`) mean "no stage, show all". They are never mapped to a guessed stage.
+    - The old Story Time filter was never saved, and no app stores a child's age, so nothing needed migrating.
+    - The library filter now uses the stages.
+    - The asset lookup by file name stays. The Expo app would need a static `require()` map with the same ids.
+20. **Sync rules are specified and tested before any server exists.**
+    - Event identity is `<runId>/<activityId>`.
+    - New run ids carry a random part. Legacy ids get the device's install id appended once, before the first upload.
+    - Unacknowledged events and completions are never dropped.
+    - Events and completions merge as unions. Resume points go to the newest copy.
+
+    `docs/stories/SYNC.md` supersedes the sync part of `BACKEND_INTEGRATION.md`. Endpoints remain proposals.
+21. **Expo branches are not merged here.** They have no common history with `main`, and a merge would replace the website. The recommendation is that the Expo app becomes the long-term store app, in its own repository, with Story Time ported through a shared `story-core` package. This needs the product owner's decision.
+22. **`@playwright/test` is pinned exactly to 1.56.1,** to match the override that pins `playwright-core` for `@axe-core/playwright`. A newer test runner would mismatch the `Page` type.

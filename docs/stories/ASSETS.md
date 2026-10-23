@@ -79,6 +79,8 @@ For every line, activity question, and ending moral, the player tries these in o
 
 If a recorded file fails to play, the player falls back to the device voice. Narration follows the parent's Voice, volume, and speed settings. Speed applies to the device voice only, because recordings play at their recorded pace. Narration stops when the app goes to the background.
 
+**Not yet verified:** the recorded-file path has never played a real file, because none exists. Its file lookup is unit-tested; playback is not. The first real recording must be checked on a device, including volume, stopping on background, and falling back to the voice when a file is broken.
+
 ### Where files go
 
 ```
