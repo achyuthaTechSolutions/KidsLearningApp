@@ -1,1 +1,0 @@
-import{t as e}from"./index-CqRPkOW2.js";import{c as t}from"./tokens-Bc_d-8f_.js";var n=e();function r({message:e}){return(0,n.jsx)(t,{role:`status`,"aria-live":`polite`,sx:{position:`absolute`,width:1,height:1,overflow:`hidden`,clip:`rect(0 0 0 0)`,whiteSpace:`nowrap`},children:e})}export{r as t};
