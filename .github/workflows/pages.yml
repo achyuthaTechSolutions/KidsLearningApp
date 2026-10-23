@@ -42,4 +42,4 @@ jobs:
           git checkout -b gh-pages
           git add -A
           git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -m "Publish the website."
-          git -c http.extraheader="AUTHORIZATION: bearer ${GITHUB_TOKEN}" push --force "https://github.com/${GITHUB_REPOSITORY}.git" HEAD:gh-pages
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:gh-pages
