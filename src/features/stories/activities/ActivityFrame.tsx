@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useContext, useEffect, useRef, type ReactNode } from 'react';
 import { Box, Button, Typography } from '@mui/material';
 import { LightbulbRounded, NavigateNext, VolumeUpRounded, VisibilityRounded } from '@mui/icons-material';
 import Mascot from '../../../components/ui/Mascot';
@@ -6,6 +6,8 @@ import { useWorld } from '../../../components/ui/world';
 import { canShowDemo, type Attempt } from '../engine/activities';
 import type { Activity, Lang } from '../engine/types';
 import { ui } from '../content/uiText';
+import { celebrateMs } from '../engine/pacing';
+import { AutoFinishContext } from './autoFinish';
 
 interface FrameProps {
   activity: Activity;
@@ -28,6 +30,18 @@ export function ActivityFrame({ activity, lang, prompt, attempt, feedback, onHea
   const sun = useWorld('sun');
   const violet = useWorld('violet');
   const showHint = attempt.hintShown && !done;
+  const autoFinish = useContext(AutoFinishContext);
+  const finishRef = useRef(onFinish);
+  useEffect(() => {
+    finishRef.current = onFinish;
+  });
+  // In Puzzle mode, carry on by itself once the child has had time to enjoy the answer.
+  const explanation = activity.explanation[lang];
+  useEffect(() => {
+    if (!done || !autoFinish) return;
+    const timer = window.setTimeout(() => finishRef.current(), celebrateMs(explanation));
+    return () => window.clearTimeout(timer);
+  }, [done, autoFinish, explanation]);
   const showExplanation = attempt.demoShown || done;
   return (
     <Box component="section" data-testid="activity" lang={lang} aria-label={ui(lang, 'activity')} sx={{ p: { xs: 2, md: 3 }, borderRadius: '28px', bgcolor: 'background.paper', border: `3px solid ${violet.tint}` }}>

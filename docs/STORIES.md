@@ -102,7 +102,18 @@ Until files exist:
 - **Telugu and Hindi:** use a device voice for that language when one is installed. When none is, the story never reads the text with an English voice. It shows a note and continues with the words on screen.
 - **Respects settings:** narration follows Speech, Volume, Speed, and Voice in Parent Settings, plus the player's own Voice switch.
 - **Stops cleanly:** narration stops when the app is hidden, the language changes, or the player closes.
-- **Read to me:** this mode reads and turns pages until an activity or choice.
+- **Modes:** pages turn by themselves, so a child never has to press Next for each line. Next still skips ahead, and Pause stops it. The choice is saved as the `storyMode` setting.
+  - **Puzzle mode** (the default) stops at each activity and choice. Once the child solves the activity, it carries on by itself.
+  - **Story mode** plays to the end. It passes over activities and takes the choice marked `main` at each branch.
+  - A passed-over activity is not counted as practised. No learning event is recorded for it.
+  - **Timing** (`engine/pacing.ts`): a line turns 0.7 s after it has been read aloud. When nothing is read aloud (no voice for the language, or Voice off), it waits for reading time instead: 2.5–9 s depending on length, and longer at slower speech settings.
+  - **Speech that stalls** turns the page anyway after a time limit. Speech that is blocked or fails now reports as finished, so the story never gets stuck.
+- **Telugu voice:** whether Telugu is read aloud depends on the device or browser.
+  - Chrome's built-in voices include Hindi and English but not Telugu.
+  - Android phones can speak Telugu once the Telugu voice is installed in Google's text-to-speech settings.
+  - Microsoft Edge on Windows offers online Telugu voices.
+  - Without a voice, the story shows the words, turns the pages after reading time, and tells grown-ups how to add a voice.
+  - Recorded narration (`docs/stories/ASSETS.md`) would remove the dependence on device voices.
 
 If a recording fails to play, the device voice takes over.
 

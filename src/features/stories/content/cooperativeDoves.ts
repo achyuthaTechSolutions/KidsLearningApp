@@ -73,7 +73,7 @@ export const cooperativeDoves: StoryManifest = {
       ],
       choices: [
         { id: 'alone', emoji: '🐦', next: 'alone', text: { en: 'Each dove pulls on its own', te: 'ప్రతి పావురం ఒంటరిగా లాగుతుంది', hi: 'हर कबूतर अकेले-अकेले खींचे' } },
-        { id: 'together', emoji: '🕊️', next: 'groups', text: { en: 'All fly up together at the same time', te: 'అన్నీ ఒకేసారి కలిసి పైకి ఎగురుతాయి', hi: 'सब एक साथ मिलकर ऊपर उड़ें' } },
+        { id: 'together', main: true, emoji: '🕊️', next: 'groups', text: { en: 'All fly up together at the same time', te: 'అన్నీ ఒకేసారి కలిసి పైకి ఎగురుతాయి', hi: 'सब एक साथ मिलकर ऊपर उड़ें' } },
       ],
     },
     {

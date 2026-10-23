@@ -119,3 +119,73 @@ export function outcomeMessage(outcome: RunOutcome, failedAt?: number): string {
 export function levelsFor(difficulty: GameDifficulty): RobotLevel[] {
   return robotLevels.filter((level) => level.difficulty === difficulty);
 }
+
+/** Longest plan allowed on levels without their own limit. */
+export const MAX_PROGRAM = 16;
+
+export const commandLimit = (level: RobotLevel) => level.maxCommands ?? MAX_PROGRAM;
+
+/**
+ * Shortest list of commands from the end of `prefix` to the flag (with the star),
+ * within `budget` more commands. Undefined when the prefix bumps or cannot finish.
+ */
+export function shortestFinish(level: RobotLevel, prefix: Command[], budget: number): Command[] | undefined {
+  let robot: RobotState = { ...level.start };
+  let star = !level.star;
+  for (const command of prefix) {
+    if (command === 'forward') {
+      const next = { x: robot.x + delta[robot.dir].x, y: robot.y + delta[robot.dir].y };
+      if (next.x < 0 || next.y < 0 || next.x >= level.width || next.y >= level.height || level.rocks.some((rock) => sameCell(next, rock))) return undefined;
+      robot = { ...robot, ...next };
+      if (sameCell(robot, level.star)) star = true;
+    } else {
+      robot = { ...robot, dir: turn(robot.dir, command) };
+    }
+  }
+  const key = (r: RobotState, s: boolean) => `${r.x},${r.y},${r.dir},${s}`;
+  const queue: { robot: RobotState; star: boolean; path: Command[] }[] = [{ robot, star, path: [] }];
+  const seen = new Set([key(robot, star)]);
+  while (queue.length) {
+    const current = queue.shift()!;
+    if (current.star && sameCell(current.robot, level.goal)) return current.path;
+    if (current.path.length >= budget) continue;
+    for (const command of ['forward', 'left', 'right'] as Command[]) {
+      let next: RobotState;
+      let nextStar = current.star;
+      if (command === 'forward') {
+        const cell = { x: current.robot.x + delta[current.robot.dir].x, y: current.robot.y + delta[current.robot.dir].y };
+        if (cell.x < 0 || cell.y < 0 || cell.x >= level.width || cell.y >= level.height || level.rocks.some((rock) => sameCell(cell, rock))) continue;
+        next = { ...current.robot, ...cell };
+        if (sameCell(next, level.star)) nextStar = true;
+      } else {
+        next = { ...current.robot, dir: turn(current.robot.dir, command) };
+      }
+      if (seen.has(key(next, nextStar))) continue;
+      seen.add(key(next, nextStar));
+      queue.push({ robot: next, star: nextStar, path: [...current.path, command] });
+    }
+  }
+  return undefined;
+}
+
+export type Hint =
+  | { kind: 'ready' }
+  | { kind: 'next'; command: Command }
+  | { kind: 'change'; index: number; command: Command };
+
+/**
+ * A hint that works for whatever plan the child has built, not only the stored
+ * solution: keep the longest start of the plan that can still reach the flag in
+ * time, and suggest the first move of the shortest way on from there.
+ */
+export function hintFor(level: RobotLevel, program: Command[]): Hint {
+  if (runProgram(level, program).outcome === 'goal') return { kind: 'ready' };
+  const limit = commandLimit(level);
+  for (let keep = Math.min(program.length, limit); keep >= 0; keep--) {
+    const finish = shortestFinish(level, program.slice(0, keep), limit - keep);
+    if (!finish?.length) continue;
+    return keep === program.length ? { kind: 'next', command: finish[0] } : { kind: 'change', index: keep, command: finish[0] };
+  }
+  // Unreachable for valid levels: the stored solution always finishes from the start.
+  return { kind: 'change', index: 0, command: level.solution[0] };
+}

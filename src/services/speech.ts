@@ -99,7 +99,12 @@ export function speak(
   },
 ): void {
   const synth = getSynth();
-  if (!synth) return;
+  if (!synth) {
+    // No speech on this device (some Android WebViews): report "done" so callers waiting on it carry on.
+    options?.onUnavailable?.();
+    options?.onEnd?.();
+    return;
+  }
 
   synth.cancel();
   lastText = text;
@@ -113,7 +118,16 @@ export function speak(
   utterance.addEventListener('error', () => notifySpeaking(false));
 
   if (options?.onEnd) {
-    utterance.onend = options.onEnd;
+    // A blocked or failed utterance fires "error" instead of "end"; either way, report it once.
+    // Speech that was cancelled or replaced stays silent, so it cannot trigger the next step.
+    let ended = false;
+    const end = () => {
+      if (ended || token !== speakToken) return;
+      ended = true;
+      options.onEnd?.();
+    };
+    utterance.onend = end;
+    utterance.onerror = end;
   }
 
   const otherLanguage = options?.lang && options.lang !== 'en' ? options.lang : undefined;

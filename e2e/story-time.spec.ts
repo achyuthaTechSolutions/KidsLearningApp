@@ -187,3 +187,70 @@ test.describe('Languages', () => {
     await expect(caption(page)).not.toHaveText('అది ఒక వేడి వేసవి రోజు. సూర్యుడు బాగా ప్రకాశిస్తున్నాడు.');
   });
 });
+
+test.describe('Story and Puzzle modes', () => {
+  test('Puzzle mode turns the pages by itself, stops at the puzzle, and carries on once it is solved', async ({ page }) => {
+    await page.clock.install();
+    await openStory(page, 'thirsty-crow', 'en', { mode: 'puzzle', autoplay: true });
+    await expect(page.getByTestId('mode-help')).toHaveText('The story stops for each puzzle, then carries on.');
+    await expect(caption(page)).toHaveText('It was a hot summer day. The sun was shining bright.');
+    // No Next presses: the first scene's lines turn by themselves, then the story waits at the puzzle.
+    for (let i = 0; i < 20 && !(await activity(page).isVisible()); i += 1) await page.clock.runFor(3000);
+    await expect(activity(page).getByRole('heading', { name: /Can Kalu’s beak reach it/ })).toBeVisible();
+    await page.clock.runFor(30_000);
+    await expect(activity(page)).toBeVisible();
+    await activity(page).getByRole('button', { name: /^No, the water is too low/ }).click();
+    await expect(activity(page).getByText('Yes! Well done!')).toBeVisible();
+    await page.clock.runFor(10_000);
+    await expect(activity(page)).toHaveCount(0);
+    await expect(caption(page)).toBeVisible();
+    const saved = await storedStories(page);
+    expect(saved.events.map((event: { activityId: string }) => event.activityId)).toEqual(['can-reach']);
+  });
+
+  test('Story mode plays to the end with no presses, passing the puzzles and taking the main path', async ({ page }) => {
+    await page.clock.install();
+    await openStory(page, 'clever-rabbit', 'en', { mode: 'story', autoplay: true });
+    await expect(page.getByTestId('mode-help')).toHaveText('The story plays all the way to the end.');
+    const end = page.getByRole('heading', { name: 'The End' });
+    for (let i = 0; i < 120 && !(await end.isVisible()); i += 1) {
+      await expect(activity(page)).toHaveCount(0);
+      await page.clock.runFor(3000);
+    }
+    await expect(end).toBeVisible();
+    const saved = await storedStories(page);
+    expect(saved.stories['clever-rabbit'].completedRuns).toHaveLength(1);
+    expect(saved.stories['clever-rabbit'].playback.choices).toEqual({ 'rabbit-turn': 'trick' });
+    // Passing a puzzle is not learning: nothing is recorded as practised.
+    expect(saved.events).toEqual([]);
+  });
+
+  test('Pause stops the pages turning, and the choice of mode is remembered', async ({ page }) => {
+    await page.clock.install();
+    await openStory(page, 'thirsty-crow', 'en', { mode: 'puzzle', autoplay: true });
+    await page.getByRole('button', { name: 'Pause' }).click();
+    await page.clock.runFor(60_000);
+    await expect(caption(page)).toHaveText('It was a hot summer day. The sun was shining bright.');
+    await page.getByRole('button', { name: /Story mode/ }).click();
+    await page.reload();
+    await expect(page.getByTestId('mode-help')).toHaveText('The story plays all the way to the end.');
+  });
+
+  test('without a Telugu voice, lines still turn by themselves after time to read', async ({ page }) => {
+    await page.clock.install();
+    await openStory(page, 'thirsty-crow', 'te', { autoplay: true });
+    await page.evaluate(() => {
+      const settings = JSON.parse(localStorage.getItem('kids-learning-settings')!);
+      localStorage.setItem('kids-learning-settings', JSON.stringify({ ...settings, storyNarration: true }));
+    });
+    await page.reload();
+    const first = 'అది ఒక వేడి వేసవి రోజు. సూర్యుడు బాగా ప్రకాశిస్తున్నాడు.';
+    await expect(caption(page)).toHaveText(first);
+    await expect(page.getByText('ఈ పరికరంలో ఈ భాషకు గొంతు లేదు, అందుకే కథ మాటలను చూపిస్తుంది.')).toBeVisible();
+    // Not flashed past: still on screen after 2 seconds, turned after reading time.
+    await page.clock.runFor(2000);
+    await expect(caption(page)).toHaveText(first);
+    await page.clock.runFor(8000);
+    await expect(caption(page)).not.toHaveText(first);
+  });
+});

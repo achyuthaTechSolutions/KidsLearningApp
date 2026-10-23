@@ -216,6 +216,109 @@ This entry is on branch `claude/number-racer`, from `main` at `2824b3e`, with Nu
 
 **Not done:** no achievement badge for the racer, and no real-device check.
 
+## 2026-10-23: Robot game fixes
+
+The owner reported that some games were not working, especially the robot game.
+
+**Sweep:** a scratch Playwright run (not committed) clicked randomly through 25 screens at 3 difficulties on the production build.
+
+- 74 of 75 runs logged no page errors or console errors.
+- The one failure, Balloon Pop on advanced, hit the sweep's own 90-second limit while 4 workers shared the machine. It passes alone (1.2 minutes). It is not an app bug.
+- Random clicking is shallow, so "no crash" does not mean every game plays well.
+
+**Little Robot Adventure: fixed.**
+
+1. **Hint crashed.** A correct plan with extra steps, such as Forward ×4 on "Straight to the flag", threw `Cannot read properties of undefined (reading 'label')`. The hint then silently did nothing.
+2. **Hint was invisible.** It went only to the screen-reader status and to speech. With speech off, or no voice on the device, pressing Hint looked like nothing happened.
+3. **Hint only knew one answer.** It compared the plan with one stored solution, so a different path that works was told to "change command N".
+4. **Hint hidden on phones.** On a phone the hint and the result appeared under the bottom menu bar.
+
+**Fixes:**
+
+- `hintFor` and `shortestFinish` in `engine.ts` search for the shortest way to the flag from the longest still-workable start of the child's plan, within the command limit.
+- The hint is shown on screen, including after a bump, and the hint or result scrolls into view.
+
+**Tests:**
+
+- `engine.test.ts` has 6 new hint tests, including 225 random plans that the hints always turn into a working one.
+- `e2e/robot-adventure.spec.ts` (new) solves all 9 levels in the browser by following the hints, on desktop and the Pixel 7 profile. It also covers the old crash, the bump message, and the hint being in view on a phone.
+
+**Checks:**
+
+- tsc passes.
+- 40 files and 280 tests pass.
+- Lint: 2 pre-existing warnings.
+- The build succeeds.
+- E2E: 38 of 38 pass.
+
+**Not found by automation:** problems the owner may have seen in other games. Ask which ones.
+
+**Also noted:** the app has no error boundary, so a render crash in any game would blank the whole app.
+
+## 2026-10-23: Story and Puzzle modes, Telugu voice
+
+The owner reported two things:
+
+1. Telugu had no voice, while Hindi and English did.
+2. Pressing Next for every line made no sense. They asked for a narration mode that plays to the end, and a puzzle mode that stops at each puzzle and carries on once it is solved.
+
+**Telugu: no code bug.**
+
+- `voicesForLanguage` matches `te-IN`, `te_IN`, and `te`.
+- Chrome's built-in voices include Hindi but no Telugu, which matches the report.
+- The app deliberately never reads Telugu with an English voice.
+- Added a grown-up tip (in all three languages, drafts) on installing a voice. Without a voice, lines now turn after reading time.
+- A real fix independent of devices needs recorded narration. The pipeline for it exists; no recordings do.
+
+**Modes:**
+
+- `engine/pacing.ts` (`autoStep`, `readingTimeMs`, and related) decides the pacing.
+- The reducer has a new `skip-activity` action and `Playback.skippedActivities`.
+- `Choice.main` is new. Validation requires exactly one main choice per choice scene. The main choices are Clever Rabbit "trick", Monkey and Crocodile "calm", and Doves "together".
+- The `storyMode` setting is new, with `puzzle` as the default.
+- A solved activity auto-finishes in Puzzle mode, through `AutoFinishContext`.
+- "Read to me" is replaced by the mode picker and Play/Pause.
+
+**Speech fixes (shared `services/speech.ts`):**
+
+- With no speech engine, `onEnd` is now called.
+- `onerror` (blocked or failed) now also ends the utterance.
+- Superseded or cancelled utterances no longer report an end.
+
+The other `onEnd` callers (`quizSpeech`, `useGameFeedback`) already handled an immediate end.
+
+**Phone layout:**
+
+- The no-voice notice moved below the story.
+- The mode help line is hidden on narrow screens.
+
+**Tests:**
+
+- `pacing.test.ts` has 8 tests:
+  - Story mode plays all 5 stories to the end with no stops and nothing solved;
+  - Puzzle mode stops only at activities and choices;
+  - timing;
+  - the main-choice validation.
+- 4 E2E tests use Playwright's fake clock:
+  - Puzzle mode auto-turns, stops, and continues after solving;
+  - Story mode reaches The End with no presses, takes the main choice, and records no learning events;
+  - Pause, and the mode remembered after reload;
+  - Telugu with no voice turns after reading time, not instantly.
+- The E2E helper now presses Pause, so the older tests step with Next.
+
+**Checks:**
+
+- tsc passes.
+- 41 files and 288 tests pass.
+- Lint: 2 pre-existing warnings.
+- The build succeeds.
+- E2E: 46 of 46 pass.
+
+**Not checked:**
+
+- real speech voices, including whether page turns feel right with a real voice;
+- the Android WebView, where `speechSynthesis` may be missing (now handled by the code, but not tried on a device).
+
 ## 2026-10-23: Endless adaptive levels, louder speech, background music
 
 Request: "levels like unlimited", with difficulty that rises by itself during play; speech too quiet; background music during games and activities.

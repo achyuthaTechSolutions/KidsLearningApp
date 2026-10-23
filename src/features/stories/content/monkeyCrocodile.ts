@@ -90,7 +90,7 @@ export const monkeyCrocodile: StoryManifest = {
       ],
       choices: [
         { id: 'panic', emoji: '🌊', next: 'panic', text: { en: 'Shout and jump into the deep water', te: 'అరిచి లోతైన నీళ్లలోకి దూకు', hi: 'चिल्लाकर गहरे पानी में कूद जाओ' } },
-        { id: 'calm', emoji: '💭', next: 'plan', text: { en: 'Stay calm and think of a plan', te: 'ప్రశాంతంగా ఉండి ఉపాయం ఆలోచించు', hi: 'शांत रहो और उपाय सोचो' } },
+        { id: 'calm', main: true, emoji: '💭', next: 'plan', text: { en: 'Stay calm and think of a plan', te: 'ప్రశాంతంగా ఉండి ఉపాయం ఆలోచించు', hi: 'शांत रहो और उपाय सोचो' } },
       ],
     },
     {

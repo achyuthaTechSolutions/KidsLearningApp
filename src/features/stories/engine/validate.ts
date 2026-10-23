@@ -87,6 +87,9 @@ export function validateStory(story: StoryManifest, context: ValidationContext):
       }
     }
     if (scene.next && !sceneIds.has(scene.next)) error('bad-reference', where, `Next scene ${scene.next} does not exist.`);
+    if (scene.choices?.length && scene.choices.filter((choice) => choice.main).length !== 1) {
+      error('bad-choice', where, 'Exactly one choice must be marked main, for Story mode.');
+    }
     for (const choice of scene.choices ?? []) {
       text(choice.text, `${where}/choice ${choice.id}`);
       if (!sceneIds.has(choice.next)) error('bad-reference', `${where}/choice ${choice.id}`, `Choice goes to missing scene ${choice.next}.`);

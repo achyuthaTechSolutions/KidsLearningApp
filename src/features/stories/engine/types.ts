@@ -148,6 +148,8 @@ export interface Choice {
   id: string;
   text: Localized;
   emoji?: string;
+  /** The choice Story mode takes, so the story plays to the end without stopping. One per choice scene. */
+  main?: boolean;
   next: string;
 }
 
