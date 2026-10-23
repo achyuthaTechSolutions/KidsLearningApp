@@ -12,7 +12,8 @@
     "illustrations": "node scripts/build-illustrations.mjs",
     "cap:sync": "npm run build && cap sync android",
     "android:run": "npm run build && cap run android",
-    "android:bundle": "npm run build && cap sync android && cd android && gradlew.bat bundleRelease"
+    "android:bundle": "npm run build && cap sync android && cd android && gradlew.bat bundleRelease",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.3",
@@ -35,8 +36,10 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
     "@capacitor/cli": "^8.5.3",
     "@iconify-json/fluent-emoji-flat": "1.2.6",
+    "@playwright/test": "^1.56.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^24.13.3",
@@ -48,5 +51,10 @@
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
     "vitest": "^5.0.5"
+  },
+  "overrides": {
+    "@axe-core/playwright": {
+      "playwright-core": "1.56.1"
+    }
   }
 }

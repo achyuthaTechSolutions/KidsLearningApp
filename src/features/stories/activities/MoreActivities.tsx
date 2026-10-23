@@ -251,10 +251,14 @@ export function BarGraphView({ activity, lang, say, onSolved }: ActivityProps<Ba
               <Box key={category.id} sx={{ position: 'relative', height: PLOT_HEIGHT, borderBottom: `3px solid ${theme.palette.text.primary}`, backgroundImage: `repeating-linear-gradient(to top, ${alpha(theme.palette.text.primary, 0.08)} 0 1px, transparent 1px ${100 / top}%)` }}>
                 <Box
                   aria-hidden
-                  sx={{ position: 'absolute', bottom: 0, left: '15%', width: '70%', height: `${(value / top) * 100}%`, bgcolor: w.main, borderRadius: '10px 10px 0 0', transition: 'height 350ms ease-out', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', color: w.onMain, fontWeight: 900, pt: value ? 0.5 : 0 }}
-                >
-                  {value > 0 ? value : ''}
-                </Box>
+                  sx={{ position: 'absolute', bottom: 0, left: '15%', width: '70%', height: `${(value / top) * 100}%`, bgcolor: w.main, borderRadius: '10px 10px 0 0', transition: 'height 350ms ease-out' }}
+                />
+                {/* The count sits above the bar in body text colour, so it is readable on every bar colour. */}
+                {value > 0 && (
+                  <Typography aria-hidden sx={{ position: 'absolute', left: 0, right: 0, bottom: `${(value / top) * 100}%`, textAlign: 'center', fontWeight: 900, lineHeight: 1.4, transition: 'bottom 350ms ease-out' }}>
+                    {value}
+                  </Typography>
+                )}
               </Box>
             );
           })}
@@ -269,7 +273,7 @@ export function BarGraphView({ activity, lang, say, onSolved }: ActivityProps<Ba
                   onClick={() => setBuilt(addToBar(activity, built, category.id))}
                   disabled={full || ready}
                   aria-label={`${ui(lang, 'addOne', { a: category.label[lang] })}. ${value} / ${category.value}`}
-                  sx={[tactile(theme, w, { state: full ? 'done' : 'selected', depth: 4, radius: 14 }), { width: '100%', minHeight: 48, flexDirection: 'column', py: 0.5, '&.Mui-disabled': { color: w.text } }]}
+                  sx={[tactile(theme, w, { state: full ? 'done' : 'idle', depth: 4, radius: 14 }), { width: '100%', minHeight: 48, flexDirection: 'column', py: 0.5, color: w.text, borderColor: w.main, '&.Mui-disabled': { color: w.text } }]}
                 >
                   <Illustration emoji={category.emoji} size="26px" />
                   <Typography lang={lang} sx={{ fontSize: { xs: '0.72rem', sm: '0.85rem' }, fontWeight: 800, lineHeight: 1.1 }}>{category.label[lang]}</Typography>
