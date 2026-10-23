@@ -38,6 +38,8 @@ const SpaceExplorer = lazy(() => import('./features/space-explorer/SpaceExplorer
 const StoryLibrary = lazy(() => import('./features/stories/StoryLibrary'));
 const StoryPlayer = lazy(() => import('./features/stories/player/StoryPlayer'));
 
+const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, '');
+
 const playRoutes = [
   { path: '/games/tracing', Component: LetterTracing },
   { path: '/games/alphabet-catcher', Component: AlphabetCatcher },
@@ -84,7 +86,7 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <BrowserRouter>
+      <BrowserRouter basename={routerBasename}>
         <Routes>
           <Route element={<AppLayout />}>
             <Route index element={<HomePage />} />

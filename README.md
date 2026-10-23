@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173/. Other checks:
+Open http://localhost:5173/. The same site is published for a phone browser at https://achyuthatechsolutions.github.io/KidsLearningApp/. A push to `main` rebuilds that address. Progress stays in the browser you open, so a phone and this computer do not share scores. Other checks:
 
 ```powershell
 npm test
