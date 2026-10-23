@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, ButtonBase, FormControlLabel, Switch, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -13,28 +13,39 @@ import { useAppStore } from '../../store/useAppStore';
 import { playConfirmation, playError, playSuccess } from '../../services/audio';
 import { GameHeader, GameResults } from '../learning-games/GameChrome';
 import { useGameFeedback } from '../learning-games/useGameFeedback';
-import { WORDS_PER_ROUND, isNextLetter, pickSpellWords, scrambleTiles, spellOut, type LetterTile, type SpellWord } from './words';
+import { useEndlessLevel } from '../learning-games/useEndlessLevel';
+import LevelUpBanner from '../learning-games/LevelUpBanner';
+import EndlessControls from '../learning-games/EndlessControls';
+import { decoysFor, isNextLetter, pickWord, scrambleTiles, spellOut, type LetterTile, type SpellWord } from './words';
 
+/** An endless game: words keep coming until the child taps Finish. */
 interface Round {
-  words: SpellWord[];
-  index: number;
+  word: SpellWord;
   tiles: LetterTile[];
   used: number[];
   mistakes: number;
   wordMistakes: number;
+  spelled: number;
   perfectWords: number;
-  done: boolean;
+  recent: string[];
 }
 
-function newRound(): Round {
-  const words = pickSpellWords();
-  return { words, index: 0, tiles: scrambleTiles(words[0].word), used: [], mistakes: 0, wordMistakes: 0, perfectWords: 0, done: false };
+function wordFor(level: number, recent: string[]) {
+  const word = pickWord(level, recent);
+  return { word, tiles: scrambleTiles(word.word, Math.random, decoysFor(level)) };
 }
 
-/** One star per word spelled without a wrong tap, scaled to three. */
-function spellStars(perfectWords: number): number {
-  if (perfectWords >= WORDS_PER_ROUND - 1) return 3;
-  if (perfectWords >= 2) return 2;
+function newRound(level: number): Round {
+  const first = wordFor(level, []);
+  return { ...first, used: [], mistakes: 0, wordMistakes: 0, spelled: 0, perfectWords: 0, recent: [first.word.word] };
+}
+
+/** Stars when the child stops: words spelled with no wrong tap, out of all words spelled. */
+function spellStars(round: Round): number {
+  if (round.spelled === 0) return 1;
+  const ratio = round.perfectWords / round.spelled;
+  if (ratio >= 0.8) return 3;
+  if (ratio >= 0.5) return 2;
   return 1;
 }
 
@@ -43,34 +54,41 @@ export default function WordBuilder() {
   const navigate = useNavigate();
   const pink = useWorld('pink');
   const green = useWorld('green');
-  const { say, sound } = useGameFeedback();
+  const { say, sound, settings } = useGameFeedback();
+  const endless = useEndlessLevel('spell', settings.gameDifficulty);
   const incrementGamesCompleted = useAppStore((s) => s.incrementGamesCompleted);
   const addLetterExplored = useAppStore((s) => s.addLetterExplored);
   const addWordLearned = useAppStore((s) => s.addWordLearned);
 
-  const [round, setRound] = useState<Round>(() => newRound());
+  const [round, setRound] = useState<Round>(() => newRound(endless.planned));
   const [hints, setHints] = useState(true);
   const [shaking, setShaking] = useState<number | null>(null);
   const [finished, setFinished] = useState(false);
   const [celebrate, setCelebrate] = useState(0);
 
-  const current = round.words[round.index];
+  const current = round.word;
   const word = current.word.toUpperCase();
   const placed = round.used.length;
   const solved = placed === word.length;
 
   const introduce = (next: SpellWord) => say(`Let's spell ${next.word}!`);
 
-  const [firstWord] = useState(() => round.words[0].word);
+  const [firstWord] = useState(() => round.word.word);
+  // Start once when the screen opens. `begin` changes as the level moves, so guard it.
+  const { begin } = endless;
+  const begun = useRef(false);
   useEffect(() => {
+    if (begun.current) return;
+    begun.current = true;
+    begin();
     say(`Let's spell ${firstWord}!`);
-  }, [say, firstWord]);
+  }, [say, firstWord, begin]);
 
   const restart = () => {
-    const next = newRound();
+    const next = newRound(endless.begin());
     setRound(next);
     setFinished(false);
-    introduce(next.words[0]);
+    introduce(next.word);
   };
 
   const tap = (tile: LetterTile) => {
@@ -96,28 +114,30 @@ export default function WordBuilder() {
     addWordLearned(current.word);
     sound((v) => playSuccess(v * 0.3));
     setCelebrate((count) => count + 1);
-    say(spellOut(current.word));
-    setRound({ ...round, used, perfectWords: round.perfectWords + (round.wordMistakes === 0 ? 1 : 0) });
+    const after = endless.record(round.wordMistakes === 0);
+    say(`${spellOut(current.word)}${after.change === 'up' ? ` Level up! Level ${after.level}!` : ''}`);
+    setRound({ ...round, used, spelled: round.spelled + 1, perfectWords: round.perfectWords + (round.wordMistakes === 0 ? 1 : 0) });
   };
 
   const next = () => {
-    if (round.index + 1 >= round.words.length) {
-      incrementGamesCompleted();
-      setFinished(true);
-      setCelebrate((count) => count + 1);
-      say(`You spelled ${WORDS_PER_ROUND} words! Super speller!`);
-      return;
-    }
-    const index = round.index + 1;
-    setRound({ ...round, index, tiles: scrambleTiles(round.words[index].word), used: [], wordMistakes: 0 });
-    introduce(round.words[index]);
+    const upcoming = wordFor(endless.level, round.recent);
+    setRound({ ...round, ...upcoming, used: [], wordMistakes: 0, recent: [...round.recent, upcoming.word.word].slice(-10) });
+    introduce(upcoming.word);
+  };
+
+  /** The game never ends by itself: the child stops when they like. */
+  const finish = () => {
+    if (round.spelled > 0) incrementGamesCompleted();
+    setFinished(true);
+    setCelebrate((count) => count + 1);
+    say(round.spelled > 0 ? `You spelled ${round.spelled} words and reached level ${endless.level}! Super speller!` : 'See you next time!');
   };
 
   if (finished) {
     return (
       <GameResults
-        stars={spellStars(round.perfectWords)}
-        message={`You spelled ${WORDS_PER_ROUND} words!`}
+        stars={spellStars(round)}
+        message={`You spelled ${round.spelled} ${round.spelled === 1 ? 'word' : 'words'} and reached Level ${endless.level}!`}
         celebrate={celebrate}
         onPlayAgain={restart}
         onChooseGame={() => navigate('/games')}
@@ -133,7 +153,9 @@ export default function WordBuilder() {
         world="pink"
         backLabel="Back to Games"
         onBack={() => navigate('/games')}
-        progress={{ value: round.index + (solved ? 1 : 0), total: WORDS_PER_ROUND, label: `Word ${round.index + 1} of ${WORDS_PER_ROUND}` }}
+        score={round.spelled}
+        scoreLabel={`${round.spelled} words spelled`}
+        actions={<EndlessControls level={endless.level} world="pink" onFinish={finish} />}
       />
 
       <Box
@@ -224,7 +246,7 @@ export default function WordBuilder() {
               You spelled {current.word}!
             </Typography>
             <Button variant="contained" color="success" endIcon={<NavigateNext />} onClick={next} sx={{ fontSize: '1.1rem', px: 3 }}>
-              {round.index + 1 >= round.words.length ? 'See Results' : 'Next Word'}
+              Next Word
             </Button>
           </Box>
         )}
@@ -236,6 +258,7 @@ export default function WordBuilder() {
           label="Show letter hints"
         />
       </Box>
+      <LevelUpBanner change={endless.lastChange} world="pink" />
       <Confetti fire={celebrate} />
     </Page>
   );

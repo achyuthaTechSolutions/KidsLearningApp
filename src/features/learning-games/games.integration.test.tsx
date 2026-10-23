@@ -19,6 +19,7 @@ import RhythmHero from '../rhythm-hero/RhythmHero';
 import SoundSafari from '../sound-safari/SoundSafari';
 import ShadowDetective from '../shadow-detective/ShadowDetective';
 import SpaceExplorer from '../space-explorer/SpaceExplorer';
+import WordBuilder from '../word-builder/WordBuilder';
 import { strokesFor } from '../letter-tracing/strokes';
 import { sampleStroke } from '../letter-tracing/tracing';
 
@@ -88,6 +89,31 @@ describe('Alphabet Catcher', () => {
     const target = screen.getAllByText(/^Catch the letter [A-Z]!$/)[0].textContent!.match(/letter ([A-Z])/)![1];
     fireEvent.keyDown(window, { key: target.toLowerCase() });
     expect(screen.getByRole('button', { name: 'Next Letter' })).toBeTruthy();
+  });
+});
+
+describe('Word Builder', () => {
+  it('is endless: 3 words spelled with no wrong tap go up a level, and Finish shows the level reached', () => {
+    renderGame(<WordBuilder />);
+    const spellWord = () => {
+      const slots = within(screen.getByRole('list', { name: /^Spelling 0 of \d+ letters$/ })).getAllByRole('listitem');
+      const letters = slots.map((slot) => /needs (.)$/.exec(slot.getAttribute('aria-label')!)![1]);
+      for (const letter of letters) {
+        const tile = screen.getAllByRole('button', { name: `Letter ${letter}` }).find((button) => !button.hasAttribute('disabled') && button.getAttribute('aria-disabled') !== 'true')!;
+        fireEvent.click(tile);
+      }
+      return letters.length;
+    };
+    expect(spellWord()).toBe(3);
+    expect(screen.getByTestId('game-level').textContent).toBe('Level 1');
+    fireEvent.click(screen.getByRole('button', { name: 'Next Word' }));
+    spellWord();
+    fireEvent.click(screen.getByRole('button', { name: 'Next Word' }));
+    spellWord();
+    expect(screen.getByTestId('game-level').textContent).toBe('Level 2');
+    expect(useAppStore.getState().progress.gameSkill.spell).toBe(2);
+    fireEvent.click(screen.getByRole('button', { name: 'Finish' }));
+    expect(screen.getByText('You spelled 3 words and reached Level 2!')).toBeTruthy();
   });
 });
 
