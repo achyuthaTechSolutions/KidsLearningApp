@@ -82,7 +82,7 @@ interface ResultsProps {
   onChooseGame: () => void;
 }
 
-/** The end-of-round card: Pip, a cheer, stars, and what to do next. */
+/** The end-of-round card: Avi, a cheer, stars, and what to do next. */
 export function GameResults({ stars, total = 3, message, celebrate, onPlayAgain, onChooseGame }: ResultsProps) {
   useScrollToTop();
   const gold = useWorld('gold');
@@ -106,7 +106,7 @@ export function GameResults({ stars, total = 3, message, celebrate, onPlayAgain,
       >
         <Box aria-hidden sx={{ position: 'absolute', left: '50%', top: -260, width: 620, height: 440, transform: 'translateX(-50%)', borderRadius: '50%', bgcolor: gold.tint }} />
         <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center', mb: 1 }}>
-          <Mascot size={150} mood={ratio >= 0.6 ? 'cheer' : 'happy'} label="Pip the owl celebrating" />
+          <Mascot size={150} mood={ratio >= 0.6 ? 'cheer' : 'happy'} label="Avi celebrating" />
         </Box>
         <Typography variant="h1" component="h1" sx={{ position: 'relative', fontSize: { xs: '2.2rem', md: '2.8rem' }, color: gold.text }}>
           {title}

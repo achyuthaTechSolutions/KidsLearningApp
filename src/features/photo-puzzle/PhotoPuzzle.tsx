@@ -182,7 +182,7 @@ export default function PhotoPuzzle() {
             <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center', mb: 2 }}>
               <TextField
                 label="Photo name (optional)"
-                helperText="Pip says this name, for example “Grandma” or “our dog”."
+                helperText="Avi says this name, for example “Grandma” or “our dog”."
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 slotProps={{ htmlInput: { maxLength: MAX_NAME_LENGTH } }}

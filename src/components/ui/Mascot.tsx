@@ -22,7 +22,7 @@ const beak = worlds.sun.main;
 const beakDark = worlds.sun.dark;
 const ink = colors.text;
 
-/** Pip, the app's original owl guide. Drawn here so it is bundled and needs no licence. */
+/** Avi, the app's guide. Drawn here so it is bundled and needs no licence. */
 export default function Mascot({ size = 120, mood = 'happy', wave = false, float = true, label }: MascotProps) {
   const look = mood === 'think' ? { dx: 3, dy: -4 } : { dx: 0, dy: 1 };
   const cheer = mood === 'cheer';

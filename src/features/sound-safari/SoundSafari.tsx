@@ -22,7 +22,7 @@ import { SAFARI_ROUNDS, createPhrasePlayer, createSafariQuestion, type SafariCat
 
 const categoryOptions = [
   { value: 'instruments' as const, label: 'Music Studio sounds', emoji: '🥁' },
-  { value: 'animals' as const, label: 'Animal sounds, said by Pip', emoji: '🐄' },
+  { value: 'animals' as const, label: 'Animal sounds, said by Avi', emoji: '🐄' },
 ];
 const optionWorlds = ['blue', 'pink', 'violet', 'teal'] as const;
 
@@ -53,7 +53,7 @@ export default function SoundSafari() {
   const speechReady = isSpeechAvailable() && settings.speechEnabled && settings.volume > 0;
   const blocked = category === 'instruments'
     ? (!soundReady ? 'Music Studio sounds need sound effects. Turn on sound and volume in Parent Settings.' : '')
-    : (!speechReady ? 'Pip needs speech to make animal sounds. Turn on speech and volume in Parent Settings.' : '');
+    : (!speechReady ? 'Avi needs speech to make animal sounds. Turn on speech and volume in Parent Settings.' : '');
 
   const playSound = (sound: SafariSound) => {
     setPlaying(true);
@@ -74,7 +74,7 @@ export default function SoundSafari() {
     setQuestion(next);
     setTried([]);
     setSolved(false);
-    const prompt = next.sound.category === 'animals' ? 'Listen to Pip. Which animal says this?' : 'Listen. What makes this sound?';
+    const prompt = next.sound.category === 'animals' ? 'Listen to Avi. Which animal says this?' : 'Listen. What makes this sound?';
     setStatus(prompt);
     setPlaying(true);
     say(prompt, () => playSound(next.sound));
@@ -143,7 +143,7 @@ export default function SoundSafari() {
         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', maxWidth: 560, mx: 'auto' }}>
           {category === 'instruments'
             ? 'These are the same instrument sounds you play in Music Studio. They are made by the app, not recorded.'
-            : 'There are no animal recordings in the app. Pip pretends to be each animal using the speaking voice.'}
+            : 'There are no animal recordings in the app. Avi pretends to be each animal using the speaking voice.'}
         </Typography>
         {blocked && <Alert severity="info" sx={{ mt: 2 }}>{blocked}</Alert>}
       </GameIntro>
@@ -180,10 +180,10 @@ export default function SoundSafari() {
 
       <Box sx={{ textAlign: 'center', p: { xs: 2, md: 3 }, borderRadius: '32px', bgcolor: sun.tint, mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
-          {isAnimal ? <Mascot size={96} mood="happy" float={false} label="Pip, pretending to be an animal" /> : <Illustration emoji="🎧" size="88px" />}
+          {isAnimal ? <Mascot size={96} mood="happy" float={false} label="Avi, pretending to be an animal" /> : <Illustration emoji="🎧" size="88px" />}
         </Box>
         <Typography variant="h3" component="h2" sx={{ fontSize: { xs: '1.35rem', md: '1.7rem' }, mb: 1.5 }}>
-          {isAnimal ? 'Which animal is Pip pretending to be?' : 'What makes this sound?'}
+          {isAnimal ? 'Which animal is Avi pretending to be?' : 'What makes this sound?'}
         </Typography>
         <Button
           variant="contained"

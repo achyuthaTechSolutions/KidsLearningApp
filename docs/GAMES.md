@@ -94,7 +94,7 @@ Speech is also louder: the Volume slider's default (0.7) now maps to full speech
 
 Stroke order and direction are shown but not enforced. Drawing uses pointer events with pointer capture on the SVG only (`touch-action: none` there), so the page still scrolls elsewhere. **Skip this letter** and **Show me** are the non-drawing ways through.
 
-**Alphabet Catcher.** Pip names a letter and the child taps it, or types it on a keyboard. Letters can stay still (the default) or fall slowly and loop back to the top, so nothing is ever missed. Choices are 3, 4, or 6 by level; rounds are 5, 10, or 15 letters. Phonics mode says the letter's sound instead of its name and never shows two letters with the same sound (C and K). A catch counts once. Falling letters pause on the Pause button or when the tab is hidden.
+**Alphabet Catcher.** Avi names a letter and the child taps it, or types it on a keyboard. Letters can stay still (the default) or fall slowly and loop back to the top, so nothing is ever missed. Choices are 3, 4, or 6 by level; rounds are 5, 10, or 15 letters. Phonics mode says the letter's sound instead of its name and never shows two letters with the same sound (C and K). A catch counts once. Falling letters pause on the Pause button or when the tab is hidden.
 
 **Number Racer.** The child's car drives up a three-lane road toward a row of gates. A sign asks a number question, and each gate carries an answer. The child steers into the lane with the right answer by tapping a lane, using the Left and Right buttons, the arrow keys (or A and D), or 1, 2, and 3.
 
@@ -112,7 +112,7 @@ Stroke order and direction are shown but not enforced. Drawing uses pointer even
 
 - **Adding photos:** a grown-up adds or deletes photos after the existing parent check. They come from the device's own picture picker; the app requests no camera permission (the Android manifest removes it).
 - **Processing (`photo-puzzle/photos.ts`):** the photo is checked (image types only, up to 25 MB), cropped to its centred square, and resized to 600 × 600. It is re-encoded as JPEG, which drops EXIF metadata such as GPS location. A real-browser test confirmed that a photo with GPS data is stored without it.
-- **Storage:** up to 8 photos, each about 10 to 60 KB, are kept under `kids-learning-photos` in this app's local storage with an optional name that Pip reads out. They are never uploaded. Damaged or non-JPEG entries are ignored when loading.
+- **Storage:** up to 8 photos, each about 10 to 60 KB, are kept under `kids-learning-photos` in this app's local storage with an optional name that Avi reads out. They are never uploaded. Damaged or non-JPEG entries are ignored when loading.
 - **Deleting:** a grown-up can delete photos one at a time or all at once, and Reset All Progress deletes them too.
 - **Playing:** a photo is shown through a short-lived object URL so the pieces share one image.
 
@@ -121,7 +121,7 @@ Stroke order and direction are shown but not enforced. Drawing uses pointer even
 **Sound Safari.** The app has no recorded audio files, so it does not pretend to. It has two clearly labelled modes:
 
 - **Music Studio sounds**: piano, drum, guitar, flute, and clapping, played by the same on-device synthesiser that Music Studio uses (`services/audio.ts`). They are labelled as made by the app, not recorded.
-- **Animal sounds, said by Pip**: the narrator voice says "Moo!", "Woof!", and so on. The screen says Pip is pretending.
+- **Animal sounds, said by Avi**: the narrator voice says "Moo!", "Woof!", and so on. The screen says Avi is pretending.
 
 Vehicle and everyday sounds are left out because no real recordings exist (see Limitations). Each mode is disabled, with a note for parents, when its sound or speech is off or unavailable. Sounds that are easy to confuse (piano and guitar, drum and clap) only appear together at Champion level. Replaying cancels the previous phrase, so sounds never pile up.
 

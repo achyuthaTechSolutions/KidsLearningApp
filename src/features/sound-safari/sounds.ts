@@ -8,8 +8,8 @@ export type SynthInstrument = 'piano' | 'drum' | 'guitar' | 'flute' | 'clap';
 /**
  * Where a sound comes from. The app has no recorded audio files, so it is honest about it:
  * "synth" sounds are the same on-device instrument sounds Music Studio plays, and
- * "spoken" sounds are Pip saying the animal noise with the device voice. Spoken sounds
- * are labelled as Pip pretending, never as recordings.
+ * "spoken" sounds are Avi saying the animal noise with the device voice. Spoken sounds
+ * are labelled as Avi pretending, never as recordings.
  */
 export type SoundSource =
   | { kind: 'synth'; instrument: SynthInstrument }

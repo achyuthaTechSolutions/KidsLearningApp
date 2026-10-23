@@ -175,7 +175,7 @@ export default function AlphabetCatcher() {
         emoji="🔤"
         world="violet"
         steps={[
-          { emoji: '👂', text: 'Listen. Pip will name a letter.' },
+          { emoji: '👂', text: 'Listen. Avi will name a letter.' },
           { emoji: '👆', text: 'Tap that letter, or press it on the keyboard.' },
           { emoji: '🔁', text: 'Tap the speaker any time to hear it again.' },
         ]}
@@ -183,7 +183,7 @@ export default function AlphabetCatcher() {
         onDifficulty={endless.pickDifficulty}
         endlessLevel={endless.planned}
         onStart={start}
-        onHear={() => say('Listen to Pip, then tap the letter you hear. You can tap the speaker to hear it again.')}
+        onHear={() => say('Listen to Avi, then tap the letter you hear. You can tap the speaker to hear it again.')}
       >
         <PillPicker value={letterCase} options={caseOptions} onChange={setLetterCase} world="violet" ariaLabel="Letter case" />
         <PillPicker value={motion} options={motionOptions} onChange={setMotion} world="violet" ariaLabel="How letters move" />
