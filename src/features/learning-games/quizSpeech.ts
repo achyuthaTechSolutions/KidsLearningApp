@@ -1,4 +1,3 @@
-import { spokenQuizLines } from '../../../packages/learning-core/src/speech/lines';
 import { cancelSpeech, speak } from '../../services/speech';
 import type { QuizQuestion } from './questions';
 
@@ -8,16 +7,16 @@ function speechOptions(rate?: number, voice?: string | null) {
 
 export function speakQuizQuestion(question: QuizQuestion, rate?: number, voice?: string | null): void {
   const options = speechOptions(rate, voice);
-  const [first, followUp] = spokenQuizLines(question);
   cancelSpeech();
-  if (followUp) {
-    speak(first, {
+  if (question.type === 'listen' && question.spokenWord) {
+    const word = question.spokenWord;
+    speak(question.prompt, {
       ...options,
-      onEnd: () => speak(followUp, options),
+      onEnd: () => speak(word, options),
     });
     return;
   }
-  speak(first, options);
+  speak(question.prompt, options);
 }
 
 export function replayQuizWord(question: QuizQuestion, rate?: number, voice?: string | null): void {

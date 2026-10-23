@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from 'react';
 import {
   Box, Typography, Switch, Slider, Select, MenuItem,
   FormControl, InputLabel, Button, Dialog, DialogTitle, DialogContent,
@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import {
-  InsightsRounded, RecordVoiceOverRounded, PaletteRounded, LockRounded, PlayArrowRounded, RestartAltRounded,
+  InsightsRounded, RecordVoiceOverRounded, PaletteRounded, LockRounded, PlayArrowRounded, RestartAltRounded, SportsEsportsRounded,
 } from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
 import Page from '../../components/ui/Page';
@@ -23,6 +23,12 @@ import { normalizeDailyRecord } from '../daily-challenge/dailySelection';
 import ParentGate from '../../components/parent/ParentGate.tsx';
 import { pushOverlay } from '../../platform/overlays';
 import Illustration from '../../components/ui/Illustration';
+import { difficultyHints, difficultyOptions } from '../learning-games/difficulty';
+import { LANGUAGES, languageInfo } from '../stories/engine/types';
+import type { AppSettings, GameDifficulty } from '../../types';
+
+// Story content is large, so its summary loads only when this page opens.
+const StoryProgressSummary = lazy(() => import('../stories/StoryProgressSummary'));
 
 function Section({ world, icon, title, children }: { world: WorldKey; icon: ReactNode; title: string; children: ReactNode }) {
   const w = useWorld(world);
@@ -129,6 +135,7 @@ export default function ParentSettings() {
             <AreaBar key={area.label} label={area.label} value={area.value} total={area.total} />
           ))}
         </Box>
+        <Suspense fallback={null}><StoryProgressSummary /></Suspense>
       </Section>
 
       <Section world="blue" icon={<RecordVoiceOverRounded />} title="Speech & Audio">
@@ -220,6 +227,41 @@ export default function ParentSettings() {
         )}
       </Section>
 
+      <Section world="teal" icon={<SportsEsportsRounded />} title="Games">
+        <FormControl fullWidth sx={{ mb: 1 }}>
+          <InputLabel id="game-level-label">Starting level for games</InputLabel>
+          <Select
+            labelId="game-level-label"
+            value={settings.gameDifficulty}
+            onChange={(e) => updateSettings({ gameDifficulty: e.target.value as GameDifficulty })}
+            label="Starting level for games"
+          >
+            {difficultyOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <Typography variant="body2" color="text.secondary">
+          {difficultyHints[settings.gameDifficulty]} Each game opens at this level, and your child can still change it before playing.
+        </Typography>
+        <FormControl fullWidth sx={{ mt: 2.5, mb: 1 }}>
+          <InputLabel id="story-language-label">Story Time language</InputLabel>
+          <Select
+            labelId="story-language-label"
+            value={settings.storyLanguage}
+            onChange={(e) => updateSettings({ storyLanguage: e.target.value as AppSettings['storyLanguage'] })}
+            label="Story Time language"
+          >
+            {LANGUAGES.map((lang) => (
+              <MenuItem key={lang} value={lang}>{languageInfo[lang].label} ({languageInfo[lang].native})</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <Typography variant="body2" color="text.secondary">
+          Telugu and Hindi story text are draft translations that have not yet been reviewed by native speakers. Narration uses this device’s voice for the language when one is installed; otherwise the story shows the words.
+        </Typography>
+      </Section>
+
       <Section world="pink" icon={<PaletteRounded />} title="Appearance">
         <FormControl fullWidth sx={{ mb: 1.5 }}>
           <InputLabel id="theme-label">Theme</InputLabel>
@@ -249,7 +291,7 @@ export default function ParentSettings() {
 
       <Section world="slate" icon={<LockRounded />} title="Data & progress">
         <Alert severity="info" sx={{ mb: 2 }}>
-          Learning progress and these settings stay on this device. Nothing is sent to a server. Reset clears progress, the answer streak, achievements, Dino Dash scores, and today’s daily challenge. It does not change these sound and speech settings.
+          Learning progress and these settings stay on this device. Nothing is sent to a server. Reset clears progress, finished game levels, story positions and story learning records, the answer streak, achievements, Dino Dash scores, today’s daily challenge, and any photos added to My Photo Puzzle. It does not change these sound and speech settings.
         </Alert>
 
         <Button component={RouterLink} to="/privacy" variant="text" sx={{ mb: 1 }}>

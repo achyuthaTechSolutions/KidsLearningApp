@@ -112,3 +112,20 @@ html[data-reduced-motion='true'] .kl-motion-only {
     display: none !important;
   }
 }
+
+@keyframes kl-burst {
+  0% { transform: translate(-50%, -50%) scale(0.4); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.7); opacity: 0; }
+}
+
+@keyframes kl-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* Story Time character reactions. Reduced motion stops them (see above). */
+@keyframes kl-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6%); } }
+@keyframes kl-tilt { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-8deg); } }
+@keyframes kl-hop { 0%, 100% { transform: translateY(0) scale(1); } 40% { transform: translateY(-14%) scale(1.04); } }
+@keyframes kl-droop { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(4%) rotate(4deg); } }
+@keyframes kl-scene-in { from { opacity: 0; transform: scale(1.03); } to { opacity: 1; transform: none; } }

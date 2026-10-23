@@ -1,0 +1,167 @@
+import type { StoryManifest } from '../engine/types';
+
+/** Story 2: a Panchatantra tale of brains over strength. */
+export const cleverRabbit: StoryManifest = {
+  id: 'clever-rabbit',
+  version: 1,
+  status: 'published',
+  emoji: '🐰',
+  backdrop: 'forest-well',
+  title: { en: 'The Clever Rabbit and the Lion', te: 'తెలివైన కుందేలు, సింహం', hi: 'चतुर खरगोश और शेर' },
+  summary: {
+    en: 'A proud lion scares the forest. A small rabbit makes a clever plan. Count, choose, and put the plan in order!',
+    te: 'గర్వం గల సింహం అడవిని భయపెడుతుంది. చిన్న కుందేలు ఒక తెలివైన ఉపాయం చేస్తుంది. లెక్కపెట్టు, ఎంచుకో, ఉపాయాన్ని వరుసలో పెట్టు!',
+    hi: 'एक घमंडी शेर जंगल को डराता है। एक छोटा खरगोश चतुर उपाय सोचता है। गिनो, चुनो और उपाय को क्रम से लगाओ!',
+  },
+  tradition: 'Panchatantra, Book 1 (Mitra-bheda): “The Lion and the Hare”',
+  provenance: 'Original retelling written for this app in 2026. The Panchatantra is a traditional, public-domain collection. No modern translation or illustration was copied. The ending is told gently for young children.',
+  ageRange: [4, 7],
+  minutes: 7,
+  objectives: ['counting', 'addition', 'sequencing', 'prediction', 'cause-effect', 'comprehension', 'vocabulary', 'values'],
+  languages: ['en', 'te', 'hi'],
+  translation: { en: 'source', te: 'draft-needs-native-review', hi: 'draft-needs-native-review' },
+  startScene: 'proud-lion',
+  scenes: [
+    {
+      id: 'proud-lion',
+      backdrop: 'forest',
+      characters: [{ id: 'lion', position: 'center', expression: 'action' }],
+      lines: [
+        { id: 'rab-1', speaker: 'narrator', text: { en: 'Deep in the forest lived a big, proud lion. Every day he chased the animals and scared them.', te: 'అడవి లోపల ఒక పెద్ద, గర్వం గల సింహం ఉండేది. ప్రతిరోజూ అది జంతువులను వెంటాడి భయపెట్టేది.', hi: 'घने जंगल में एक बड़ा और घमंडी शेर रहता था। वह हर दिन जानवरों का पीछा करके उन्हें डराता था।' } },
+        { id: 'rab-2', speaker: 'lion', expression: 'action', text: { en: 'ROAR! I am the king. I want a big meal every day!', te: 'గర్ర్! నేనే రాజును. నాకు ప్రతిరోజూ పెద్ద భోజనం కావాలి!', hi: 'दहाड़! मैं राजा हूँ। मुझे हर दिन बड़ा भोजन चाहिए!' } },
+      ],
+      next: 'meeting',
+    },
+    {
+      id: 'meeting',
+      backdrop: 'forest',
+      characters: [{ id: 'deer', position: 'left', expression: 'sad' }, { id: 'rabbit', position: 'right', expression: 'thinking' }],
+      lines: [
+        { id: 'rab-3', speaker: 'narrator', text: { en: 'The worried animals met to make a plan.', te: 'భయపడిన జంతువులు ఒక ఉపాయం ఆలోచించడానికి సభ పెట్టుకున్నాయి.', hi: 'परेशान जानवर उपाय सोचने के लिए इकट्ठा हुए।' } },
+      ],
+      activity: {
+        kind: 'arithmetic',
+        id: 'count-meeting',
+        objectives: ['addition', 'counting'],
+        op: 'add',
+        a: 3,
+        b: 2,
+        emoji: '🦌',
+        choices: [4, 5, 6],
+        prompt: { en: 'First 3 animals came to the meeting. Then 2 more came. How many animals came in all?', te: 'సభకు మొదట 3 జంతువులు వచ్చాయి, తర్వాత ఇంకో 2 వచ్చాయి. మొత్తం ఎన్ని జంతువులు వచ్చాయి?', hi: 'सभा में पहले 3 जानवर आए, फिर 2 और आए। कुल कितने जानवर आए?' },
+        hint: { en: 'Start at 3 and count on: 4, 5.', te: '3 నుంచి ముందుకు లెక్కపెట్టు: 4, 5.', hi: '3 से आगे गिनो: 4, 5।' },
+        explanation: { en: '3 and 2 more make 5. 3 + 2 = 5.', te: '3, ఇంకో 2 కలిపితే 5. 3 + 2 = 5.', hi: '3 और 2 मिलकर 5 होते हैं। 3 + 2 = 5।' },
+      },
+      next: 'rabbit-turn',
+    },
+    {
+      id: 'rabbit-turn',
+      backdrop: 'forest',
+      characters: [{ id: 'rabbit', position: 'center', expression: 'thinking' }],
+      lines: [
+        { id: 'rab-4', speaker: 'rabbit', expression: 'thinking', text: { en: 'Tomorrow it is my turn to go to the lion. But I have a clever idea!', te: 'రేపు సింహం దగ్గరకి వెళ్ళే వంతు నాది. కానీ నా దగ్గర ఒక తెలివైన ఆలోచన ఉంది!', hi: 'कल शेर के पास जाने की मेरी बारी है। लेकिन मेरे पास एक चतुर उपाय है!' } },
+        { id: 'rab-5', speaker: 'narrator', text: { en: 'The rabbit walked very slowly. He reached the lion very late.', te: 'కుందేలు చాలా నెమ్మదిగా నడిచింది. సింహం దగ్గరకి చాలా ఆలస్యంగా చేరింది.', hi: 'खरगोश बहुत धीरे-धीरे चला। वह शेर के पास बहुत देर से पहुँचा।' } },
+      ],
+      choices: [
+        { id: 'hide', emoji: '🌿', next: 'hide', text: { en: 'Run away and hide', te: 'పారిపోయి దాక్కో', hi: 'भागकर छिप जाओ' } },
+        { id: 'trick', emoji: '🦁', next: 'late', text: { en: 'Tell the lion about another lion', te: 'ఇంకో సింహం గురించి సింహానికి చెప్పు', hi: 'शेर को दूसरे शेर के बारे में बताओ' } },
+      ],
+    },
+    {
+      id: 'hide',
+      backdrop: 'forest',
+      characters: [{ id: 'rabbit', position: 'left', expression: 'thinking' }],
+      lines: [
+        { id: 'rab-6', speaker: 'rabbit', expression: 'thinking', text: { en: 'If I hide, the lion will still scare my friends. I need a better plan!', te: 'నేను దాక్కుంటే, సింహం నా స్నేహితులను ఇంకా భయపెడుతుంది. నాకు ఇంకా మంచి ఉపాయం కావాలి!', hi: 'अगर मैं छिप गया, तो शेर मेरे दोस्तों को डराता रहेगा। मुझे इससे अच्छा उपाय चाहिए!' } },
+      ],
+      next: 'late',
+    },
+    {
+      id: 'late',
+      backdrop: 'forest',
+      characters: [{ id: 'lion', position: 'left', expression: 'action' }, { id: 'rabbit', position: 'right', expression: 'idle' }],
+      lines: [
+        { id: 'rab-7', speaker: 'lion', expression: 'action', text: { en: 'Why are you so late?', te: 'ఇంత ఆలస్యం ఎందుకు?', hi: 'तुम इतनी देर से क्यों आए?' } },
+        { id: 'rab-8', speaker: 'rabbit', expression: 'speaking', text: { en: 'Another lion stopped me on the way! He says HE is the king of the forest.', te: 'దారిలో ఇంకో సింహం నన్ను ఆపింది! తానే అడవికి రాజు అని అంటోంది.', hi: 'रास्ते में एक दूसरे शेर ने मुझे रोक लिया! वह कहता है कि वही जंगल का राजा है।' } },
+        { id: 'rab-9', speaker: 'lion', expression: 'surprised', text: { en: 'Another king? Show me!', te: 'ఇంకో రాజా? నాకు చూపించు!', hi: 'दूसरा राजा? मुझे दिखाओ!' } },
+      ],
+      next: 'the-well',
+    },
+    {
+      id: 'the-well',
+      backdrop: 'forest-well',
+      characters: [{ id: 'rabbit', position: 'left', expression: 'idle' }, { id: 'lion', position: 'center', expression: 'thinking' }],
+      lines: [
+        { id: 'rab-10', speaker: 'narrator', text: { en: 'The rabbit led the lion to a deep well.', te: 'కుందేలు సింహాన్ని ఒక లోతైన బావి దగ్గరకి తీసుకెళ్లింది.', hi: 'खरगोश शेर को एक गहरे कुएँ के पास ले गया।' } },
+      ],
+      activity: {
+        kind: 'sequence',
+        id: 'plan-order',
+        objectives: ['sequencing', 'comprehension'],
+        prompt: { en: 'Help tell the rabbit’s plan. What happened first?', te: 'కుందేలు ఉపాయాన్ని వరుసలో చెప్పు. మొదట ఏం జరిగింది?', hi: 'खरगोश के उपाय को क्रम से बताओ। पहले क्या हुआ?' },
+        hint: { en: 'Think back: what did the rabbit do before he spoke to the lion?', te: 'గుర్తు చేసుకో: సింహంతో మాట్లాడే ముందు కుందేలు ఏం చేసింది?', hi: 'याद करो: शेर से बात करने से पहले खरगोश ने क्या किया?' },
+        explanation: { en: 'First the rabbit came late. Then he told about another lion. Then they walked to the well. Then the lion looked in.', te: 'మొదట కుందేలు ఆలస్యంగా వచ్చింది. తర్వాత ఇంకో సింహం గురించి చెప్పింది. తర్వాత బావి దగ్గరకి నడిచారు. చివరికి సింహం లోపలికి చూసింది.', hi: 'पहले खरगोश देर से आया। फिर उसने दूसरे शेर के बारे में बताया। फिर वे कुएँ तक चले। फिर शेर ने अंदर देखा।' },
+        events: [
+          { id: 'came-late', emoji: '🐰', text: { en: 'The rabbit came late', te: 'కుందేలు ఆలస్యంగా వచ్చింది', hi: 'खरगोश देर से आया' } },
+          { id: 'told', emoji: '🦁', text: { en: 'The rabbit told about another lion', te: 'కుందేలు ఇంకో సింహం గురించి చెప్పింది', hi: 'खरगोश ने दूसरे शेर के बारे में बताया' } },
+          { id: 'walked', emoji: '🌳', text: { en: 'They walked to the well', te: 'వాళ్ళు బావి దగ్గరకి నడిచారు', hi: 'वे कुएँ तक चले' } },
+          { id: 'looked', emoji: '💧', text: { en: 'The lion looked into the water', te: 'సింహం నీళ్లలోకి చూసింది', hi: 'शेर ने पानी में देखा' } },
+        ],
+      },
+      next: 'reflection',
+    },
+    {
+      id: 'reflection',
+      backdrop: 'forest-well',
+      characters: [{ id: 'lion', position: 'center', expression: 'surprised' }],
+      lines: [
+        { id: 'rab-11', speaker: 'narrator', text: { en: 'The lion leaned over the well and looked down into the still water.', te: 'సింహం బావి మీదకు వంగి, నిశ్చలమైన నీళ్లలోకి కిందకు చూసింది.', hi: 'शेर कुएँ पर झुका और नीचे शांत पानी में देखा।' } },
+      ],
+      activity: {
+        kind: 'question',
+        id: 'what-see',
+        objectives: ['prediction', 'cause-effect'],
+        prompt: { en: 'What will the lion see in the still water?', te: 'నిశ్చలమైన నీళ్లలో సింహానికి ఏం కనిపిస్తుంది?', hi: 'शांत पानी में शेर को क्या दिखेगा?' },
+        hint: { en: 'Still water is like a mirror. What do you see in a mirror?', te: 'నిశ్చలమైన నీరు అద్దం లాంటిది. అద్దంలో నీకు ఏం కనిపిస్తుంది?', hi: 'शांत पानी शीशे जैसा होता है। शीशे में तुम्हें क्या दिखता है?' },
+        explanation: { en: 'Still water works like a mirror, so the lion sees himself. He thinks it is another lion!', te: 'నిశ్చలమైన నీరు అద్దంలా పనిచేస్తుంది, అందుకే సింహానికి తనే కనిపిస్తుంది. అది ఇంకో సింహం అనుకుంటుంది!', hi: 'शांत पानी शीशे की तरह काम करता है, इसलिए शेर को अपना ही प्रतिबिंब दिखता है। उसे लगता है कि वह दूसरा शेर है!' },
+        options: [
+          { id: 'himself', emoji: '🦁', text: { en: 'His own reflection', te: 'తన ప్రతిబింబం', hi: 'अपना ही प्रतिबिंब' } },
+          { id: 'fish', emoji: '🐟', text: { en: 'A big fish', te: 'ఒక పెద్ద చేప', hi: 'एक बड़ी मछली' } },
+          { id: 'nothing', text: { en: 'Nothing at all', te: 'ఏమీ కనిపించదు', hi: 'कुछ भी नहीं' } },
+        ],
+        correct: ['himself'],
+      },
+      next: 'splash',
+    },
+    {
+      id: 'splash',
+      backdrop: 'forest-well',
+      characters: [{ id: 'rabbit', position: 'left', expression: 'surprised' }],
+      lines: [
+        { id: 'rab-12', speaker: 'narrator', text: { en: 'The lion roared at the lion in the water, and the echo roared back. SPLASH! He jumped in to fight it.', te: 'సింహం నీళ్లలోని సింహం మీద గర్జించింది, ప్రతిధ్వని కూడా తిరిగి గర్జించింది. దబ్! దానితో పోరాడటానికి సింహం లోపలికి దూకింది.', hi: 'शेर ने पानी वाले शेर पर दहाड़ मारी, और गूँज ने भी दहाड़ लौटाई। छपाक! वह उससे लड़ने के लिए कुएँ में कूद गया।' } },
+        { id: 'rab-13', speaker: 'narrator', text: { en: 'The well was very deep. The proud lion never came back to scare the animals again.', te: 'బావి చాలా లోతుగా ఉంది. గర్వం గల సింహం మళ్ళీ జంతువులను భయపెట్టడానికి ఎప్పుడూ రాలేదు.', hi: 'कुआँ बहुत गहरा था। घमंडी शेर फिर कभी जानवरों को डराने नहीं आया।' } },
+      ],
+      next: 'celebrate',
+    },
+    {
+      id: 'celebrate',
+      backdrop: 'meadow',
+      characters: [{ id: 'deer', position: 'left', expression: 'happy' }, { id: 'rabbit', position: 'right', expression: 'happy' }],
+      lines: [
+        { id: 'rab-14', speaker: 'rabbit', expression: 'happy', text: { en: 'We are safe now, friends!', te: 'స్నేహితులారా, ఇప్పుడు మనం సురక్షితంగా ఉన్నాం!', hi: 'दोस्तों, अब हम सुरक्षित हैं!' } },
+      ],
+      activity: {
+        kind: 'count',
+        id: 'count-friends',
+        objectives: ['counting'],
+        emoji: '🦌',
+        count: 6,
+        choices: [5, 6, 7],
+        prompt: { en: 'All the animals came out to celebrate! How many deer are dancing?', te: 'జంతువులన్నీ సంతోషంగా బయటకు వచ్చాయి! ఎన్ని జింకలు నాట్యం చేస్తున్నాయి?', hi: 'सारे जानवर खुशी मनाने बाहर आए! कितने हिरण नाच रहे हैं?' },
+        hint: { en: 'Touch each deer once as you count.', te: 'లెక్కపెడుతూ ఒక్కో జింకను ఒక్కసారే తాకు.', hi: 'गिनते समय हर हिरण को एक बार छुओ।' },
+        explanation: { en: 'There are 6 deer: 1, 2, 3, 4, 5, 6.', te: '6 జింకలు ఉన్నాయి: 1, 2, 3, 4, 5, 6.', hi: '6 हिरण हैं: 1, 2, 3, 4, 5, 6।' },
+      },
+      moral: { en: 'Being clever and calm can beat being big and strong.', te: 'పెద్దగా, బలంగా ఉండటం కంటే తెలివిగా, ప్రశాంతంగా ఉండటమే గెలుస్తుంది.', hi: 'बड़ा और ताकतवर होने से ज़्यादा, समझदार और शांत रहना काम आता है।' },
+    },
+  ],
+};

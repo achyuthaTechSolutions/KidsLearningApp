@@ -17,6 +17,7 @@ import { generateQuestion, type QuizGameType, type QuizQuestion } from './questi
 import { replayQuizWord, speakQuizQuestion } from './quizSpeech';
 import QuestionCard from './QuestionCard';
 import Illustration from '../../components/ui/Illustration';
+import { gameCatalog, gameCategories } from './catalog';
 
 const QUESTIONS_PER_GAME = 5;
 
@@ -26,7 +27,11 @@ const gameList: { type: QuizGameType; title: string; description: string; emoji:
   { type: 'count', title: 'Count the Objects', description: 'How many objects do you see?', emoji: '🔢', world: 'sun' },
   { type: 'match', title: 'Match the Word', description: 'Find the word that starts with this letter!', emoji: '🎯', world: 'pink' },
   { type: 'listen', title: 'Listen and Choose', description: 'Listen to the word and find it!', emoji: '👂', world: 'blue' },
+  { type: 'odd-one-out', title: 'Odd One Out', description: 'Which picture does not belong?', emoji: '🔍', world: 'violet' },
+  { type: 'pattern', title: 'What Comes Next?', description: 'Finish the picture pattern!', emoji: '🧠', world: 'red' },
 ];
+
+
 
 export default function LearningGames() {
   const [gameType, setGameType] = useState<QuizGameType | 'select'>('select');
@@ -79,12 +84,12 @@ export default function LearningGames() {
       setCelebrate((count) => count + 1);
       if (settings.soundEnabled) playSuccess(settings.volume * 0.3);
       if (settings.speechEnabled) {
-        window.setTimeout(() => speakQuizQuestion({ ...question, type: 'match', prompt: 'Correct! Well done!', spokenWord: undefined }, settings.speechRate, settings.selectedVoice), 500);
+        window.setTimeout(() => speakQuizQuestion({ ...question, type: 'match', prompt: `Correct! Well done!${question.explanation ? ` ${question.explanation}` : ''}`, spokenWord: undefined }, settings.speechRate, settings.selectedVoice), 500);
       }
     } else {
       if (settings.soundEnabled) playError(settings.volume * 0.3);
       if (settings.speechEnabled) {
-        window.setTimeout(() => speakQuizQuestion({ ...question, type: 'match', prompt: `Good try! The answer is ${question.correctAnswer}.`, spokenWord: undefined }, settings.speechRate, settings.selectedVoice), 500);
+        window.setTimeout(() => speakQuizQuestion({ ...question, type: 'match', prompt: `Good try! The answer is ${question.correctAnswer}.${question.explanation ? ` ${question.explanation}` : ''}`, spokenWord: undefined }, settings.speechRate, settings.selectedVoice), 500);
       }
     }
   };
@@ -117,11 +122,25 @@ export default function LearningGames() {
   if (gameType === 'select') {
     return (
       <Page>
-        <PageHero world="teal" title="Learning Games" subtitle="Pick a game. Every round has five questions." emoji="🎮" />
+        <PageHero world="teal" title="Learning Games" subtitle="Trace, build, listen, solve, and explore. Pick a game!" emoji="🎮" />
+        {gameCategories.map((category) => {
+          const games = gameCatalog.filter((game) => game.category === category.id);
+          if (games.length === 0) return null;
+          return (
+            <Box component="section" aria-labelledby={`games-${category.id}`} key={category.id} sx={{ mb: 4 }}>
+              <Typography id={`games-${category.id}`} variant="h2" sx={{ fontSize: { xs: '1.4rem', md: '1.7rem' }, mb: 2 }}>{category.title}</Typography>
+              <Grid container spacing={{ xs: 2, md: 3 }}>
+                {games.map((game, index) => (
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }} key={game.id}>
+                    <ActivityCard world={game.world} emoji={game.emoji} title={game.title} subtitle={game.description} delay={index * 50} onClick={() => navigate(game.path)} />
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
+          );
+        })}
+        <Typography variant="h2" sx={{ fontSize: { xs: '1.4rem', md: '1.7rem' }, mb: 2 }}>Quiz games · five questions each</Typography>
         <Grid container spacing={{ xs: 2, md: 3 }}>
-          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <ActivityCard world="green" emoji="🦖" title="Dino Dash" subtitle="Run, jump, and catch letters. Endless levels!" onClick={() => navigate('/dino')} />
-          </Grid>
           {gameList.map((game, index) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={game.type}>
               <ActivityCard

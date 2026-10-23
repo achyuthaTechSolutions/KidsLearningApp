@@ -85,6 +85,7 @@ export default function HomePage() {
       : 'Five fresh questions are waiting for you.';
 
   const cards: { path: string; title: string; subtitle: string; progress?: { value: number; total: number } }[] = [
+    { path: '/stories', title: 'Story Time', subtitle: 'Animal stories with maths and morals' },
     { path: '/keyboard', title: 'Explore the keyboard', subtitle: 'Tap a key, see a picture' },
     { path: '/alphabet', title: "Let's learn ABC", subtitle: 'All 26 letters', progress: { value: summary.letters, total: LETTER_TOTAL } },
     { path: '/numbers', title: 'Count the stars', subtitle: 'Numbers 0 to 20', progress: { value: summary.numbers, total: NUMBER_TOTAL } },
@@ -92,7 +93,8 @@ export default function HomePage() {
     { path: '/words', title: 'My first words', subtitle: 'Fruits, cars, colours', progress: { value: summary.words, total: WORD_TOTAL } },
     { path: '/music', title: 'Make some music', subtitle: 'Piano, drums, and more' },
     { path: '/dino', title: 'Dino Dash', subtitle: 'Run, jump, and catch letters' },
-    { path: '/games', title: 'Play a game', subtitle: 'Guess, count, and match' },
+    { path: '/balloons', title: 'Balloon Pop', subtitle: 'Pop letters, numbers, and colours' },
+    { path: '/games', title: 'Play a game', subtitle: 'Match, spell, guess, and count' },
     { path: '/achievements', title: 'My badges', subtitle: `${totalStars} of ${achievementsList.length} earned` },
   ];
 

@@ -1,6 +1,6 @@
 # Kids Learning
 
-Kids Learning is a local-first app for early letters, numbers, animals, words, music, quizzes, a daily challenge, and achievements. Progress stays on the device. The web app and the Android app use the same React project.
+Kids Learning is a local-first app for early letters, numbers, animals, words, music, Story Time (five interactive animal stories with maths and morals in English, Telugu, and Hindi; see [docs/STORIES.md](docs/STORIES.md)), Play games (letter tracing, robot coding, puzzles, rhythm, sound listening, a pretend kitchen, feelings, space, and more; see [docs/GAMES.md](docs/GAMES.md)), quizzes, a daily challenge, and achievements. Progress stays on the device. The web app and the Android app use the same React project.
 
 ## Web
 
@@ -25,7 +25,8 @@ Everything the app shows is bundled, so it looks the same on every device and wo
 
 - **Illustrations:** [Fluent Emoji](https://github.com/microsoft/fluentui-emoji), flat style, © Microsoft Corporation, MIT License. One SVG per picture lives in `src/assets/illustrations/`, with the licence notice in `src/assets/illustrations/LICENSE.txt`. They come from the `@iconify-json/fluent-emoji-flat` dev dependency.
 - **Mascot and decorations:** Pip the owl and the background shapes are inline SVG drawn for this app.
-- **Fonts:** Fredoka and Nunito, both SIL Open Font License 1.1, through `@fontsource`.
+- **Fonts:** Fredoka and Nunito, plus Noto Sans Telugu and Noto Sans Devanagari for Story Time (script subsets only), all SIL Open Font License 1.1, through `@fontsource`.
+- **Story Time scenes:** the picture-book backdrops are drawn in code. Story characters use the bundled Fluent pictures as development artwork.
 
 The app's data and screens still name each picture with an emoji character, and `src/data/illustrations.ts` maps it to the bundled SVG. If no SVG exists, the emoji itself is shown. After adding or changing an emoji anywhere in `src/`, regenerate the files:
 
@@ -139,7 +140,7 @@ Before production, the owner still has to:
 2. Finish and host `docs/PRIVACY_POLICY_DRAFT.md` at a public URL. Replace every placeholder, including the contact method. Put that URL in the store listing and in the app content section. The in-app Privacy screen describes current behavior; it is not the hosted policy.
 3. Choose the target age groups honestly. This app is built for young children and includes a parent area. If any selected group includes children, the Families policy applies, including an accurate privacy policy and no advertising identifier for a child-only app. This project does not request the advertising ID and does not ship an ads SDK.
 4. Complete the content rating questionnaire. Describe an educational app without user chat, ads, purchases, location, or user-generated content.
-5. Complete Data safety from what this version actually does: learning progress and settings stay on the device, are not sent to the developer, and are not shared. Speech and sound are on-device. Say that there are no ads. If a later build adds a network call, update the form before you ship it.
+5. Complete Data safety from what this version actually does: learning progress, settings, and any My Photo Puzzle photos a parent adds stay on the device, are not sent to the developer, and are not shared. Speech and sound are on-device. Say that there are no ads. If a later build adds a network call, update the form before you ship it.
 6. Declare that the app does not contain ads.
 7. Prepare the store listing: title, short and full description, icon, feature graphic, and phone and tablet screenshots from a real device. Do not use screenshots that show a child’s personal information.
 8. Upload `app-release.aab` to a test track. The application ID becomes fixed once an artifact is uploaded.

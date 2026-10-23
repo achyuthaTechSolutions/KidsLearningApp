@@ -47,6 +47,7 @@ export default function QuestionCard({
   const correct = answered === question.correctAnswer;
   const { text, objects } = splitCountPrompt(question);
   const shortOptions = question.options.every((option) => option.length <= 2);
+  const pictures = question.pictures;
 
   return (
     <Box sx={{ textAlign: 'center' }}>
@@ -94,6 +95,50 @@ export default function QuestionCard({
         </Box>
       )}
 
+      {question.sequence && (
+        <Box
+          role="img"
+          aria-label={`A pattern of ${question.sequence.length} pictures, then a missing one`}
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: { xs: 0.75, md: 1 },
+            p: 2,
+            mb: 2.5,
+            borderRadius: '24px',
+            bgcolor: teal.tint,
+            border: `3px dashed ${alpha(teal.main, 0.45)}`,
+          }}
+        >
+          {question.sequence.map((emoji, index) => (
+            <Box key={index} aria-hidden sx={{ fontSize: { xs: '2rem', md: '2.4rem' }, lineHeight: 1.1, animation: `kl-pop-in 360ms cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 70}ms both` }}>
+              <Illustration emoji={emoji} />
+            </Box>
+          ))}
+          <Box
+            aria-hidden
+            sx={{
+              width: { xs: 48, md: 58 },
+              height: { xs: 48, md: 58 },
+              borderRadius: '16px',
+              display: 'grid',
+              placeItems: 'center',
+              fontSize: { xs: '2rem', md: '2.4rem' },
+              lineHeight: 1,
+              fontFamily: fonts.display,
+              fontWeight: 700,
+              color: teal.text,
+              border: `3px solid ${teal.main}`,
+              bgcolor: 'background.paper',
+            }}
+          >
+            {showResult && pictures?.[question.correctAnswer] ? <Illustration emoji={pictures[question.correctAnswer]} /> : '?'}
+          </Box>
+        </Box>
+      )}
+
       {isListen && !showResult && (
         <Box sx={{ mb: 2.5 }}>
           <Button
@@ -132,7 +177,8 @@ export default function QuestionCard({
               sx={[
                 tactile(theme, w, { state, depth: 6, radius: 24 }),
                 {
-                  minHeight: shortOptions ? { xs: 88, md: 104 } : { xs: 64, md: 76 },
+                  minHeight: shortOptions ? { xs: 88, md: 104 } : pictures ? { xs: 96, md: 112 } : { xs: 64, md: 76 },
+                  flexDirection: pictures ? 'column' : 'row',
                   px: 2,
                   gap: 1,
                   fontFamily: fonts.display,
@@ -152,9 +198,12 @@ export default function QuestionCard({
                 },
               ]}
             >
-              {option}
-              {showResult && isAnswer && <CheckRounded aria-hidden sx={{ fontSize: '1.6rem' }} />}
-              {showResult && isChosen && !isAnswer && <CloseRounded aria-hidden sx={{ fontSize: '1.4rem' }} />}
+              {pictures?.[option] && <Illustration emoji={pictures[option]} size="2.4em" sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }} />}
+              <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+                {option}
+                {showResult && isAnswer && <CheckRounded aria-hidden sx={{ fontSize: '1.6rem' }} />}
+                {showResult && isChosen && !isAnswer && <CloseRounded aria-hidden sx={{ fontSize: '1.4rem' }} />}
+              </Box>
             </ButtonBase>
           );
         })}
@@ -179,6 +228,7 @@ export default function QuestionCard({
           <Mascot size={64} mood={correct ? 'cheer' : 'think'} float={false} />
           <Typography variant="h4" component="p" sx={{ color: correct ? green.text : orange.text, flex: { sm: 1 }, textAlign: { xs: 'center', sm: 'left' } }}>
             {correct ? <>Correct! <Illustration emoji="🎉" sx={{ ml: 0.5 }} /></> : `Good try! The answer is ${question.correctAnswer}.`}
+            {question.explanation && <> {question.explanation}</>}
           </Typography>
           {onNext && (
             <Button variant="contained" color={correct ? 'success' : 'primary'} endIcon={<NavigateNext />} onClick={onNext} sx={{ fontSize: '1.1rem', px: 3 }}>

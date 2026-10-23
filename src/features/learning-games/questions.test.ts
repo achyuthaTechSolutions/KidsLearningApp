@@ -6,6 +6,9 @@ import {
   buildDailyQuestions,
   generateQuestion,
   mulberry32,
+  nextInShape,
+  ODD_ONE_OUT_PROMPT,
+  PATTERN_PROMPT,
 } from './questions';
 
 describe('Listen and Choose questions', () => {
@@ -41,5 +44,41 @@ describe('Daily question selection', () => {
     expect(listen?.prompt).toBe(LISTEN_PROMPT);
     expect(listen?.prompt.toLowerCase()).not.toContain(listen?.correctAnswer.toLowerCase() ?? 'missing');
     expect(listen?.emoji).toBeUndefined();
+  });
+});
+
+describe('Odd One Out questions', () => {
+  it('has one picture per option and an explained, unique answer', () => {
+    for (let seed = 1; seed <= 60; seed += 1) {
+      const question = generateQuestion('odd-one-out', mulberry32(seed));
+      expect(question.prompt).toBe(ODD_ONE_OUT_PROMPT);
+      expect(question.options).toHaveLength(4);
+      expect(new Set(question.options).size).toBe(4);
+      expect(question.options).toContain(question.correctAnswer);
+      for (const option of question.options) expect(question.pictures?.[option]).toBeTruthy();
+      expect(question.explanation).toMatch(/^The others are /);
+    }
+  });
+});
+
+describe('What Comes Next questions', () => {
+  it('continues the repeating unit', () => {
+    expect(nextInShape([0, 1, 0, 1, 0])).toBe(1);
+    expect(nextInShape([0, 0, 1, 0, 0, 1, 0, 0])).toBe(1);
+    expect(nextInShape([0, 1, 1, 0, 1, 1, 0])).toBe(1);
+    expect(nextInShape([0, 1, 2, 0, 1, 2, 0, 1])).toBe(2);
+  });
+
+  it('offers the picture that comes next', () => {
+    for (let seed = 1; seed <= 60; seed += 1) {
+      const question = generateQuestion('pattern', mulberry32(seed));
+      expect(question.prompt).toBe(PATTERN_PROMPT);
+      expect(question.sequence?.length).toBeGreaterThanOrEqual(5);
+      expect(question.options.length).toBeGreaterThanOrEqual(3);
+      expect(new Set(question.options).size).toBe(question.options.length);
+      expect(question.options).toContain(question.correctAnswer);
+      const answerPicture = question.pictures?.[question.correctAnswer];
+      expect(question.sequence).toContain(answerPicture);
+    }
   });
 });
