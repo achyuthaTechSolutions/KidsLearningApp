@@ -1,4 +1,5 @@
 import { illustrationFor } from '../../../data/illustrations';
+import { storyAssets } from '../assets';
 import type { BackdropId, StoryManifest } from '../engine/types';
 import { errorsOf, validateStory, type ValidationContext } from '../engine/validate';
 import { characterIds } from './characters';
@@ -10,14 +11,11 @@ import { thirstyCrow } from './thirstyCrow';
 
 export const backdropIds: BackdropId[] = ['dry-field', 'forest', 'forest-well', 'river', 'tree-river', 'meadow', 'sky'];
 
-/** The app ships no recorded narration yet. Add bundled audio ids here as they arrive. */
-export const bundledAudio = new Set<string>();
-
 export const storyValidationContext: ValidationContext = {
   characters: characterIds,
   backdrops: backdropIds,
   hasPicture: (emoji) => Boolean(illustrationFor(emoji)),
-  hasAudio: (id) => bundledAudio.has(id),
+  hasAudio: (id) => storyAssets.hasAudio(id),
 };
 
 /** Every story written so far, in reading order, including drafts. */

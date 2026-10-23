@@ -15,7 +15,7 @@ export async function openStory(page: Page, storyId: string, lang: 'en' | 'te' |
 }
 
 export const caption = (page: Page) => page.getByTestId('caption');
-export const activity = (page: Page) => page.locator('section[aria-label="Activity"]');
+export const activity = (page: Page) => page.getByTestId('activity');
 
 /** Presses the story's Next button (caption, activity, or continue). */
 export async function next(page: Page, times = 1) {

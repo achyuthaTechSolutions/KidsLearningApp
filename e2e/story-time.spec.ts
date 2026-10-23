@@ -155,3 +155,35 @@ test.describe('Bar graph lesson', () => {
     expect(saved.events).toEqual([expect.objectContaining({ activityId: 'grain-graph', solved: true, clean: false })]);
   });
 });
+
+test.describe('Languages', () => {
+  test('Telugu and Hindi render in the bundled Noto fonts', async ({ page }) => {
+    for (const [lang, family, sample] of [['te', 'Noto Sans Telugu', 'కాలూ'], ['hi', 'Noto Sans Devanagari', 'कालू']] as const) {
+      await openStory(page, 'thirsty-crow', lang);
+      await expect(page.locator(`[data-testid="caption"][lang="${lang}"]`)).toBeVisible();
+      // The caption is bold, so the bold face must have loaded and be in the caption's font stack.
+      const loaded = await page.evaluate(async ([fontFamily, text]) => {
+        await document.fonts.ready;
+        const caption = document.querySelector('[data-testid="caption"]')!;
+        const style = getComputedStyle(caption);
+        const bundled = [...document.fonts].some((face) => face.family.replace(/"/g, '') === fontFamily && face.weight === style.fontWeight && face.status === 'loaded');
+        return bundled && style.fontFamily.includes(fontFamily) && document.fonts.check(`${style.fontWeight} 20px "${fontFamily}"`, text);
+      }, [family, sample]);
+      expect(loaded, `${family} loaded`).toBe(true);
+    }
+  });
+
+  test('without a Telugu voice, the story says so and keeps showing the words', async ({ page }) => {
+    // Headless Chromium has no speech voices, like a phone without a Telugu voice pack.
+    await openStory(page, 'thirsty-crow', 'te');
+    await page.evaluate(() => {
+      const settings = JSON.parse(localStorage.getItem('kids-learning-settings')!);
+      localStorage.setItem('kids-learning-settings', JSON.stringify({ ...settings, storyNarration: true }));
+    });
+    await page.reload();
+    await expect(page.getByText('ఈ పరికరంలో ఈ భాషకు గొంతు లేదు, అందుకే కథ మాటలను చూపిస్తుంది.')).toBeVisible();
+    await expect(caption(page)).toHaveText('అది ఒక వేడి వేసవి రోజు. సూర్యుడు బాగా ప్రకాశిస్తున్నాడు.');
+    await page.getByRole('button', { name: 'తర్వాత', exact: true }).click();
+    await expect(caption(page)).not.toHaveText('అది ఒక వేడి వేసవి రోజు. సూర్యుడు బాగా ప్రకాశిస్తున్నాడు.');
+  });
+});

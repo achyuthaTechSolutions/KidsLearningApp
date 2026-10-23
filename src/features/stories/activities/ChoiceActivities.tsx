@@ -6,6 +6,7 @@ import { useWorld } from '../../../components/ui/world';
 import { fonts } from '../../../theme/tokens';
 import { arithmeticAnswer, isCorrectOption, patternAnswer, patternShown } from '../engine/activities';
 import type { ArithmeticActivity, CountActivity, PatternActivity, QuestionActivity } from '../engine/types';
+import { ui } from '../content/uiText';
 import { ActivityFrame } from './ActivityFrame';
 import { useAttempt, type ActivityProps } from './useAttempt';
 import OptionButton from './OptionButton';
@@ -154,7 +155,7 @@ export function PatternView({ activity, lang, say, onSolved }: ActivityProps<Pat
   const done = state.attempt.solved;
   return (
     <ActivityFrame activity={activity} lang={lang} attempt={state.attempt} feedback={state.feedback} onHear={() => say(activity.prompt[lang])} onHint={state.hint} onDemo={state.demo} onFinish={state.finish} done={done}>
-      <Box role="img" aria-label="Pattern with a missing picture at the end" sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 1, p: 2, mb: 2, borderRadius: '20px', bgcolor: tint.tint }}>
+      <Box role="img" aria-label={ui(lang, 'patternGap')} sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 1, p: 2, mb: 2, borderRadius: '20px', bgcolor: tint.tint }}>
         {patternShown(activity).map((emoji, i) => (
           <Box key={i} aria-hidden sx={{ fontSize: { xs: '2rem', md: '2.4rem' }, lineHeight: 1 }}><Illustration emoji={emoji} /></Box>
         ))}

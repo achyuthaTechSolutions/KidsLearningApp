@@ -30,7 +30,7 @@ export function ActivityFrame({ activity, lang, prompt, attempt, feedback, onHea
   const showHint = attempt.hintShown && !done;
   const showExplanation = attempt.demoShown || done;
   return (
-    <Box component="section" aria-label="Activity" sx={{ p: { xs: 2, md: 3 }, borderRadius: '28px', bgcolor: 'background.paper', border: `3px solid ${violet.tint}` }}>
+    <Box component="section" data-testid="activity" lang={lang} aria-label={ui(lang, 'activity')} sx={{ p: { xs: 2, md: 3 }, borderRadius: '28px', bgcolor: 'background.paper', border: `3px solid ${violet.tint}` }}>
       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
         <Typography variant="h3" component="h2" lang={lang} sx={{ flex: 1, fontSize: { xs: '1.2rem', md: '1.45rem' }, lineHeight: 1.35 }}>
           {prompt ?? activity.prompt[lang]}

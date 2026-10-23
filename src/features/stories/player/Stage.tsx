@@ -2,6 +2,7 @@ import { Box } from '@mui/material';
 import type { ReactNode } from 'react';
 import Illustration from '../../../components/ui/Illustration';
 import { characters } from '../content/characters';
+import { backdropArt, characterArt } from '../assets';
 import type { BackdropId, Expression, Lang, SceneCharacter, SceneProp } from '../engine/types';
 
 /*
@@ -194,6 +195,20 @@ interface StageProps {
   children?: ReactNode;
 }
 
+/** Bundled painted art for this backdrop if there is any, otherwise the drawn one. */
+function BackdropArt({ id }: { id: BackdropId }) {
+  const url = backdropArt(id);
+  if (!url) return <Backdrop id={id} />;
+  return <Box component="img" src={url} alt="" draggable={false} sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />;
+}
+
+/** Bundled character art if there is any, otherwise the development picture. */
+function CharacterArt({ id }: { id: SceneCharacter['id'] }) {
+  const url = characterArt(id);
+  if (!url) return <Illustration emoji={characters[id].emoji} />;
+  return <Box component="img" src={url} alt="" draggable={false} sx={{ height: '1em', width: 'auto', display: 'block' }} />;
+}
+
 /** The scene: backdrop, props, and characters reacting to what is happening. */
 export function Stage({ backdrop, cast, props = [], speaker, speakerExpression, lang, sceneKey, children }: StageProps) {
   const label = cast.map((member) => characters[member.id].name[lang]).join(', ');
@@ -215,7 +230,7 @@ export function Stage({ backdrop, cast, props = [], speaker, speakerExpression, 
         bgcolor: palette.cream,
       }}
     >
-      <Box sx={{ position: 'absolute', inset: 0 }}><Backdrop id={backdrop} /></Box>
+      <Box sx={{ position: 'absolute', inset: 0 }}><BackdropArt id={backdrop} /></Box>
       {props.map((prop) => (
         <Box
           key={prop.id}
@@ -245,7 +260,7 @@ export function Stage({ backdrop, cast, props = [], speaker, speakerExpression, 
             }}
           >
             <Box sx={{ animation: expressionMotion[expression], transformOrigin: 'bottom center' }}>
-              <Illustration emoji={characters[member.id].emoji} />
+              <CharacterArt id={member.id} />
             </Box>
             {mark && (
               <Box sx={{ position: 'absolute', top: '-12%', right: '-18%', fontSize: '0.38em', animation: 'kl-pop-in 400ms both' }}>

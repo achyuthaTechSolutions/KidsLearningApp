@@ -43,7 +43,7 @@ export default function StoryLibrary() {
 
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
         <PillPicker value={lang} options={LANGUAGES.map((value) => ({ value, label: languageInfo[value].native }))} onChange={(value) => updateSettings({ storyLanguage: value as Lang })} world="violet" ariaLabel={ui(lang, 'language')} />
-        <PillPicker value={age} options={ageOptions} onChange={setAge} world="violet" ariaLabel="Age" />
+        <PillPicker value={age} options={ageOptions} onChange={setAge} world="violet" ariaLabel={ui(lang, 'age')} />
       </Box>
 
       {resumable && (

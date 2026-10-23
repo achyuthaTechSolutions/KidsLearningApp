@@ -24,6 +24,7 @@ import { scriptFont, ui } from '../content/uiText';
 import ActivityView from '../activities/ActivityView';
 import { Stage } from './Stage';
 import { useNarration } from './useNarration';
+import { narrationId } from '../assets';
 
 const languageOptions = LANGUAGES.map((lang) => ({ value: lang, label: languageInfo[lang].native }));
 
@@ -65,6 +66,7 @@ function StoryPlayer({ story }: { story: StoryManifest }) {
   const scene = currentScene(story, playback);
   const phase = phaseOf(story, playback);
   const line = phase === 'line' ? scene.lines[playback.lineIndex] : scene.lines[scene.lines.length - 1];
+  const lineAudio = line && narrationId(lang, `${story.id}/${scene.id}/${line.id}`, line.audio);
 
   const persist = useCallback((next: Playback) => {
     saveStoryProgress(savePlayback(loadStoryProgress(), next, lang, Date.now()));
@@ -99,15 +101,15 @@ function StoryPlayer({ story }: { story: StoryManifest }) {
           const current = playbackRef.current;
           if (`${current.sceneId}:${current.lineIndex}` === at) dispatch({ type: 'next-line' });
         }, 700);
-      });
+      }, lineAudio);
     } else if (phase === 'activity' && scene.activity) {
-      say(scene.activity.prompt[lang]);
+      say(scene.activity.prompt[lang], undefined, narrationId(lang, `${story.id}/${scene.id}/${scene.activity.id}.prompt`));
     } else if (phase === 'choice') {
-      say(ui(lang, 'whatNext'));
+      say(ui(lang, 'whatNext'), undefined, narrationId(lang, 'ui.whatNext'));
     } else if (phase === 'continue' && autoRead) {
       window.setTimeout(() => dispatch({ type: 'continue' }), 500);
     } else if (phase === 'end' && scene.moral) {
-      say(`${ui(lang, 'moral')}: ${scene.moral[lang]}`);
+      say(`${ui(lang, 'moral')}: ${scene.moral[lang]}`, undefined, narrationId(lang, `${story.id}/${scene.id}.moral`));
     }
   });
   // Speak again only when the position, phase, language, or reading mode changes.
@@ -203,7 +205,7 @@ function StoryPlayer({ story }: { story: StoryManifest }) {
             )}
           </Box>
           <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
-            <Button variant="outlined" onClick={() => say(line.text[lang])} aria-label={ui(lang, 'hearAgain')} disabled={!narrationOn} sx={{ minWidth: 52 }}>
+            <Button variant="outlined" onClick={() => say(line.text[lang], undefined, lineAudio)} aria-label={ui(lang, 'hearAgain')} disabled={!narrationOn} sx={{ minWidth: 52 }}>
               <VolumeUpRounded />
             </Button>
             <Button variant="contained" size="large" endIcon={<NavigateNext />} onClick={() => dispatch({ type: 'next-line' })} lang={lang} sx={{ fontSize: '1.15rem', px: 3 }}>

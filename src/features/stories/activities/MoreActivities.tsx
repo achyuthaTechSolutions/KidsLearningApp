@@ -31,7 +31,7 @@ export function NumberLineView({ activity, lang, say, onSolved }: ActivityProps<
         <Box
           role="slider"
           tabIndex={0}
-          aria-label="Number line"
+          aria-label={ui(lang, 'numberLine')}
           aria-valuemin={activity.min}
           aria-valuemax={activity.max}
           aria-valuenow={position}
@@ -160,7 +160,7 @@ export function SequenceView({ activity, lang, say, onSolved }: ActivityProps<Se
   return (
     <ActivityFrame activity={activity} lang={lang} attempt={state.attempt} feedback={state.feedback} onHear={() => say(`${activity.prompt[lang]} ${ui(lang, 'tapInOrder')}`)} onHint={state.hint} onDemo={state.demo} onFinish={state.finish} done={done}>
       <Typography lang={lang} sx={{ fontWeight: 700, mb: 1.5, color: 'text.secondary' }}>{ui(lang, 'tapInOrder')}</Typography>
-      <Box component="ol" aria-label="Story order" sx={{ listStyle: 'none', p: 0, m: 0, mb: 2, display: 'grid', gap: 1 }}>
+      <Box component="ol" aria-label={ui(lang, 'storyOrder')} sx={{ listStyle: 'none', p: 0, m: 0, mb: 2, display: 'grid', gap: 1 }}>
         {activity.events.map((event, i) => {
           const isPlaced = placed.includes(event.id);
           return (
@@ -171,7 +171,7 @@ export function SequenceView({ activity, lang, say, onSolved }: ActivityProps<Se
           );
         })}
       </Box>
-      <Box role="group" aria-label="Events to place" sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 1.5 }}>
+      <Box role="group" aria-label={ui(lang, 'eventsToPlace')} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 1.5 }}>
         {shuffled.filter((event) => !placed.includes(event.id)).map((event, index) => {
           const w = resolveWorld(rainbow[index % rainbow.length], theme.palette.mode);
           const highlight = state.attempt.demoShown && event.id === nextHint;
@@ -237,7 +237,7 @@ export function BarGraphView({ activity, lang, say, onSolved }: ActivityProps<Ba
   return (
     <ActivityFrame activity={activity} lang={lang} prompt={prompt} attempt={state.attempt} feedback={state.feedback} onHear={() => say(prompt)} onHint={state.hint} onDemo={state.demo} onFinish={state.finish} done={done}>
       {/* Bars share one plot area and one scale, so their heights always compare fairly. */}
-      <Box role="figure" aria-label={`Bar graph. ${summary}`} sx={{ mb: 2 }}>
+      <Box role="figure" aria-label={ui(lang, 'barGraph', { a: summary })} sx={{ mb: 2 }}>
         <Box sx={{ display: 'grid', gridTemplateColumns: `28px repeat(${activity.categories.length}, 1fr)`, columnGap: { xs: 0.75, sm: 1.5 } }}>
           <Box aria-hidden sx={{ position: 'relative', height: PLOT_HEIGHT }}>
             {Array.from({ length: top + 1 }, (_, i) => (

@@ -56,6 +56,13 @@ const strings = {
   noStories: { en: 'No stories for these ages yet.', te: 'ఈ వయసుకు ఇంకా కథలు లేవు.', hi: 'इस उम्र के लिए अभी कहानियाँ नहीं हैं।' },
   continueStory: { en: 'Continue your story', te: 'నీ కథ కొనసాగించు', hi: 'अपनी कहानी जारी रखो' },
   youWillLearn: { en: 'You will practise', te: 'నువ్వు సాధన చేసేవి', hi: 'तुम अभ्यास करोगे' },
+  activity: { en: 'Activity', te: 'కార్యకలాపం', hi: 'गतिविधि' },
+  age: { en: 'Age', te: 'వయసు', hi: 'उम्र' },
+  numberLine: { en: 'Number line', te: 'సంఖ్యా రేఖ', hi: 'संख्या रेखा' },
+  storyOrder: { en: 'Story order', te: 'కథ క్రమం', hi: 'कहानी का क्रम' },
+  eventsToPlace: { en: 'Pictures to put in order', te: 'వరుసలో పెట్టాల్సిన బొమ్మలు', hi: 'क्रम में लगाने वाली तस्वीरें' },
+  barGraph: { en: 'Bar graph. {a}', te: 'బార్ గ్రాఫ్. {a}', hi: 'बार ग्राफ़। {a}' },
+  patternGap: { en: 'Pattern with a missing picture at the end', te: 'చివర ఒక బొమ్మ లేని నమూనా', hi: 'पैटर्न, जिसके आख़िर में एक तस्वीर नहीं है' },
   worksOffline: { en: 'Works offline', te: 'ఇంటర్నెట్ లేకుండా పనిచేస్తుంది', hi: 'बिना इंटरनेट चलती है' },
 } satisfies Record<string, Record<Lang, string>>;
 

@@ -64,6 +64,17 @@ test.describe('Story Time accessibility', () => {
 });
 
 test.describe('Story Time motion', () => {
+  test('the parent Reduce motion setting stops animations too', async ({ page }) => {
+    await openStory(page, 'thirsty-crow');
+    await page.evaluate(() => {
+      const settings = JSON.parse(localStorage.getItem('kids-learning-settings')!);
+      localStorage.setItem('kids-learning-settings', JSON.stringify({ ...settings, reducedMotion: true }));
+    });
+    await page.reload();
+    const duration = await page.locator('[data-expression]').first().locator('div').first().evaluate((node) => getComputedStyle(node).animationDuration);
+    expect(parseFloat(duration)).toBeLessThan(0.01);
+  });
+
   test('characters do animate when reduced motion is off', async ({ page }) => {
     await openStory(page, 'thirsty-crow');
     const duration = await page.locator('[data-expression]').first().locator('div').first().evaluate((node) => getComputedStyle(node).animationDuration);
