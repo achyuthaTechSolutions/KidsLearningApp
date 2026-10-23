@@ -26,7 +26,7 @@ export function emojiKey(emoji) {
 function walk(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) return full === outDir ? [] : walk(full);
+    if (entry.isDirectory()) return full === outDir || entry.name === 'node_modules' ? [] : walk(full);
     if (!/\.(ts|tsx)$/.test(entry.name) || /\.test\.tsx?$/.test(entry.name)) return [];
     return [full];
   });
@@ -34,7 +34,11 @@ function walk(dir) {
 
 const emojiPattern = /\p{RGI_Emoji}/gv;
 const found = new Map();
-for (const file of walk(srcDir)) {
+// Lesson content shared with the phone app lives in packages/, outside src/: scan it too,
+// or its pictures would be deleted as unused.
+const packagesDir = path.join(root, 'packages');
+const sourceDirs = [srcDir, ...(fs.existsSync(packagesDir) ? [packagesDir] : [])];
+for (const file of sourceDirs.flatMap((dir) => walk(dir))) {
   const text = fs.readFileSync(file, 'utf8');
   for (const match of text.matchAll(emojiPattern)) {
     const key = emojiKey(match[0]);

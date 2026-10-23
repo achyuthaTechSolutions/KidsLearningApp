@@ -22,7 +22,8 @@ The hub groups games by category. The list lives in `src/features/learning-games
 | Pretend Play and Feelings | Little Chef | `/games/chef` | `features/little-chef` |
 | | Emotion Explorer | `/games/emotions` | `features/emotion-explorer` |
 | Science and Discovery | Space Explorer | `/games/space` | `features/space-explorer` |
-| Move and Play | Dino Dash | `/dino` | `features/dino-dash` |
+| Move and Play | Number Racer | `/games/racer` | `features/number-racer` |
+| | Dino Dash | `/dino` | `features/dino-dash` |
 
 The five quiz games (Find the Letter, Guess the Animal, Count, Match the Word, Listen and Choose, plus Odd One Out and What Comes Next) still start inside the hub.
 
@@ -58,6 +59,14 @@ Parent Settings → **Games** sets the starting level for every game. Each intro
 Stroke order and direction are shown but not enforced. Drawing uses pointer events with pointer capture on the SVG only (`touch-action: none` there), so the page still scrolls elsewhere. **Skip this letter** and **Show me** are the non-drawing ways through.
 
 **Alphabet Catcher.** Pip names a letter and the child taps it, or types it on a keyboard. Letters can stay still (the default) or fall slowly and loop back to the top, so nothing is ever missed. Choices are 3, 4, or 6 by level; rounds are 5, 10, or 15 letters. Phonics mode says the letter's sound instead of its name and never shows two letters with the same sound (C and K). A catch counts once. Falling letters pause on the Pause button or when the tab is hidden.
+
+**Number Racer.** The child's car drives up a three-lane road toward a row of gates. A sign asks a number question, and each gate carries an answer. The child steers into the lane with the right answer by tapping a lane, using the Left and Right buttons, the arrow keys (or A and D), or 1, 2, and 3.
+
+- **Questions:** Beginner asks "Drive to 4" or to count up to 5 pictures. Explorer adds and takes away within 10. Champion works within 20 and adds missing numbers ("4 + ? = 9").
+- **A wrong lane is gentle:** nothing crashes and the race never ends. The answer and why are shown, then the same question comes back with the lanes shuffled and the car slower. After two misses, the right gate glows.
+- **Timing:** gates take 8, 6.5, or 5.5 seconds to arrive, and longer under reduced motion. Pause stops the gate, and so does hiding the app.
+- **Race:** 5 or 10 gates. Stars count answers right on the first try. The car comes in four colours, drawn from above in code.
+- **Code:** `engine.ts` holds the rules (questions, gates, passing, stars) with no timing. The screen moves the gate with one animation loop.
 
 **Little Robot Adventure.** Grid levels with Forward, Turn left, and Turn right. Turns are the robot's own left and right. `engine.ts` runs a whole program without any timing and returns every step. The screen then replays those steps slowly, so the result never depends on animation. Bumping a rock or the edge names the command to fix. The plan has Undo, Clear, Reset robot, and Hint (Hint compares the plan with the stored solution). There are nine levels, three per difficulty. Champion levels add a star to collect and a command limit. Tests check that every level is solvable within its limit.
 
@@ -113,6 +122,7 @@ Badge rules count only real level ids, so a damaged or unknown id never unlocks 
 
 - Logic: `*/engine.test.ts`, `tracing.test.ts`, `rhythm.test.ts`, `sounds.test.ts`, `recipes.test.ts`, `scenarios.test.ts`, and `destinations.test.ts`.
 - Store, storage, and badges: `learning-games/gameProgress.test.ts`.
+- Browser: `e2e/number-racer.spec.ts` drives a whole race on a fake clock, plus a gentle miss with the glowing gate, and keyboard steering with Pause.
 - Screens: `learning-games/games.integration.test.tsx`. It renders every route from `App`, checks hub discovery, and plays each game's main interaction, including pointer tracing, robot runs with fake timers, tap and keyboard puzzle placement, and the rhythm copy.
 
 ## Limitations
