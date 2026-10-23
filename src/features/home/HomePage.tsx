@@ -15,6 +15,10 @@ import ActivityCard from '../../components/ui/ActivityCard';
 import { gradient, resolveWorld, tactile, useWorld } from '../../components/ui/world';
 import { fonts, worlds, type WorldKey } from '../../theme/tokens';
 import Illustration from '../../components/ui/Illustration';
+import { useLook } from '../../theme/useLook';
+import GardenHome from './looks/GardenHome';
+import BlocksHome from './looks/BlocksHome';
+import MapHome from './looks/MapHome';
 
 function greeting(now = new Date()): string {
   const hour = now.getHours();
@@ -57,7 +61,16 @@ function StatTile({ world, emoji, label, value, total }: { world: WorldKey; emoj
   );
 }
 
+/** Home for the parent's chosen look. */
 export default function HomePage() {
+  const look = useLook();
+  if (look.id === 'garden') return <GardenHome />;
+  if (look.id === 'blocks') return <BlocksHome />;
+  if (look.id === 'map') return <MapHome />;
+  return <ClassicHome />;
+}
+
+function ClassicHome() {
   const navigate = useNavigate();
   const theme = useTheme();
   const progress = useAppStore((s) => s.progress);
@@ -152,14 +165,14 @@ export default function HomePage() {
         <Box sx={{ position: 'relative', display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, alignItems: { xs: 'stretch', lg: 'center' }, gap: { xs: 2, md: 3, lg: 4 } }}>
           <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: { xs: 1.5, md: 2.5 }, flex: 1, minWidth: 0 }}>
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-              <Mascot size={150} wave label="Pip the owl waving hello" />
+              <Mascot size={150} wave label="Avi waving hello" />
             </Box>
             <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
-              <Mascot size={92} wave label="Pip the owl waving hello" />
+              <Mascot size={92} wave label="Avi waving hello" />
             </Box>
             <Box sx={{ flex: 1, minWidth: { xs: 0, sm: 220 }, maxWidth: 460, color: 'text.primary', mb: { xs: 1, md: 3 } }}>
               <SpeechBubble>
-                {greeting()}! I&apos;m Pip. What shall we learn today?
+                {greeting()}! I&apos;m Avi. What shall we learn today?
               </SpeechBubble>
             </Box>
           </Box>

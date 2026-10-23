@@ -1,7 +1,8 @@
 import { lazy, Suspense, useEffect, useMemo } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
-import { lightTheme, darkTheme } from './theme/theme';
+import { themeFor } from './theme/theme';
+import { applyLookFonts } from './theme/looks';
 import { useAppStore } from './store/useAppStore';
 import { setSpeechVolume, speechVolumeFor } from './services/speech';
 import AppLayout from './components/layout/AppLayout';
@@ -62,6 +63,11 @@ export default function App() {
   const themeMode = useAppStore((s) => s.settings.theme);
   const volume = useAppStore((s) => s.settings.volume);
   const reducedMotion = useAppStore((s) => s.settings.reducedMotion);
+  const look = useAppStore((s) => s.settings.appLook);
+
+  useEffect(() => {
+    applyLookFonts(look);
+  }, [look]);
 
   useEffect(() => {
     setSpeechVolume(speechVolumeFor(volume));
@@ -78,12 +84,9 @@ export default function App() {
   }, [reducedMotion]);
 
   const theme = useMemo(() => {
-    if (themeMode === 'dark') return darkTheme;
-    if (themeMode === 'system') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? darkTheme : lightTheme;
-    }
-    return lightTheme;
-  }, [themeMode]);
+    const dark = themeMode === 'dark' || (themeMode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    return themeFor(dark ? 'dark' : 'light', look);
+  }, [themeMode, look]);
 
   return (
     <ThemeProvider theme={theme}>

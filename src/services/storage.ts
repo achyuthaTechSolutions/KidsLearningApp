@@ -1,6 +1,8 @@
-import type { LearningProgress, AppSettings, GameDifficulty } from '../types';
+import type { LearningProgress, AppSettings, AppLook, GameDifficulty } from '../types';
 import { emptyStoryProgress, type StoryProgressData } from '../features/stories/engine/progress';
 import { LANGUAGES } from '../features/stories/engine/types';
+
+export const APP_LOOKS: readonly AppLook[] = ['classic', 'garden', 'blocks', 'map'];
 
 const PROGRESS_KEY = 'kids-learning-progress';
 const SETTINGS_KEY = 'kids-learning-settings';
@@ -72,6 +74,7 @@ export const defaultSettings: AppSettings = {
   storyNarration: true,
   storyCaptions: true,
   backgroundMusic: true,
+  appLook: 'classic',
 };
 
 const GAME_DIFFICULTIES: GameDifficulty[] = ['beginner', 'intermediate', 'advanced'];
@@ -157,6 +160,7 @@ export function loadSettings(): AppSettings {
     storyNarration: typeof stored.storyNarration === 'boolean' ? stored.storyNarration : defaultSettings.storyNarration,
     storyCaptions: typeof stored.storyCaptions === 'boolean' ? stored.storyCaptions : defaultSettings.storyCaptions,
     backgroundMusic: typeof stored.backgroundMusic === 'boolean' ? stored.backgroundMusic : defaultSettings.backgroundMusic,
+    appLook: APP_LOOKS.includes(stored.appLook as AppLook) ? (stored.appLook as AppLook) : defaultSettings.appLook,
   };
 }
 

@@ -151,7 +151,7 @@ export default function DailyChallenge() {
         >
           <Box aria-hidden sx={{ position: 'absolute', left: '50%', top: -260, width: 620, height: 440, transform: 'translateX(-50%)', borderRadius: '50%', bgcolor: gold.tint }} />
           <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center', mb: 1 }}>
-            <Mascot size={140} mood="cheer" label="Pip the owl cheering" />
+            <Mascot size={140} mood="cheer" label="Avi cheering" />
           </Box>
           <Typography variant="h2" component="p" sx={{ position: 'relative', fontSize: { xs: '1.9rem', md: '2.4rem' }, color: gold.text }}>
             Finished for today

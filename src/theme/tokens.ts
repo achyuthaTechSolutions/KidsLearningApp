@@ -78,9 +78,10 @@ export const radii = {
 // Telugu and Devanagari fall through to the bundled Noto fonts, since Fredoka and Nunito do not cover them.
 const indic = '"Noto Sans Telugu", "Noto Sans Devanagari"';
 
+// The look (see `looks.ts`) sets these variables; without one, the Classic fonts apply.
 export const fonts = {
-  display: `"Fredoka", "Nunito", ${indic}, "Segoe UI", Roboto, sans-serif`,
-  body: `"Nunito", ${indic}, "Segoe UI", Roboto, sans-serif`,
+  display: `var(--kl-font-display, "Fredoka"), "Nunito", ${indic}, "Segoe UI", Roboto, sans-serif`,
+  body: `var(--kl-font-body, "Nunito"), ${indic}, "Segoe UI", Roboto, sans-serif`,
 } as const;
 
 export const typography = {

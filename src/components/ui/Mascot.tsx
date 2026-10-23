@@ -2,6 +2,9 @@ import { Box, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import type { ReactNode } from 'react';
 import { colors, fonts, worlds } from '../../theme/tokens';
+import { useLook } from '../../theme/useLook';
+import type { AppLook } from '../../types';
+import { ElephantAvi, GardenOwl, SunnyAvi } from './AviLooks';
 
 export type MascotMood = 'happy' | 'cheer' | 'think';
 
@@ -22,8 +25,22 @@ const beak = worlds.sun.main;
 const beakDark = worlds.sun.dark;
 const ink = colors.text;
 
-/** Pip, the app's original owl guide. Drawn here so it is bundled and needs no licence. */
-export default function Mascot({ size = 120, mood = 'happy', wave = false, float = true, label }: MascotProps) {
+/** Avi, the app's guide, drawn for the parent's chosen look. Bundled, so it needs no licence. */
+export default function Mascot(props: MascotProps) {
+  const look = useLook();
+  return <AviFor look={look.id} {...props} />;
+}
+
+/** Avi as drawn in a given look, for previews such as the look picker. */
+export function AviFor({ look, ...props }: MascotProps & { look: AppLook }) {
+  if (look === 'garden') return <GardenOwl {...props} />;
+  if (look === 'blocks') return <SunnyAvi {...props} />;
+  if (look === 'map') return <ElephantAvi {...props} />;
+  return <ClassicOwl {...props} />;
+}
+
+/** The Classic look's Avi: a violet owl in a graduation cap. */
+function ClassicOwl({ size = 120, mood = 'happy', wave = false, float = true, label }: MascotProps) {
   const look = mood === 'think' ? { dx: 3, dy: -4 } : { dx: 0, dy: 1 };
   const cheer = mood === 'cheer';
   const leftWing = cheer ? 'rotate(140 24 70)' : 'rotate(14 24 70)';
@@ -108,7 +125,7 @@ interface SpeechBubbleProps {
 export function SpeechBubble({ children, tail = 'left' }: SpeechBubbleProps) {
   const theme = useTheme();
   const bg = theme.palette.background.paper;
-  const border = theme.palette.mode === 'dark' ? colors.darkOutline : colors.outline;
+  const border = theme.palette.mode === 'dark' ? colors.darkOutline : theme.palette.divider;
   return (
     <Box
       sx={{

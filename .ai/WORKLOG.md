@@ -239,3 +239,32 @@ Request: "levels like unlimited", with difficulty that rises by itself during pl
 
 - Little Robot and the other content-based activities keep fixed levels.
 - The music and speech loudness have not been checked on a real device or by ear; only the code paths are tested.
+
+## 2026-10-23: Redesign looks (Storybook Garden, Bright Blocks, Adventure Map)
+
+The owner asked to build all three redesign directions from the canvas, using "Avi" (their daughter's name) instead of Pip.
+
+**Built (branch `claude/redesign-looks`, on top of `claude/endless-levels-music` / PR #7):**
+
+- Renamed Pip to Avi everywhere (19 places).
+- A parent **Look** setting: Classic (default), Storybook Garden, Bright Blocks, Adventure Map. See `docs/LOOKS.md`.
+- Each look has its own theme, fonts (loaded on demand), Avi drawing, Home, Games list, and phone bottom menu. Bright Blocks puts the grown-ups area behind a press-and-hold lock.
+
+**Not changed:** the screens inside games, dark-mode colours, and the Story Time player (PR #8 changes it).
+
+**Tests:**
+
+- `src/theme/looks.test.tsx`: 13 tests covering the setting, themes, fonts, the picker, each Home, and each Games list.
+- `e2e/looks.spec.ts`: axe, no side scroll, and navigation in each look; the lock; switching back to Classic.
+
+**Found by axe:** the canvas leaf green behind small text was 3.4:1; "Avi's pick" now uses the darker leaf.
+
+**Checks:**
+
+- tsc passes.
+- 44 files and 323 tests pass.
+- Lint: 2 pre-existing warnings.
+- The build succeeds.
+- E2E: 53 pass, 1 skipped (the lock test on desktop, which has no bottom menu).
+
+**Not done:** no real-device or TalkBack check. The new Avi drawings are the canvas stand-ins, not final artwork.

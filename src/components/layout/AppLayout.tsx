@@ -18,6 +18,9 @@ import Mascot from '../ui/Mascot';
 import SceneBackground from '../ui/SceneBackground';
 import { useWorld } from '../ui/world';
 import { colors, fonts } from '../../theme/tokens';
+import { useLook } from '../../theme/useLook';
+import { lookBarHeight } from '../../theme/looks';
+import LookBottomBar from './LookBottomBar';
 
 const DRAWER_WIDTH = 284;
 const DRAWER_COLLAPSED = 96;
@@ -130,8 +133,10 @@ export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const dark = theme.palette.mode === 'dark';
-  const outline = dark ? colors.darkOutline : colors.outline;
+  const outline = dark ? colors.darkOutline : theme.palette.divider;
   const current = sectionFor(location.pathname);
+  const look = useLook();
+  const bottomBar = look.id === 'classic' ? BOTTOM_BAR : lookBarHeight[look.id];
 
   const handleNav = (path: string) => {
     navigate(path);
@@ -219,7 +224,7 @@ export default function AppLayout() {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100dvh', bgcolor: 'background.default' }}>
-      <SceneBackground />
+      {look.id === 'classic' && <SceneBackground />}
 
       {isMobile && (
         <Box
@@ -298,7 +303,7 @@ export default function AppLayout() {
           minHeight: '100dvh',
           overflow: 'auto',
           pt: isMobile ? 'calc(62px + env(safe-area-inset-top, 0px))' : 0,
-          pb: isMobile ? `calc(${BOTTOM_BAR + 8}px + env(safe-area-inset-bottom, 0px))` : 'env(safe-area-inset-bottom, 0px)',
+          pb: isMobile ? `calc(${bottomBar + 8}px + env(safe-area-inset-bottom, 0px))` : 'env(safe-area-inset-bottom, 0px)',
           pl: 'env(safe-area-inset-left, 0px)',
           pr: 'env(safe-area-inset-right, 0px)',
         }}
@@ -306,7 +311,11 @@ export default function AppLayout() {
         <Outlet />
       </Box>
 
-      {isMobile && (
+      {isMobile && look.id !== 'classic' && (
+        <LookBottomBar look={look.id} currentPath={current.path} onNav={handleNav} onMore={() => setMobileOpen(true)} />
+      )}
+
+      {isMobile && look.id === 'classic' && (
         <Box
           component="nav"
           aria-label="Quick links"

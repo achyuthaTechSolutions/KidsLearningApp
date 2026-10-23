@@ -13,6 +13,7 @@ import Page from '../../components/ui/Page';
 import PageHero from '../../components/ui/PageHero';
 import { useWorld } from '../../components/ui/world';
 import type { WorldKey } from '../../theme/tokens';
+import LookPicker from './LookPicker';
 import { useAppStore } from '../../store/useAppStore';
 import {
   getVoices, isChildVoiceName, isSpeechAvailable, RECOMMENDED_VOICE_LABEL, speak, VOICE_PREVIEW_TEXT,
@@ -270,6 +271,11 @@ export default function ParentSettings() {
       </Section>
 
       <Section world="pink" icon={<PaletteRounded />} title="Appearance">
+        <Typography sx={{ fontWeight: 800, mb: 1 }}>Look</Typography>
+        <LookPicker value={settings.appLook} onChange={(appLook) => updateSettings({ appLook })} />
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Try each look: it changes the colours, Avi, Home, the Games list, and the menus. Progress stays the same. Inside a game, the game keeps its own colours.
+        </Typography>
         <FormControl fullWidth sx={{ mb: 1.5 }}>
           <InputLabel id="theme-label">Theme</InputLabel>
           <Select
