@@ -54,3 +54,55 @@
 - a committed end-to-end suite;
 - checks on a real Android device and with a screen reader;
 - a React Native app (none exists).
+
+## 2026-10-23: Story Time release readiness
+
+**Baseline:**
+
+- Branch `claude/learning-games-photo-puzzle` at `95de500`, equal to the remote and clean, 1 commit ahead of `main` (`f9c2e0f`).
+- `tsc` passed; 35 files and 247 tests passed; lint had 2 pre-existing warnings; the build succeeded.
+
+**Added:**
+
+- **Browser tests**
+  - Playwright and axe: `playwright.config.ts`, `e2e/helpers.ts`, `e2e/story-time.spec.ts`, `e2e/accessibility.spec.ts`.
+  - `npm run test:e2e`. Vitest now excludes `e2e/`.
+- **Text and asset checks**
+  - `src/features/stories/content/inventory.ts`, `localization.test.ts`, `assetManifest.ts`, `assets.test.ts`, and `src/features/stories/assets.ts`.
+- **Docs**
+  - `docs/localization/` (checklist, review sheet, status);
+  - `docs/stories/ASSETS.md` and `asset-manifest.csv`;
+  - `docs/stories/BACKEND_INTEGRATION.md`;
+  - `docs/qa/ANDROID_STORY_TIME_QA.md`.
+
+**Problems found and fixed:**
+
+- axe contrast failures:
+  - the library language and age pickers, white on orange at 3.4:1;
+  - the bar-graph category buttons and bar counts, white on orange and green at about 3.4:1.
+- Five screen-reader labels were English-only in Telugu and Hindi mode. They are now localized, as drafts.
+- `vite.config.ts` gave a new lint warning after adding the import. The redundant triple-slash reference was removed.
+
+**False alarms, explained rather than hidden:**
+
+- axe flagged contrast while content was mid-fade. Scans now run under reduced motion.
+- The number check flagged the Hindi "3-3". It now understands that form.
+- My first font test checked weight 400, which the caption does not use. The test was corrected; the app did not change.
+
+**Checks (actual):**
+
+- `tsc` passes.
+- 37 files and 258 tests pass.
+- Lint: 2 pre-existing warnings.
+- The build succeeds.
+- E2E: 28 of 28 pass across both profiles.
+
+**Not done:**
+
+- native-speaker review;
+- recordings;
+- final art;
+- real-device and TalkBack testing (no SDK or device here);
+- a server.
+
+Nothing was pushed or merged.

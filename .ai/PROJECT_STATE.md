@@ -1,6 +1,6 @@
 # Project state
 
-Last updated: 2026-10-22. Branch `claude/learning-games-photo-puzzle`, restarted from `main` at `f9c2e0f` after PR #3 merged.
+Last updated: 2026-10-23 (release readiness pass). Branch `claude/learning-games-photo-puzzle`: Story Time commit `95de500`, plus local readiness commits on top. These are not pushed or merged.
 
 ## The product
 
@@ -9,7 +9,8 @@ Kids Learning is a local-first React 19, Vite 8, MUI 9, and Zustand 5 app with a
 - no backend, accounts, subscriptions, analytics, or ads;
 - all data in `localStorage`, mirrored to Capacitor Preferences on Android;
 - device speech synthesis for narration;
-- Vitest and Testing Library for tests, with no end-to-end framework committed.
+- Vitest and Testing Library for unit tests;
+- Playwright with axe (`npm run test:e2e`) for browser tests, on desktop Chrome and a Pixel 7 profile.
 
 ## Story Time (this change)
 
@@ -19,33 +20,36 @@ Kids Learning is a local-first React 19, Vite 8, MUI 9, and Zustand 5 app with a
 | Five stories: Thirsty Crow, Clever Rabbit, Lion and Mouse, Monkey and Crocodile, Cooperative Doves | Implemented; validated; every branch tested to the end; played in Chromium |
 | Activities: pebble pot, count, arithmetic, number line, equal groups, pattern, sequence, bar graph, question; branching choices | Implemented; tests pass; played in Chromium |
 | Library (`/stories`): filters, continue card, offline note; player (`/stories/:id`): captions, replay, read-to-me, resume | Implemented and browser-checked at 1280 px and 390 px |
-| English, Telugu, Hindi: text, interface, language switch, story language setting | Implemented. **Telugu and Hindi are drafts that need native-speaker review.** |
-| Narration | Device voice per language, with a text-only fallback. **No recorded narration exists yet.** |
+| English, Telugu, Hindi: text, interface, language switch, story language setting | Implemented, with automated text checks, a generated review sheet, and a checklist (`docs/localization/`). **Telugu and Hindi are drafts. No native-speaker review has taken place.** |
+| Narration | Uses a recorded file, then the device voice, then text only. The recordings are found by file name (`src/features/stories/assets.ts`), and the recording spec is in `docs/stories/ASSETS.md`. **No recorded narration exists. The recording path has never played a real file.** |
 | Bundled Noto Telugu and Devanagari fonts | Added |
-| Artwork | Development artwork: code-drawn backdrops and Fluent Emoji characters. **No final illustrations yet.** |
+| Artwork | Development artwork: code-drawn backdrops and Fluent Emoji characters. Replacement art is found by id, and a provenance check runs. The asset manifest is `docs/stories/asset-manifest.csv`. **No final illustrations yet.** |
 | Parent summary (Parent Settings → Learning summary) | Implemented |
-| Accounts, entitlements, server sync | **Not applicable:** this app has none, so nothing was invented. Local progress is complete. |
-| React Native app | **Does not exist** in this repository or in the account's repositories. The engine is DOM-free and ready to share. |
+| Accounts, entitlements, server sync | None in this app. Design only: `docs/stories/BACKEND_INTEGRATION.md`. No endpoint exists. |
+| Android device QA, TalkBack | Checklist in `docs/qa/ANDROID_STORY_TIME_QA.md`. **Not run:** there is no Android SDK or device here. |
+| React Native app | Not on `main`. The unmerged branches `cursor/mobile-app-export-8089` and `cursor/mobile-auth-onboarding-8089` hold a separate Expo app without Story Time. (An earlier entry that said none existed was wrong.) |
 
 Details: `docs/STORIES.md`. The earlier games are described in `docs/GAMES.md`.
 
-## Checks (last run, on the final code)
+## Checks (last run 2026-10-23, on the final code)
 
 | Command | Result |
 | --- | --- |
-| `npx tsc -b` | passes |
-| `npm test` | 35 files, 247 tests pass |
+| `npx tsc -b` (now also type-checks `e2e/` and `playwright.config.ts`) | passes |
+| `npm test` | 37 files, 258 tests pass |
 | `npm run lint` | 2 warnings, both pre-existing in `KeyboardExplorer.tsx` |
-| `npm run build` | succeeds; main `App` chunk 327.6 kB (365 kB before this work), story screens lazy-loaded |
-| Scratch Playwright (not committed) on `vite preview` at 1280 and 390 px | all 5 stories finish through the interface, completion recorded once each, no console errors, no horizontal overflow; story screen interactive in 0.42–0.93 s (headless Chromium in this container) |
+| `npm run build` | succeeds; main `App` chunk 327.6 kB |
+| `npm run test:e2e` (with `PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium`) | 28 pass: 14 tests × desktop and Pixel 7 profiles |
 
 ## Next actionable step
 
-Have native speakers review the Telugu and Hindi story text and interface strings in `src/features/stories/content/`. Then set `translation` to `native-reviewed` for each story they approve.
+1. A native Telugu speaker and a native Hindi speaker review the text using `docs/localization/REVIEW_CHECKLIST.md`.
+2. Run the Android device and TalkBack checklist on real phones.
 
 ## Known gaps
 
-- No recorded narration. Device voices for Telugu and Hindi are not installed on every device.
-- No final illustrations or character animation assets, such as Rive or Lottie files.
-- No end-to-end framework in the repository. Consider committing a Playwright suite based on the scratch script.
-- Not yet checked on a real Android phone or tablet, or with a screen reader.
+- No native-speaker review. No recorded narration. No final artwork.
+- Not checked on a real Android device or with a screen reader.
+- The orange and green PillPickers in Puzzle Planet and Letter Tracing probably have the same contrast issue that was fixed in Story Time. Those screens were not scanned or changed.
+- `src/services/storage.ts` depends on the stories feature (a layering issue to fix before adding sync).
+- `npm run android:bundle` calls `gradlew.bat`, so it only works on Windows.

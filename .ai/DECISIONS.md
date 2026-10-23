@@ -16,3 +16,19 @@
     - The Thirsty Crow and the Lion and the Mouse are labelled as Aesop fables widely retold in India, not as Panchatantra stories.
     - Telugu and Hindi are labelled `draft-needs-native-review`.
     - The Monkey story's trust lesson is about what a character does, not what kind of animal it is.
+
+## 2026-10-23: Story Time release readiness
+
+12. **Browser tests use Playwright with axe**, run against the production build on desktop Chrome and a Pixel 7 profile.
+    - The axe scans run with reduced motion. Entrance fades measured mid-animation gave false contrast failures.
+    - The tests are type-checked by the normal build.
+13. **Generated review artefacts are checked by tests.** The translation review sheet, the status page, and the asset manifest are written by Vitest file snapshots. A story change that is not reflected in them fails `npm test`. Regenerate them with `-u`.
+14. **Assets are found by file name, not listed in story data.**
+    - Art: `art/character.<id>` and `art/backdrop.<id>`.
+    - Narration: `narration/<lang>/<review-sheet key>`.
+
+    This keeps story logic unchanged when assets arrive. `Line.audio` stays as an explicit override and is still validated. Every bundled file needs a provenance entry, or a test fails.
+15. **Narration fallback order:** recording, then device voice, then text. A recording that fails to play falls back to the voice.
+16. **Number checks allow the Hindi "3-3" form** ("3 each"). It is idiomatic, not a mistranslation.
+17. **Screen-reader labels follow the story language.** Before this, five labels were English-only. Their Telugu and Hindi are drafts like the rest.
+18. **Correction to decision 2.** The account does have Expo (React Native) code, on the unmerged branches `cursor/mobile-app-export-8089` and `cursor/mobile-auth-onboarding-8089`. The Android app on `main` is still the Capacitor shell, and Story Time was not added to the Expo app. The backend design reuses that branch's parent-account contract shapes rather than inventing a second one.
