@@ -56,6 +56,7 @@ export const defaultProgress: LearningProgress = {
   lastActivity: null,
   gameRounds: {},
   gameLevels: {},
+  gameSkill: {},
 };
 
 export const defaultSettings: AppSettings = {
@@ -71,6 +72,7 @@ export const defaultSettings: AppSettings = {
   storyNarration: true,
   storyCaptions: true,
   storyMode: 'puzzle',
+  backgroundMusic: true,
 };
 
 const GAME_DIFFICULTIES: GameDifficulty[] = ['beginner', 'intermediate', 'advanced'];
@@ -118,6 +120,15 @@ export function cleanGameLevels(value: unknown): Record<string, string[]> {
   );
 }
 
+export function cleanGameSkill(value: unknown): Record<string, number> {
+  if (!isRecord(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value).flatMap(([id, level]) => (typeof level === 'number' && Number.isFinite(level) && level >= 1
+      ? [[id, Math.min(999, Math.floor(level))]]
+      : [])),
+  );
+}
+
 export function loadProgress(): LearningProgress {
   const stored = safeGet(PROGRESS_KEY, defaultProgress);
   const streak = stored.currentStreak;
@@ -130,6 +141,7 @@ export function loadProgress(): LearningProgress {
     currentStreak,
     gameRounds: cleanGameRounds(stored.gameRounds),
     gameLevels: cleanGameLevels(stored.gameLevels),
+    gameSkill: cleanGameSkill(stored.gameSkill),
   };
 }
 
@@ -146,6 +158,7 @@ export function loadSettings(): AppSettings {
     storyNarration: typeof stored.storyNarration === 'boolean' ? stored.storyNarration : defaultSettings.storyNarration,
     storyCaptions: typeof stored.storyCaptions === 'boolean' ? stored.storyCaptions : defaultSettings.storyCaptions,
     storyMode: stored.storyMode === 'story' || stored.storyMode === 'puzzle' ? stored.storyMode : defaultSettings.storyMode,
+    backgroundMusic: typeof stored.backgroundMusic === 'boolean' ? stored.backgroundMusic : defaultSettings.backgroundMusic,
   };
 }
 

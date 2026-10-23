@@ -153,6 +153,13 @@ export default function ParentSettings() {
             slotProps={{ input: { 'aria-label': 'Sound effects' } }}
           />
         </SettingRow>
+        <SettingRow emoji="🎵" label="Background music">
+          <Switch
+            checked={settings.backgroundMusic}
+            onChange={(e) => updateSettings({ backgroundMusic: e.target.checked })}
+            slotProps={{ input: { 'aria-label': 'Background music' } }}
+          />
+        </SettingRow>
 
         <Box sx={{ mt: 2, mb: 1, px: 1 }}>
           <Typography gutterBottom id="volume-label" sx={{ fontWeight: 800 }}>

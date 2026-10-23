@@ -19,6 +19,8 @@ import RhythmHero from '../rhythm-hero/RhythmHero';
 import SoundSafari from '../sound-safari/SoundSafari';
 import ShadowDetective from '../shadow-detective/ShadowDetective';
 import SpaceExplorer from '../space-explorer/SpaceExplorer';
+import WordBuilder from '../word-builder/WordBuilder';
+import { alphabetData } from '../../data/alphabet';
 import { strokesFor } from '../letter-tracing/strokes';
 import { sampleStroke } from '../letter-tracing/tracing';
 
@@ -62,19 +64,24 @@ describe('Game routes and hub', () => {
 });
 
 describe('Alphabet Catcher', () => {
-  it('counts a correct catch once and moves to the next letter', () => {
+  it('counts a correct catch once, levels up after 3 first tries, and finishes when the child stops', () => {
     renderGame(<AlphabetCatcher />);
+    expect(screen.getByTestId('endless-level').textContent).toContain('Level 1');
     fireEvent.click(screen.getByRole('button', { name: "Let's play!" }));
-    const prompt = screen.getAllByText(/^Catch the letter [A-Z]!$/)[0].textContent!;
-    const target = prompt.match(/letter ([A-Z])/)![1];
-    const choices = within(screen.getByRole('group', { name: 'Letters' })).getAllByRole('button');
-    expect(choices).toHaveLength(3);
-    fireEvent.click(screen.getByRole('button', { name: `Letter ${target}` }));
-    expect(screen.getByText('1 of 10', { exact: false })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: `Letter ${target}` }));
+    const target = () => screen.getAllByText(/^Catch the letter [A-Z]!$/)[0].textContent!.match(/letter ([A-Z])/)![1];
+    expect(within(screen.getByRole('group', { name: 'Letters' })).getAllByRole('button')).toHaveLength(3);
+    const first = target();
+    fireEvent.click(screen.getByRole('button', { name: `Letter ${first}` }));
+    fireEvent.click(screen.getByRole('button', { name: `Letter ${first}` }));
     expect(screen.getByLabelText('1 letters caught')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Next Letter' }));
-    expect(screen.getByText(/Letter 2 of 10/)).toBeTruthy();
+    for (let i = 0; i < 2; i += 1) {
+      fireEvent.click(screen.getByRole('button', { name: 'Next Letter' }));
+      fireEvent.click(screen.getByRole('button', { name: `Letter ${target()}` }));
+    }
+    expect(screen.getByTestId('game-level').textContent).toBe('Level 2');
+    expect(useAppStore.getState().progress.gameSkill['alphabet-catcher']).toBe(2);
+    fireEvent.click(screen.getByRole('button', { name: 'Finish' }));
+    expect(screen.getByText(/You caught 3 letters and reached Level 2! 3 on the first try\./)).toBeTruthy();
   });
 
   it('lets a keyboard user press the letter key', () => {
@@ -83,6 +90,54 @@ describe('Alphabet Catcher', () => {
     const target = screen.getAllByText(/^Catch the letter [A-Z]!$/)[0].textContent!.match(/letter ([A-Z])/)![1];
     fireEvent.keyDown(window, { key: target.toLowerCase() });
     expect(screen.getByRole('button', { name: 'Next Letter' })).toBeTruthy();
+  });
+});
+
+describe('Quiz games', () => {
+  it('are endless with their own level: 3 right answers go up, choices grow, and Finish shows the level', () => {
+    renderGame(<LearningGames />);
+    fireEvent.click(screen.getByRole('button', { name: /Match the Word/ }));
+    const answerOnce = () => {
+      const letter = /starts with the letter ([A-Z])\?/.exec(screen.getByText(/^Which word starts with the letter [A-Z]\?$/).textContent!)![1];
+      fireEvent.click(screen.getByRole('button', { name: new RegExp(`^${alphabetData[letter].word}$`) }));
+    };
+    const choices = () => screen.getAllByRole('button').filter((button) => Object.values(alphabetData).some((item) => button.textContent === item.word));
+    expect(choices()).toHaveLength(3);
+    for (let i = 0; i < 3; i += 1) {
+      answerOnce();
+      fireEvent.click(screen.getByRole('button', { name: 'Next Question' }));
+    }
+    expect(screen.getByTestId('game-level').textContent).toBe('Level 2');
+    expect(useAppStore.getState().progress.gameSkill['quiz-match']).toBe(2);
+    expect(useAppStore.getState().progress.gameSkill['quiz-count']).toBeUndefined();
+    expect(screen.getByText('Question 4')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Finish' }));
+    expect(screen.getByText('You got 3 of 3 right and reached Level 2!')).toBeTruthy();
+  });
+});
+
+describe('Word Builder', () => {
+  it('is endless: 3 words spelled with no wrong tap go up a level, and Finish shows the level reached', () => {
+    renderGame(<WordBuilder />);
+    const spellWord = () => {
+      const slots = within(screen.getByRole('list', { name: /^Spelling 0 of \d+ letters$/ })).getAllByRole('listitem');
+      const letters = slots.map((slot) => /needs (.)$/.exec(slot.getAttribute('aria-label')!)![1]);
+      for (const letter of letters) {
+        const tile = screen.getAllByRole('button', { name: `Letter ${letter}` }).find((button) => !button.hasAttribute('disabled') && button.getAttribute('aria-disabled') !== 'true')!;
+        fireEvent.click(tile);
+      }
+      return letters.length;
+    };
+    expect(spellWord()).toBe(3);
+    expect(screen.getByTestId('game-level').textContent).toBe('Level 1');
+    fireEvent.click(screen.getByRole('button', { name: 'Next Word' }));
+    spellWord();
+    fireEvent.click(screen.getByRole('button', { name: 'Next Word' }));
+    spellWord();
+    expect(screen.getByTestId('game-level').textContent).toBe('Level 2');
+    expect(useAppStore.getState().progress.gameSkill.spell).toBe(2);
+    fireEvent.click(screen.getByRole('button', { name: 'Finish' }));
+    expect(screen.getByText('You spelled 3 words and reached Level 2!')).toBeTruthy();
   });
 });
 
@@ -150,6 +205,25 @@ describe('Puzzle Planet', () => {
     fireEvent.keyDown(screen.getByRole('button', { name: 'Piece from row 2, column 2' }), { key: 'Enter' });
     fireEvent.click(screen.getByRole('gridcell', { name: 'Empty space, row 2, column 2' }));
     expect(screen.getByText('1 of 4 pieces placed')).toBeTruthy();
+  });
+
+  it('keeps dealing puzzles until Finish, and remembers the level', () => {
+    vi.useFakeTimers();
+    renderGame(<PuzzlePlanet />);
+    expect(screen.getByTestId('endless-level').textContent).toContain('Level 1');
+    fireEvent.click(screen.getByRole('button', { name: "Let's play!" }));
+    for (const [row, col] of [[1, 1], [1, 2], [2, 1], [2, 2]]) {
+      fireEvent.keyDown(screen.getByRole('button', { name: `Piece from row ${row}, column ${col}` }), { key: 'Enter' });
+      fireEvent.click(screen.getByRole('gridcell', { name: `Empty space, row ${row}, column ${col}` }));
+    }
+    act(() => { vi.advanceTimersByTime(1000); });
+    expect(screen.getByTestId('puzzle-solved')).toBeTruthy();
+    act(() => { vi.advanceTimersByTime(3000); });
+    expect(screen.getByText('0 of 4 pieces placed')).toBeTruthy();
+    expect(screen.getByTestId('game-level').textContent).toBe('Level 1');
+    fireEvent.click(screen.getByRole('button', { name: 'Finish' }));
+    expect(screen.getByText('You solved 1 puzzle and reached Level 1!')).toBeTruthy();
+    expect(useAppStore.getState().progress.gameSkill.puzzle).toBe(1);
   });
 });
 

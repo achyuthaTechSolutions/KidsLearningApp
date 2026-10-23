@@ -318,3 +318,27 @@ The other `onEnd` callers (`quizSpeech`, `useGameFeedback`) already handled an i
 
 - real speech voices, including whether page turns feel right with a real voice;
 - the Android WebView, where `speechSynthesis` may be missing (now handled by the code, but not tried on a device).
+
+## 2026-10-23: Endless adaptive levels, louder speech, background music
+
+Request: "levels like unlimited", with difficulty that rises by itself during play; speech too quiet; background music during games and activities.
+
+**Done (branch `claude/endless-levels-music`, from `claude/number-racer`):**
+
+- A shared adaptive level: 3 first-try answers in a row → up, 2 struggles in a row → down (minimum 1). The level is saved per game in `progress.gameSkill`.
+- Endless play with a Finish button, a Level chip, and a "Level up!" banner in: Number Racer, Alphabet Catcher, Balloon Pop, Memory Match, Word Builder, the 7 quizzes, Rhythm Hero, and Puzzle Planet (4 up to 25 pieces).
+- Speech volume: `speechVolumeFor(setting) = min(1, setting / 0.7)`, so the default Volume plays speech at full volume.
+- Background music: synthesised, ducks under speech, off on quiet routes and in sound-based games, with a parent switch (on by default).
+
+**Checks:**
+
+- tsc passes.
+- 43 files and 310 tests pass.
+- Lint: 2 pre-existing warnings in KeyboardExplorer.
+- The build succeeds.
+- E2E: 44 of 44 pass.
+
+**Not done:**
+
+- Little Robot and the other content-based activities keep fixed levels.
+- The music and speech loudness have not been checked on a real device or by ear; only the code paths are tested.

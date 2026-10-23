@@ -1,5 +1,5 @@
 import { alphabetData, letterOrder } from '../../data/alphabet';
-import type { GameDifficulty } from '../learning-games/difficulty';
+import { grow } from '../learning-games/adaptive';
 import { pick, shuffle, type Random } from '../learning-games/random';
 
 export type LetterCase = 'upper' | 'lower' | 'mixed';
@@ -11,14 +11,16 @@ export interface CatcherProfile {
   fallSpeed: number;
 }
 
-export const catcherProfiles: Record<GameDifficulty, CatcherProfile> = {
-  beginner: { choices: 3, fallSpeed: 0.07 },
-  intermediate: { choices: 4, fallSpeed: 0.095 },
-  advanced: { choices: 6, fallSpeed: 0.12 },
-};
-
-export const ROUND_LENGTHS = [5, 10, 15] as const;
-export const DEFAULT_ROUND_LENGTH = 10;
+/**
+ * Choices and fall speed for an endless level: 3 letters at level 1, one more every
+ * two levels up to 8; falling a little faster each level, up to a gentle limit.
+ */
+export function catcherProfile(level: number): CatcherProfile {
+  return {
+    choices: Math.min(8, 3 + Math.floor((Math.max(1, level) - 1) / 2)),
+    fallSpeed: grow(level, 0.07, 0.008, 0.16),
+  };
+}
 
 export interface CatcherChoice {
   /** The letter as shown, e.g. "b" or "B". */
@@ -45,7 +47,7 @@ function show(letter: string, letterCase: LetterCase, random: Random): string {
  * so C and K ("kuh") are never on screen together.
  */
 export function createCatcherRound(
-  difficulty: GameDifficulty,
+  level: number,
   letterCase: LetterCase,
   phonics: boolean,
   random: Random = Math.random,
@@ -57,7 +59,7 @@ export function createCatcherRound(
   const distractors = shuffle(letterOrder.filter((letter) => letter !== target && (!phonics || alphabetData[letter].phonetic !== sound)), random);
   const picked: string[] = [];
   for (const letter of distractors) {
-    if (picked.length >= catcherProfiles[difficulty].choices - 1) break;
+    if (picked.length >= catcherProfile(level).choices - 1) break;
     if (phonics && picked.some((other) => alphabetData[other].phonetic === alphabetData[letter].phonetic)) continue;
     picked.push(letter);
   }
@@ -70,37 +72,34 @@ export function catcherPrompt(round: CatcherRound, phonics: boolean): string {
   return `Catch the letter ${round.target}!`;
 }
 
+/** An endless game: letters keep coming until the child stops. */
 export interface CatcherGame {
-  difficulty: GameDifficulty;
+  /** The endless level the current letters were made for. */
+  level: number;
   letterCase: LetterCase;
   phonics: boolean;
-  length: number;
+  /** Letter number, from 1. */
   number: number;
   round: CatcherRound;
   /** True after the right letter is caught, until the next round starts. */
   caught: boolean;
+  /** Letters caught so far. */
+  caughtCount: number;
   firstTry: number;
   mistakes: number;
   roundMistakes: number;
-  finished: boolean;
 }
 
-export function createCatcherGame(
-  difficulty: GameDifficulty,
-  letterCase: LetterCase,
-  phonics: boolean,
-  length = DEFAULT_ROUND_LENGTH,
-  random: Random = Math.random,
-): CatcherGame {
+export function createCatcherGame(level: number, letterCase: LetterCase, phonics: boolean, random: Random = Math.random): CatcherGame {
   return {
-    difficulty, letterCase, phonics, length,
+    level, letterCase, phonics,
     number: 1,
-    round: createCatcherRound(difficulty, letterCase, phonics, random),
+    round: createCatcherRound(level, letterCase, phonics, random),
     caught: false,
+    caughtCount: 0,
     firstTry: 0,
     mistakes: 0,
     roundMistakes: 0,
-    finished: false,
   };
 }
 
@@ -108,27 +107,33 @@ export type CatchResult = 'correct' | 'wrong' | 'ignored';
 
 /** Checks a pick. Once caught, further taps are ignored so one catch counts once. */
 export function catchLetter(game: CatcherGame, letter: string): { game: CatcherGame; result: CatchResult } {
-  if (game.caught || game.finished) return { game, result: 'ignored' };
+  if (game.caught) return { game, result: 'ignored' };
   if (letter.toUpperCase() !== game.round.target) {
     return { game: { ...game, mistakes: game.mistakes + 1, roundMistakes: game.roundMistakes + 1 }, result: 'wrong' };
   }
-  return { game: { ...game, caught: true, firstTry: game.firstTry + (game.roundMistakes === 0 ? 1 : 0) }, result: 'correct' };
+  return {
+    game: { ...game, caught: true, caughtCount: game.caughtCount + 1, firstTry: game.firstTry + (game.roundMistakes === 0 ? 1 : 0) },
+    result: 'correct',
+  };
 }
 
-export function nextCatcherRound(game: CatcherGame, random: Random = Math.random): CatcherGame {
+/** The next letter, made for `level` (the level after the last catch). */
+export function nextCatcherRound(game: CatcherGame, level = game.level, random: Random = Math.random): CatcherGame {
   if (!game.caught) return game;
-  if (game.number >= game.length) return { ...game, finished: true };
   return {
     ...game,
+    level,
     number: game.number + 1,
-    round: createCatcherRound(game.difficulty, game.letterCase, game.phonics, random, game.round.target),
+    round: createCatcherRound(level, game.letterCase, game.phonics, random, game.round.target),
     caught: false,
     roundMistakes: 0,
   };
 }
 
+/** Stars when the child stops: first-try catches out of all catches. */
 export function catcherStars(game: CatcherGame): number {
-  const ratio = game.firstTry / game.length;
+  if (game.caughtCount === 0) return 1;
+  const ratio = game.firstTry / game.caughtCount;
   if (ratio >= 0.8) return 3;
   if (ratio >= 0.5) return 2;
   return 1;

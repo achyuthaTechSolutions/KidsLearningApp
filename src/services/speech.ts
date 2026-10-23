@@ -19,11 +19,32 @@ export {
 } from '../../packages/learning-core/src/speech/voices';
 
 let lastText = '';
+const speakingListeners = new Set<(speaking: boolean) => void>();
+
+/** Tells a listener when the voice starts and stops, such as background music that dips under it. */
+export function onSpeakingChange(listener: (speaking: boolean) => void): () => void {
+  speakingListeners.add(listener);
+  return () => speakingListeners.delete(listener);
+}
+
+function notifySpeaking(speaking: boolean) {
+  speakingListeners.forEach((listener) => listener(speaking));
+}
 let speakToken = 0;
 let speechVolume = 1;
 
 export function setSpeechVolume(volume: number): void {
   speechVolume = Number.isFinite(volume) ? Math.min(1, Math.max(0, volume)) : 1;
+}
+
+/**
+ * Speech volume for the parent's one Volume slider. Device voices are much quieter
+ * than the app's sound effects at the same number, so speech reaches full loudness at
+ * the default setting (0.7) and scales down evenly below it. 0 stays silent.
+ */
+export function speechVolumeFor(setting: number): number {
+  if (!Number.isFinite(setting) || setting <= 0) return 0;
+  return Math.min(1, setting / 0.7);
 }
 
 function getSynth(): SpeechSynthesis | null {
@@ -92,6 +113,9 @@ export function speak(
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.rate = options?.rate ?? 0.9;
   utterance.volume = options?.volume ?? speechVolume;
+  utterance.addEventListener('start', () => notifySpeaking(true));
+  utterance.addEventListener('end', () => notifySpeaking(false));
+  utterance.addEventListener('error', () => notifySpeaking(false));
 
   if (options?.onEnd) {
     // A blocked or failed utterance fires "error" instead of "end"; either way, report it once.
@@ -156,6 +180,7 @@ export function speak(
 export function cancelSpeech(): void {
   speakToken += 1;
   getSynth()?.cancel();
+  notifySpeaking(false);
 }
 
 export function repeatLast(options?: { rate?: number; voice?: string }): void {

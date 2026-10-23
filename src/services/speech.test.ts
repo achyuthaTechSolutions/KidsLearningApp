@@ -6,6 +6,7 @@ import {
   pickKidsVoice,
   pitchForVoice,
   resolveVoice,
+  speechVolumeFor,
 } from './speech';
 
 function voice(
@@ -74,5 +75,20 @@ describe('Voice selection', () => {
     expect(pitchForVoice(voice('en-us-x-iom-local'))).toBe(DEEP_VOICE_PITCH);
     expect(pitchForVoice(voice('English Child'))).toBe(GENTLE_PITCH);
     expect(DEEP_VOICE_PITCH).toBeLessThan(1.25);
+  });
+});
+
+describe('Speech volume', () => {
+  it('is full at the default Volume setting and scales evenly below it', () => {
+    expect(speechVolumeFor(0.7)).toBe(1);
+    expect(speechVolumeFor(1)).toBe(1);
+    expect(speechVolumeFor(0.35)).toBeCloseTo(0.5);
+    expect(speechVolumeFor(0.07)).toBeCloseTo(0.1);
+  });
+
+  it('stays silent at 0 and ignores bad values', () => {
+    expect(speechVolumeFor(0)).toBe(0);
+    expect(speechVolumeFor(-1)).toBe(0);
+    expect(speechVolumeFor(Number.NaN)).toBe(0);
   });
 });

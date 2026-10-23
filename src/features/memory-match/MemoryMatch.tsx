@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, ButtonBase, Grid, Typography } from '@mui/material';
+import { Box, Button, ButtonBase, Grid, Typography } from '@mui/material';
+import { NavigateNext } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
 import Page from '../../components/ui/Page';
 import PageHero from '../../components/ui/PageHero';
@@ -14,20 +15,18 @@ import { useAppStore } from '../../store/useAppStore';
 import { playConfirmation, playNote, playSuccess } from '../../services/audio';
 import { GameHeader, GameResults } from '../learning-games/GameChrome';
 import { useGameFeedback } from '../learning-games/useGameFeedback';
-import { createDeck, isPair, memoryStars, pairsForLevel, type MemoryCard, type MemoryLevel, type MemoryTheme } from './deck';
+import { difficultyOptions } from '../learning-games/difficulty';
+import { useEndlessLevel } from '../learning-games/useEndlessLevel';
+import LevelUpBanner from '../learning-games/LevelUpBanner';
+import EndlessControls from '../learning-games/EndlessControls';
+import { createDeck, isPair, memoryStars, pairsFor, type MemoryCard, type MemoryTheme } from './deck';
 
-type Status = 'menu' | 'playing' | 'done';
+type Status = 'menu' | 'playing' | 'cleared' | 'done';
 
 const themes: { theme: MemoryTheme; title: string; subtitle: string; emoji: string; world: WorldKey }[] = [
   { theme: 'animals', title: 'Animal Pairs', subtitle: 'Find two of each animal!', emoji: '🐾', world: 'orange' },
   { theme: 'fruits', title: 'Fruit and Veg Pairs', subtitle: 'Match the yummy food!', emoji: '🍓', world: 'pink' },
   { theme: 'vehicles', title: 'Vehicle Pairs', subtitle: 'Beep beep! Match the rides!', emoji: '🚗', world: 'blue' },
-];
-
-const levels: { value: MemoryLevel; label: string }[] = [
-  { value: 'easy', label: `Easy · ${pairsForLevel.easy * 2} cards` },
-  { value: 'medium', label: `Medium · ${pairsForLevel.medium * 2} cards` },
-  { value: 'hard', label: `Hard · ${pairsForLevel.hard * 2} cards` },
 ];
 
 const FLIP_BACK_MS = 1000;
@@ -37,14 +36,16 @@ export default function MemoryMatch() {
   const navigate = useNavigate();
   const violet = useWorld('violet');
   const green = useWorld('green');
-  const { say, sound } = useGameFeedback();
+  const { say, sound, settings } = useGameFeedback();
   const incrementGamesCompleted = useAppStore((s) => s.incrementGamesCompleted);
   const addAnimalDiscovered = useAppStore((s) => s.addAnimalDiscovered);
   const addWordLearned = useAppStore((s) => s.addWordLearned);
 
   const [status, setStatus] = useState<Status>('menu');
   const [deckTheme, setDeckTheme] = useState<MemoryTheme>('animals');
-  const [level, setLevel] = useState<MemoryLevel>('easy');
+  const endless = useEndlessLevel('memory', settings.gameDifficulty);
+  /** Boards cleared this game, and those cleared in few turns. */
+  const [boards, setBoards] = useState({ cleared: 0, clean: 0, pairs: 0 });
   const [deck, setDeck] = useState<MemoryCard[]>([]);
   const [open, setOpen] = useState<number[]>([]);
   const [matched, setMatched] = useState<string[]>([]);
@@ -53,19 +54,38 @@ export default function MemoryMatch() {
   const [announcement, setAnnouncement] = useState('');
   const flipBack = useRef<number | undefined>(undefined);
 
-  useEffect(() => () => window.clearTimeout(flipBack.current), []);
-
-  const pairs = pairsForLevel[level];
-
-  const start = (nextTheme: MemoryTheme) => {
+  const nextBoard = useRef<number | undefined>(undefined);
+  useEffect(() => () => {
     window.clearTimeout(flipBack.current);
+    window.clearTimeout(nextBoard.current);
+  }, []);
+
+  const pairs = deck.length / 2;
+
+  /** Deals a board for `level`. */
+  const deal = (nextTheme: MemoryTheme, level: number) => {
+    window.clearTimeout(flipBack.current);
+    window.clearTimeout(nextBoard.current);
     setDeckTheme(nextTheme);
     setDeck(createDeck(nextTheme, level));
     setOpen([]);
     setMatched([]);
     setTurns(0);
     setStatus('playing');
+  };
+
+  const start = (nextTheme: MemoryTheme) => {
+    setBoards({ cleared: 0, clean: 0, pairs: 0 });
+    deal(nextTheme, endless.begin());
     say('Find the matching pairs!');
+  };
+
+  /** The game never ends by itself: the child stops when they like. */
+  const finish = () => {
+    window.clearTimeout(nextBoard.current);
+    setStatus('done');
+    setCelebrate((count) => count + 1);
+    say(boards.cleared > 0 ? `You cleared ${boards.cleared} boards and reached level ${endless.level}!` : 'See you next time!');
   };
 
   const flip = (card: MemoryCard) => {
@@ -91,10 +111,17 @@ export default function MemoryMatch() {
         incrementGamesCompleted();
         setCelebrate((count) => count + 1);
         sound((v) => playSuccess(v * 0.3));
+        // A board cleared in few turns counts as "first try" for the endless level.
+        const clean = memoryStars(turns + 1, pairs) === 3;
+        const after = endless.record(clean);
+        setBoards((count) => ({ cleared: count.cleared + 1, clean: count.clean + (clean ? 1 : 0), pairs: count.pairs + pairs }));
+        const levelUp = after.change === 'up' ? ` Level up! Level ${after.level}!` : '';
         window.setTimeout(() => {
-          setStatus('done');
-          say('You found all the pairs! Well done!');
+          setStatus('cleared');
+          say(`You found all the pairs!${levelUp} Here comes the next board.`);
         }, 700);
+        // The next board comes by itself; the child can also tap Next board.
+        nextBoard.current = window.setTimeout(() => deal(deckTheme, after.level), 3200);
       } else {
         sound((v) => playConfirmation(v * 0.25));
         window.setTimeout(() => say(`Match! ${card.name}!`), 600);
@@ -110,8 +137,13 @@ export default function MemoryMatch() {
     return (
       <Page>
         <PageHero world="violet" title="Memory Match" subtitle="Turn over two cards. Can you find the pairs?" emoji="🃏" />
-        <Box sx={{ mb: 3 }}>
-          <PillPicker value={level} options={levels} onChange={setLevel} world="violet" ariaLabel="How many cards" />
+        <Box sx={{ mb: 3, textAlign: 'center' }}>
+          <Box data-testid="endless-level" sx={{ mb: 2, mx: 'auto', maxWidth: 520, p: 1.5, borderRadius: '20px', bgcolor: violet.tint }}>
+            <Typography sx={{ fontFamily: fonts.display, fontWeight: 700, fontSize: '1.5rem', color: violet.text }}>Level {endless.planned} · {pairsFor(endless.planned, 'animals') * 2} cards</Typography>
+            <Typography sx={{ fontWeight: 700 }}>The levels never end. Clear 3 boards in a row in few turns to get more cards!</Typography>
+          </Box>
+          <Typography variant="h4" component="h2" sx={{ mb: 1.25, fontSize: '1.15rem' }}>Start from</Typography>
+          <PillPicker value={endless.difficulty} options={difficultyOptions} onChange={endless.pickDifficulty} world="violet" ariaLabel="Game level" />
         </Box>
         <Grid container spacing={{ xs: 2, md: 3 }}>
           {themes.map((item, index) => (
@@ -125,10 +157,11 @@ export default function MemoryMatch() {
   }
 
   if (status === 'done') {
+    const ratio = boards.cleared ? boards.clean / boards.cleared : 0;
     return (
       <GameResults
-        stars={memoryStars(turns, pairs)}
-        message={`You found ${pairs} pairs in ${turns} turns!`}
+        stars={ratio >= 0.8 ? 3 : ratio >= 0.5 ? 2 : 1}
+        message={`You cleared ${boards.cleared} ${boards.cleared === 1 ? 'board' : 'boards'} and found ${boards.pairs} pairs. You reached Level ${endless.level}!`}
         celebrate={celebrate}
         onPlayAgain={() => start(deckTheme)}
         onChooseGame={() => navigate('/games')}
@@ -149,7 +182,15 @@ export default function MemoryMatch() {
         score={matched.length}
         scoreLabel={`${matched.length} pairs found`}
         progress={{ value: matched.length, total: pairs, label: `${matched.length} of ${pairs} pairs · ${turns} ${turns === 1 ? 'turn' : 'turns'}` }}
+        actions={<EndlessControls level={endless.level} world="violet" onFinish={finish} />}
       />
+
+      {status === 'cleared' && (
+        <Box data-testid="board-cleared" sx={{ mb: 2, p: 2, borderRadius: '24px', bgcolor: green.tint, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, flexWrap: 'wrap', animation: 'kl-rise-in 300ms ease-out both' }}>
+          <Typography variant="h4" component="p" sx={{ color: green.text }}>All pairs found!</Typography>
+          <Button variant="contained" color="success" endIcon={<NavigateNext />} onClick={() => deal(deckTheme, endless.level)}>Next board</Button>
+        </Box>
+      )}
 
       <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: { xs: 1.25, sm: 2 } }}>
         {deck.map((card, index) => {
@@ -216,6 +257,7 @@ export default function MemoryMatch() {
       <Box aria-live="polite" sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>
         {announcement}
       </Box>
+      <LevelUpBanner change={endless.lastChange} world="violet" />
       <Confetti fire={celebrate} />
     </Page>
   );

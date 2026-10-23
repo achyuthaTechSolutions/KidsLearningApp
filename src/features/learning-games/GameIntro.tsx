@@ -9,6 +9,7 @@ import Illustration from '../../components/ui/Illustration';
 import { useWorld } from '../../components/ui/world';
 import type { WorldKey } from '../../theme/tokens';
 import { difficultyHints, difficultyOptions, type GameDifficulty } from './difficulty';
+import { fonts } from '../../theme/tokens';
 
 interface Props {
   title: string;
@@ -25,11 +26,13 @@ interface Props {
   startDisabled?: boolean;
   /** Extra choices, such as a mode or theme picker. */
   children?: ReactNode;
+  /** Endless games: the level play will start at. It then rises and falls by itself. */
+  endlessLevel?: number;
 }
 
 /** The "how to play" screen every new Play game opens with. */
 export default function GameIntro({
-  title, subtitle, emoji, world, steps, difficulty, onDifficulty, onStart, onHear, startLabel = "Let's play!", startDisabled, children,
+  title, subtitle, emoji, world, steps, difficulty, onDifficulty, onStart, onHear, startLabel = "Let's play!", startDisabled, children, endlessLevel,
 }: Props) {
   const navigate = useNavigate();
   const w = useWorld(world);
@@ -60,9 +63,16 @@ export default function GameIntro({
 
       {difficulty && onDifficulty && (
         <Box sx={{ mb: 3, textAlign: 'center' }}>
-          <Typography variant="h4" component="h2" sx={{ mb: 1.25, fontSize: '1.15rem' }}>Level</Typography>
+          <Typography variant="h4" component="h2" sx={{ mb: 1.25, fontSize: '1.15rem' }}>{endlessLevel ? 'Start from' : 'Level'}</Typography>
           <PillPicker value={difficulty} options={difficultyOptions} onChange={onDifficulty} world={world} ariaLabel="Game level" />
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{difficultyHints[difficulty]}</Typography>
+        </Box>
+      )}
+
+      {endlessLevel !== undefined && (
+        <Box data-testid="endless-level" sx={{ mb: 2, mx: 'auto', maxWidth: 520, p: 1.5, borderRadius: '20px', bgcolor: w.tint, textAlign: 'center' }}>
+          <Typography sx={{ fontFamily: fonts.display, fontWeight: 700, fontSize: '1.5rem', color: w.text }}>Level {endlessLevel}</Typography>
+          <Typography sx={{ fontWeight: 700 }}>The levels never end. Get 3 right in a row to go up a level!</Typography>
         </Box>
       )}
 

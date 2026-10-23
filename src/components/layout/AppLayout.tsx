@@ -12,6 +12,7 @@ import {
 import { alpha } from '@mui/material/styles';
 import { MenuRounded, ChevronLeftRounded, CloseRounded } from '@mui/icons-material';
 import { startNativeApp } from '../../platform/androidApp';
+import { useBackgroundMusic } from '../../app/useBackgroundMusic';
 import { sections, sectionFor, type Section, type SectionGroup } from '../../app/sections';
 import Mascot from '../ui/Mascot';
 import SceneBackground from '../ui/SceneBackground';
@@ -121,6 +122,7 @@ function BottomItem({ section, active, onClick }: { section: Section; active: bo
 }
 
 export default function AppLayout() {
+  useBackgroundMusic();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
