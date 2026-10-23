@@ -20,6 +20,7 @@ import SoundSafari from '../sound-safari/SoundSafari';
 import ShadowDetective from '../shadow-detective/ShadowDetective';
 import SpaceExplorer from '../space-explorer/SpaceExplorer';
 import WordBuilder from '../word-builder/WordBuilder';
+import { alphabetData } from '../../data/alphabet';
 import { strokesFor } from '../letter-tracing/strokes';
 import { sampleStroke } from '../letter-tracing/tracing';
 
@@ -89,6 +90,29 @@ describe('Alphabet Catcher', () => {
     const target = screen.getAllByText(/^Catch the letter [A-Z]!$/)[0].textContent!.match(/letter ([A-Z])/)![1];
     fireEvent.keyDown(window, { key: target.toLowerCase() });
     expect(screen.getByRole('button', { name: 'Next Letter' })).toBeTruthy();
+  });
+});
+
+describe('Quiz games', () => {
+  it('are endless with their own level: 3 right answers go up, choices grow, and Finish shows the level', () => {
+    renderGame(<LearningGames />);
+    fireEvent.click(screen.getByRole('button', { name: /Match the Word/ }));
+    const answerOnce = () => {
+      const letter = /starts with the letter ([A-Z])\?/.exec(screen.getByText(/^Which word starts with the letter [A-Z]\?$/).textContent!)![1];
+      fireEvent.click(screen.getByRole('button', { name: new RegExp(`^${alphabetData[letter].word}$`) }));
+    };
+    const choices = () => screen.getAllByRole('button').filter((button) => Object.values(alphabetData).some((item) => button.textContent === item.word));
+    expect(choices()).toHaveLength(3);
+    for (let i = 0; i < 3; i += 1) {
+      answerOnce();
+      fireEvent.click(screen.getByRole('button', { name: 'Next Question' }));
+    }
+    expect(screen.getByTestId('game-level').textContent).toBe('Level 2');
+    expect(useAppStore.getState().progress.gameSkill['quiz-match']).toBe(2);
+    expect(useAppStore.getState().progress.gameSkill['quiz-count']).toBeUndefined();
+    expect(screen.getByText('Question 4')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Finish' }));
+    expect(screen.getByText('You got 3 of 3 right and reached Level 2!')).toBeTruthy();
   });
 });
 

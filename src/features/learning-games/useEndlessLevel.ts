@@ -1,7 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { bandOf, createAdaptive, recordAnswer, resumeLevel, startLevel, type Adaptive, type LevelChange } from './adaptive';
-import type { GameId } from './catalog';
 import type { GameDifficulty } from './difficulty';
 
 /**
@@ -9,7 +8,8 @@ import type { GameDifficulty } from './difficulty';
  * start: the saved level, or the start of the difficulty a grown-up picks. During play,
  * `record` moves the level up or down and saves it, so the next game carries on.
  */
-export function useEndlessLevel(gameId: GameId, defaultDifficulty: GameDifficulty) {
+/** `gameId` is a catalog id, or `quiz-<type>` for the quiz games. */
+export function useEndlessLevel(gameId: string, defaultDifficulty: GameDifficulty) {
   const saved = useAppStore((s) => s.progress.gameSkill?.[gameId]);
   const setGameSkill = useAppStore((s) => s.setGameSkill);
   const recordGameLevel = useAppStore((s) => s.recordGameLevel);
