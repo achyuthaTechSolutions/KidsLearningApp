@@ -215,3 +215,42 @@ The owner asked for a car racing game in the games section.
 This entry is on branch `claude/number-racer`, from `main` at `2824b3e`, with Number Racer only.
 
 **Not done:** no achievement badge for the racer, and no real-device check.
+
+## 2026-10-23: Robot game fixes
+
+The owner reported that some games were not working, especially the robot game.
+
+**Sweep:** a scratch Playwright run (not committed) clicked randomly through 25 screens at 3 difficulties on the production build.
+
+- 74 of 75 runs logged no page errors or console errors.
+- The one failure, Balloon Pop on advanced, hit the sweep's own 90-second limit while 4 workers shared the machine. It passes alone (1.2 minutes). It is not an app bug.
+- Random clicking is shallow, so "no crash" does not mean every game plays well.
+
+**Little Robot Adventure: fixed.**
+
+1. **Hint crashed.** A correct plan with extra steps, such as Forward ×4 on "Straight to the flag", threw `Cannot read properties of undefined (reading 'label')`. The hint then silently did nothing.
+2. **Hint was invisible.** It went only to the screen-reader status and to speech. With speech off, or no voice on the device, pressing Hint looked like nothing happened.
+3. **Hint only knew one answer.** It compared the plan with one stored solution, so a different path that works was told to "change command N".
+4. **Hint hidden on phones.** On a phone the hint and the result appeared under the bottom menu bar.
+
+**Fixes:**
+
+- `hintFor` and `shortestFinish` in `engine.ts` search for the shortest way to the flag from the longest still-workable start of the child's plan, within the command limit.
+- The hint is shown on screen, including after a bump, and the hint or result scrolls into view.
+
+**Tests:**
+
+- `engine.test.ts` has 6 new hint tests, including 225 random plans that the hints always turn into a working one.
+- `e2e/robot-adventure.spec.ts` (new) solves all 9 levels in the browser by following the hints, on desktop and the Pixel 7 profile. It also covers the old crash, the bump message, and the hint being in view on a phone.
+
+**Checks:**
+
+- tsc passes.
+- 40 files and 280 tests pass.
+- Lint: 2 pre-existing warnings.
+- The build succeeds.
+- E2E: 38 of 38 pass.
+
+**Not found by automation:** problems the owner may have seen in other games. Ask which ones.
+
+**Also noted:** the app has no error boundary, so a render crash in any game would blank the whole app.

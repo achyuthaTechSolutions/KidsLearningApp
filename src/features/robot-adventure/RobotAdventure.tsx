@@ -21,7 +21,7 @@ import { useGameFeedback } from '../learning-games/useGameFeedback';
 import { prefersReducedMotion } from '../learning-games/motion';
 import type { GameDifficulty } from '../learning-games/difficulty';
 import {
-  levelsFor, outcomeMessage, robotLevels, runProgram, sameCell,
+  commandLimit, hintFor, levelsFor, outcomeMessage, robotLevels, runProgram, sameCell,
   type Command, type Direction, type RobotLevel, type RobotState, type RunOutcome,
 } from './engine';
 
@@ -31,7 +31,6 @@ const commandInfo: Record<Command, { label: string; short: string; Icon: typeof 
   right: { label: 'Turn right', short: 'Right', Icon: TurnRightRounded },
 };
 const rotation: Record<Direction, number> = { up: 0, right: 90, down: 180, left: 270 };
-const MAX_PROGRAM = 16;
 
 export default function RobotAdventure() {
   const theme = useTheme();
@@ -55,15 +54,21 @@ export default function RobotAdventure() {
   const [outcome, setOutcome] = useState<RunOutcome | null>(null);
   const [failedAt, setFailedAt] = useState<number | undefined>(undefined);
   const [status, setStatus] = useState('');
+  const [hintText, setHintText] = useState<string | null>(null);
   const [celebrate, setCelebrate] = useState(0);
   const timers = useRef<number[]>([]);
   const runningRef = useRef(false);
+  const feedbackRef = useRef<HTMLDivElement>(null);
 
   const stopTimers = () => {
     timers.current.forEach((id) => window.clearTimeout(id));
     timers.current = [];
   };
   useEffect(() => () => stopTimers(), []);
+  // On a phone the hint and result appear below the fold, under the bottom menu. Bring them into view.
+  useEffect(() => {
+    if (hintText || outcome) feedbackRef.current?.scrollIntoView?.({ block: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
+  }, [hintText, outcome, reduced]);
 
   const resetRobot = (target: RobotLevel = level) => {
     stopTimers();
@@ -74,6 +79,7 @@ export default function RobotAdventure() {
     setActiveCommand(null);
     setOutcome(null);
     setFailedAt(undefined);
+    setHintText(null);
   };
 
   const openLevel = (target: RobotLevel) => {
@@ -86,8 +92,9 @@ export default function RobotAdventure() {
   };
 
   const add = (command: Command) => {
-    if (runningRef.current || program.length >= (level.maxCommands ?? MAX_PROGRAM)) return;
+    if (runningRef.current || program.length >= commandLimit(level)) return;
     if (outcome) resetRobot();
+    setHintText(null);
     sound((v) => playNote(command === 'forward' ? 660 : 520, 0.08, v * 0.2, 'triangle'));
     setProgram((current) => [...current, command]);
     setStatus(`${commandInfo[command].label} added. ${program.length + 1} commands.`);
@@ -143,13 +150,13 @@ export default function RobotAdventure() {
 
   const hint = () => {
     if (runningRef.current) return;
-    const correctPrefix = program.findIndex((command, i) => command !== level.solution[i]);
-    const next = level.solution[correctPrefix === -1 ? program.length : correctPrefix];
-    const message = correctPrefix !== -1
-      ? `Try changing command ${correctPrefix + 1} to ${commandInfo[level.solution[correctPrefix]].label.toLowerCase()}.`
-      : next
-        ? `Next, try ${commandInfo[next].label.toLowerCase()}.`
-        : 'Your program looks ready. Press Go!';
+    const advice = hintFor(level, program);
+    const message = advice.kind === 'ready'
+      ? 'Your plan works. Press Go!'
+      : advice.kind === 'next'
+        ? `Next, try ${commandInfo[advice.command].label.toLowerCase()}.`
+        : `Try changing command ${advice.index + 1} to ${commandInfo[advice.command].label.toLowerCase()}.`;
+    setHintText(message);
     setStatus(message);
     say(message);
   };
@@ -198,7 +205,7 @@ export default function RobotAdventure() {
     );
   }
 
-  const limit = level.maxCommands ?? MAX_PROGRAM;
+  const limit = commandLimit(level);
   const success = outcome === 'goal';
   const bumped = outcome === 'rock' || outcome === 'edge';
   const cellSize = `min(${Math.floor(88 / level.width)}vw, ${Math.floor(400 / level.width)}px)`;
@@ -334,6 +341,14 @@ export default function RobotAdventure() {
             <Button variant="text" startIcon={<LightbulbRounded />} onClick={hint} disabled={running}>Hint</Button>
           </Box>
 
+          <Box ref={feedbackRef} sx={{ scrollMarginBottom: '112px' }}>
+          {hintText && (
+            <Box data-testid="robot-hint" sx={{ mt: 2, p: 2, borderRadius: '20px', bgcolor: teal.tint, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <LightbulbRounded sx={{ color: teal.text }} aria-hidden />
+              <Typography sx={{ fontWeight: 900, color: teal.text }}>{hintText}</Typography>
+            </Box>
+          )}
+
           {outcome && (
             <Box sx={{ mt: 2, p: 2, borderRadius: '20px', bgcolor: success ? green.tint : orange.tint, display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', animation: 'kl-rise-in 300ms ease-out both' }}>
               <Typography sx={{ fontWeight: 900, color: success ? green.text : orange.text, flex: 1, minWidth: 200 }}>
@@ -347,6 +362,7 @@ export default function RobotAdventure() {
               )}
             </Box>
           )}
+          </Box>
         </Box>
       </Box>
       <ScreenReaderStatus message={status} />
