@@ -1,4 +1,4 @@
-import type { GameDifficulty } from '../learning-games/difficulty';
+import { grow } from '../learning-games/adaptive';
 import { pick, type Random } from '../learning-games/random';
 
 export type Pad = 'drum' | 'clap' | 'bell';
@@ -20,16 +20,27 @@ export interface RhythmProfile {
   tolerance: { ratio: number; minMs: number };
 }
 
-export const rhythmProfiles: Record<GameDifficulty, RhythmProfile> = {
-  beginner: { minBeats: 2, maxBeats: 3, pads: ['drum'], gaps: [1], beatMs: 700, tolerance: { ratio: 0.6, minMs: 320 } },
-  intermediate: { minBeats: 4, maxBeats: 6, pads: ['drum', 'clap'], gaps: [1, 1, 2], beatMs: 600, tolerance: { ratio: 0.45, minMs: 240 } },
-  advanced: { minBeats: 5, maxBeats: 8, pads: ['drum', 'clap', 'bell'], gaps: [0.5, 1, 1, 2], beatMs: 520, tolerance: { ratio: 0.38, minMs: 190 } },
-};
+/**
+ * A rhythm for an endless level. Rhythms start with 2–3 drum beats and grow by a beat
+ * every two levels (up to 7–9). A second sound comes in at level 4 and a third at
+ * level 7; half-beat gaps from level 7. The beat quickens and the timing window
+ * narrows a little each level, both with gentle limits.
+ */
+export function rhythmProfile(level: number): RhythmProfile {
+  const at = Math.max(1, Math.floor(level));
+  const minBeats = Math.min(7, 2 + Math.floor((at - 1) / 2));
+  return {
+    minBeats,
+    maxBeats: Math.min(9, minBeats + 1 + Math.floor((at - 1) / 6)),
+    pads: at <= 3 ? ['drum'] : at <= 6 ? ['drum', 'clap'] : ['drum', 'clap', 'bell'],
+    gaps: at <= 3 ? [1] : at <= 6 ? [1, 1, 2] : at <= 9 ? [0.5, 1, 1, 2] : [0.5, 0.5, 1, 2],
+    beatMs: grow(at, 720, -20, 460),
+    tolerance: { ratio: grow(at, 0.6, -0.025, 0.32), minMs: grow(at, 320, -15, 170) },
+  };
+}
 
-export const PATTERNS_PER_ROUND = 5;
-
-export function generateRhythm(difficulty: GameDifficulty, random: Random = Math.random): Beat[] {
-  const profile = rhythmProfiles[difficulty];
+export function generateRhythm(level: number, random: Random = Math.random): Beat[] {
+  const profile = rhythmProfile(level);
   const count = profile.minBeats + Math.floor(random() * (profile.maxBeats - profile.minBeats + 1));
   const beats: Beat[] = [];
   let at = 0;

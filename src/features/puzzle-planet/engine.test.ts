@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { illustrationFor } from '../../data/illustrations';
 import { mulberry32 } from '../learning-games/questions';
-import { createPuzzle, gridFor, isSolved, piecePosition, placePiece, puzzlePictures, undoPiece, type PuzzleSize } from './engine';
+import { createPuzzle, gridFor, isSolved, piecePosition, piecesFor, placePiece, puzzleFirstTry, puzzlePictures, undoPiece, type PuzzleSize } from './engine';
 
 const picture = puzzlePictures.animals[0];
 
@@ -15,7 +15,7 @@ describe('Puzzle Planet pictures', () => {
 
 describe('Puzzle Planet board', () => {
   it('makes one piece per slot, never already solved', () => {
-    for (const size of [4, 6, 12] as PuzzleSize[]) {
+    for (const size of [4, 6, 9, 12, 16, 20, 25] as PuzzleSize[]) {
       for (let seed = 1; seed <= 20; seed += 1) {
         const state = createPuzzle(picture, size, mulberry32(seed));
         expect(state.tray.slice().sort((a, b) => a - b)).toEqual(Array.from({ length: size }, (_, i) => i));
@@ -53,5 +53,16 @@ describe('Puzzle Planet board', () => {
     expect(piecePosition(11, cols, rows)).toEqual({ x: 100, y: 100 });
     expect(piecePosition(5, cols, rows).x).toBeCloseTo(33.33, 1);
     expect(piecePosition(5, cols, rows).y).toBe(50);
+  });
+
+  it('grows the board every two levels, from 4 up to 25 pieces', () => {
+    expect([1, 2, 3, 4, 5, 7, 9, 11, 13, 999].map(piecesFor)).toEqual([4, 4, 6, 6, 9, 12, 16, 20, 25, 25]);
+    expect(piecesFor(0)).toBe(4);
+  });
+
+  it('counts a puzzle with at most one wrong try as first try', () => {
+    const state = createPuzzle(picture, 4, mulberry32(2));
+    expect(puzzleFirstTry({ ...state, mistakes: 1 })).toBe(true);
+    expect(puzzleFirstTry({ ...state, mistakes: 2 })).toBe(false);
   });
 });

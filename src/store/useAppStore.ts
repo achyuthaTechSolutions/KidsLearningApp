@@ -23,6 +23,8 @@ interface AppState {
   incrementMusicActivities: () => void;
   /** Counts one finished round of a Play game, and remembers `levelId` once if given. */
   completeGameRound: (gameId: string, levelId?: string) => void;
+  /** Saves a game's endless level. */
+  setGameSkill: (gameId: string, level: number) => void;
   /** Remembers a unique level, letter or place for a game without counting a round. */
   recordGameLevel: (gameId: string, levelId: string) => void;
   updateSettings: (updates: Partial<AppSettings>) => void;
@@ -156,6 +158,15 @@ export const useAppStore = create<AppState>((set, get) => ({
       return { progress: newProgress };
     });
     get().checkAchievements();
+  },
+
+  setGameSkill: (gameId, level) => {
+    set((state) => {
+      if (state.progress.gameSkill?.[gameId] === level) return state;
+      const newProgress = { ...state.progress, gameSkill: { ...state.progress.gameSkill, [gameId]: level } };
+      saveProgress(newProgress);
+      return { progress: newProgress };
+    });
   },
 
   recordGameLevel: (gameId, levelId) => {

@@ -10,6 +10,16 @@ function getContext(): AudioContext {
   return audioCtx;
 }
 
+/** The shared audio context, or null where Web Audio is missing. Background music plays through it too. */
+export function getAudioContext(): AudioContext | null {
+  if (!isAudioAvailable()) return null;
+  try {
+    return getContext();
+  } catch {
+    return null;
+  }
+}
+
 export function suspendAudio(): void {
   if (audioCtx && audioCtx.state === 'running') {
     void audioCtx.suspend();

@@ -48,6 +48,42 @@ Parent Settings → **Games** sets the starting level for every game. Each intro
 | `intermediate` | Explorer | 3 or 4 choices, short sequences, more puzzle pieces |
 | `advanced` | Champion | 4 to 6 choices, longer sequences, command limits, two shadows at once |
 
+## Endless levels
+
+Most games no longer stop after a fixed round. They keep going, and the child taps **Finish** when they want to stop. The level adapts while they play (`adaptive.ts`, `useEndlessLevel.ts`):
+
+- 3 first-try answers in a row → up one level, with a "Level up!" banner and a spoken cheer.
+- 2 struggles in a row → down one level, never below 1. This happens quietly, with no banner.
+- The parent's Games setting picks the starting level the first time: Beginner 1, Explorer 4, Champion 7. After that, each game resumes at the child's saved level (`progress.gameSkill[gameId]`; quizzes use `quiz-<type>`). On the intro screen, "Start from" can still reset it.
+- Level-ups are also recorded as `gameLevels[gameId] = ['level-N', …]` for achievements.
+
+| Game | What grows with the level |
+| --- | --- |
+| Number Racer | Find and count, then add and subtract with bigger numbers, then missing numbers; gates come faster (8 s down to 3.5 s) |
+| Alphabet Catcher | 3 up to 8 falling letters, falling faster |
+| Balloon Pop | More wrong balloons and more on screen, faster, numbers up to 20 |
+| Memory Match | 3 up to 8 pairs (a board in few turns counts as first try) |
+| Word Builder | Longer words, up to 6 letters, then decoy letters |
+| The 7 quizzes | More choices, bigger counts, longer patterns |
+| Rhythm Hero | Longer and faster patterns |
+| Puzzle Planet | 4, 6, 9, 12, 16, 20, then 25 pieces (a bigger board every two levels); the picture helper is off by default from level 7; a puzzle with at most one wrong try counts as first try |
+| Dino Dash | Already endless: speed rises with points |
+
+These still have fixed content, because they are built from hand-made lists, not generators: Little Robot (9 levels), Shadow Detective, Sound Safari, Little Chef, Emotion Explorer, Space Explorer, Letter Tracing, My Photo Puzzle (the parent picks the pieces), and the Daily Challenge.
+
+## Background music
+
+Games, activities, and stories play quiet background music (`services/music.ts`, `musicPatterns.ts`, `app/useBackgroundMusic.ts`):
+
+- It is synthesised with Web Audio from short note patterns. There are no audio files.
+- There are two tracks: **play** for games and activities, and a slower **calm** track inside a story.
+- It is off on Home, Settings, Privacy, and Achievements, and in games that use sound themselves (Music, Rhythm Hero, Sound Safari).
+- It sits at 16% of the parent's Volume and dips to 30% of that while the voice speaks.
+- It stops when the app is hidden, and starts after the first tap or key press, as browsers require.
+- Parent Settings → **Background music** turns it off (on by default).
+
+Speech is also louder: the Volume slider's default (0.7) now maps to full speech volume (`speechVolumeFor`). Per the child-friendly voice rule, there is no new speech control.
+
 ## The games
 
 **Letter Tracing.** Uppercase, lowercase, or both, in alphabet order (skipping letters already traced) or as a surprise. The round is five letters. Each letter has hand-made stroke guides in `strokes.ts`. Numbered green dots and arrows show where each stroke starts, and **Show me** animates the strokes. Scoring is coverage, not handwriting recognition (`tracing.ts`):

@@ -17,9 +17,11 @@ import GameIntro from '../learning-games/GameIntro';
 import ScreenReaderStatus from '../learning-games/ScreenReaderStatus';
 import { useGameFeedback } from '../learning-games/useGameFeedback';
 import { isEditableTarget, prefersReducedMotion } from '../learning-games/motion';
-import type { GameDifficulty } from '../learning-games/difficulty';
+import LevelUpBanner from '../learning-games/LevelUpBanner';
+import EndlessControls from '../learning-games/EndlessControls';
+import { useEndlessLevel } from '../learning-games/useEndlessLevel';
 import {
-  CAR_LINE, DEFAULT_RACE_LENGTH, LANES, RACE_LENGTHS, createRace, explanation, gateY, passGate, questionSpoken, questionText, raceStars, steer,
+  CAR_LINE, LANES, createRace, explanation, gateY, passGate, questionSpoken, questionText, raceStars, steer,
   type Race,
 } from './engine';
 
@@ -30,7 +32,6 @@ const carColors = [
   { value: 'green' as const, label: 'Green car', body: worlds.green.main, dark: worlds.green.dark },
 ];
 type CarColor = (typeof carColors)[number]['value'];
-const lengthOptions = RACE_LENGTHS.map((value) => ({ value: String(value), label: `${value} gates` }));
 
 /** The car seen from above, so it drives up the road. */
 function Car({ color, size = 64 }: { color: CarColor; size?: number }) {
@@ -62,8 +63,7 @@ export default function NumberRacer() {
   const reduced = prefersReducedMotion(settings.reducedMotion);
 
   const [phase, setPhase] = useState<'intro' | 'play' | 'done'>('intro');
-  const [difficulty, setDifficulty] = useState<GameDifficulty>(settings.gameDifficulty);
-  const [length, setLength] = useState(String(DEFAULT_RACE_LENGTH));
+  const endless = useEndlessLevel('racer', settings.gameDifficulty);
   const [color, setColor] = useState<CarColor>('red');
   const [race, setRace] = useState<Race | null>(null);
   const [lane, setLane] = useState(1);
@@ -80,7 +80,6 @@ export default function NumberRacer() {
   const [celebrate, setCelebrate] = useState(0);
   const raceRef = useRef<Race | null>(null);
   const laneRef = useRef(1);
-  const finishedRef = useRef(false);
   const timer = useRef<number | undefined>(undefined);
   useEffect(() => () => window.clearTimeout(timer.current), []);
   // On a phone the road can start below the fold, with the car under the bottom menu.
@@ -102,8 +101,7 @@ export default function NumberRacer() {
 
   const start = () => {
     window.clearTimeout(timer.current);
-    const next = createRace(difficulty, Number(length));
-    finishedRef.current = false;
+    const next = createRace(endless.begin());
     update(next);
     laneRef.current = 1;
     setLane(1);
@@ -127,12 +125,16 @@ export default function NumberRacer() {
   const arrive = () => {
     const current = raceRef.current;
     if (!current) return;
-    const { race: next, result } = passGate(current, laneRef.current);
+    // A right answer counts toward the endless level first, so the next gate is made for the new level.
+    const right = laneRef.current === current.gate.correctLane;
+    const after = right ? endless.record(current.misses === 0) : null;
+    const { race: next, result } = passGate(current, laneRef.current, after?.level ?? current.level);
     const why = explanation(current.gate.question);
     const text = result === 'right' ? `Zoom! ${why}` : `Oops! The answer is ${current.gate.question.answer}. ${why} Try again!`;
     setFeedback({ result, lane: laneRef.current, correctLane: current.gate.correctLane, text });
-    setStatus(text);
-    say(text);
+    const levelUp = after?.change === 'up' ? ` Level up! Level ${after.level}!` : '';
+    setStatus(text + levelUp);
+    say(text + levelUp);
     if (result === 'right') {
       setCelebrate((count) => count + 1);
       sound((v) => playConfirmation(v * 0.3));
@@ -143,18 +145,19 @@ export default function NumberRacer() {
     timer.current = window.setTimeout(() => {
       setFeedback(null);
       setElapsed(0);
-      if (next.finished) {
-        if (!finishedRef.current) {
-          finishedRef.current = true;
-          completeGameRound('racer', `${next.difficulty}-${next.length}`);
-        }
-        setPhase('done');
-        sound((v) => playSuccess(v * 0.3));
-        say(`You finished the race! ${next.firstTry} gates on the first try.`);
-        return;
-      }
       announce(next);
-    }, result === 'right' ? 1600 : 2600);
+    }, result === 'right' ? (levelUp ? 2600 : 1600) : 2600);
+  };
+
+  /** The race never ends by itself: the child stops when they like. */
+  const finish = () => {
+    const current = raceRef.current;
+    window.clearTimeout(timer.current);
+    setFeedback(null);
+    if (current && current.passed > 0) completeGameRound('racer', `level-${endless.level}`);
+    setPhase('done');
+    sound((v) => playSuccess(v * 0.3));
+    say(current && current.passed > 0 ? `Great driving! You reached level ${endless.level}.` : 'See you next time!');
   };
 
   // One animation loop drives the gate down the road. It stops while paused, while
@@ -224,15 +227,15 @@ export default function NumberRacer() {
           { emoji: '👆', text: 'Tap a lane, or use the arrows, to steer your car.' },
           { emoji: '🏁', text: 'Drive through the gate with the right answer!' },
         ]}
-        difficulty={difficulty}
-        onDifficulty={setDifficulty}
+        difficulty={endless.difficulty}
+        onDifficulty={endless.pickDifficulty}
+        endlessLevel={endless.planned}
         onStart={start}
         onHear={() => say('Read the sign, then steer your car into the lane with the right answer. Tap a lane or use the arrows.')}
         startLabel="Start the race!"
       >
         <PillPicker value={color} options={carColors.map(({ value, label }) => ({ value, label }))} onChange={setColor} world="red" ariaLabel="Car colour" />
         <Box aria-hidden sx={{ display: 'flex', justifyContent: 'center' }}><Car color={color} size={84} /></Box>
-        <PillPicker value={length} options={lengthOptions} onChange={setLength} world="red" ariaLabel="Race length" />
       </GameIntro>
     );
   }
@@ -241,7 +244,7 @@ export default function NumberRacer() {
     return (
       <GameResults
         stars={raceStars(race)}
-        message={`You drove through ${race.length} gates! ${race.firstTry} on the first try.`}
+        message={`You reached Level ${endless.level} and drove through ${race.passed} gates! ${race.firstTry} on the first try.`}
         celebrate={celebrate}
         onPlayAgain={start}
         onChooseGame={() => navigate('/games')}
@@ -265,11 +268,13 @@ export default function NumberRacer() {
         onBack={() => { window.clearTimeout(timer.current); setPhase('intro'); }}
         score={race.passed}
         scoreLabel={`${race.passed} gates passed`}
-        progress={{ value: race.passed, total: race.length, label: `Gate ${Math.min(race.passed + 1, race.length)} of ${race.length}` }}
         actions={(
-          <RoundIconButton label={paused ? 'Keep driving' : 'Pause'} world="red" filled={paused} onClick={() => setPaused(!paused)}>
-            {paused ? <PlayArrowRounded /> : <PauseRounded />}
-          </RoundIconButton>
+          <>
+            <RoundIconButton label={paused ? 'Keep driving' : 'Pause'} world="red" filled={paused} onClick={() => setPaused(!paused)}>
+              {paused ? <PlayArrowRounded /> : <PauseRounded />}
+            </RoundIconButton>
+            <EndlessControls level={endless.level} world="red" onFinish={finish} />
+          </>
         )}
       />
 
@@ -385,6 +390,7 @@ export default function NumberRacer() {
         </Box>
       )}
       <ScreenReaderStatus message={status} />
+      <LevelUpBanner change={endless.lastChange} world="red" />
       <Confetti fire={celebrate} />
     </Page>
   );

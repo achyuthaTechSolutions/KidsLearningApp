@@ -90,11 +90,37 @@ function shuffle<T>(items: T[], random: () => number): T[] {
   return shuffled;
 }
 
-export function generateQuestion(type: QuizGameType, random: () => number = Math.random): QuizQuestion {
+export interface QuizLevel {
+  /** Answer choices, including the right one. */
+  options: number;
+  /** Highest number in Count the Objects. */
+  countMax: number;
+  /** Pattern shapes in play, easiest first. */
+  shapes: number;
+}
+
+/** The Daily Challenge and anything without a level: 4 choices, counting to 10, every pattern. */
+export const STANDARD_QUIZ: QuizLevel = { options: 4, countMax: 10, shapes: patternShapes.length };
+
+/**
+ * A quiz at an endless level: 3 choices at levels 1–2, then 4, 5 from level 7 and 6
+ * from level 11; counting from 5 up to 20; simple ABAB patterns first, longer ones later.
+ */
+export function quizLevel(level: number): QuizLevel {
+  const at = Math.max(1, Math.floor(level));
+  return {
+    options: at <= 2 ? 3 : at <= 6 ? 4 : at <= 10 ? 5 : 6,
+    countMax: Math.min(20, 4 + at),
+    shapes: Math.min(patternShapes.length, 1 + Math.floor((at - 1) / 2)),
+  };
+}
+
+export function generateQuestion(type: QuizGameType, random: () => number = Math.random, level: QuizLevel = STANDARD_QUIZ): QuizQuestion {
+  const wrongCount = level.options - 1;
   if (type === 'find-letter') {
     const letter = letterOrder[pickIndex(letterOrder.length, random)];
     const content = alphabetData[letter];
-    const wrong = shuffle(letterOrder.filter((item) => item !== letter), random).slice(0, 3);
+    const wrong = shuffle(letterOrder.filter((item) => item !== letter), random).slice(0, wrongCount);
     return {
       type,
       prompt: `Which letter makes the "${content.phonetic}" sound?`,
@@ -107,7 +133,7 @@ export function generateQuestion(type: QuizGameType, random: () => number = Math
   if (type === 'guess-animal') {
     const animal = animalData[pickIndex(animalData.length, random)];
     const wrong = shuffle(animalData.filter((item) => item.name !== animal.name), random)
-      .slice(0, 3)
+      .slice(0, wrongCount)
       .map((item) => item.name);
     return {
       type,
@@ -119,12 +145,12 @@ export function generateQuestion(type: QuizGameType, random: () => number = Math
   }
 
   if (type === 'count') {
-    const value = pickIndex(10, random) + 1;
+    const value = pickIndex(level.countMax, random) + 1;
     const content = numberData[value];
     const wrong = shuffle(
-      Array.from({ length: 10 }, (_, index) => index + 1).filter((item) => item !== value),
+      Array.from({ length: Math.max(level.countMax, level.options) }, (_, index) => index + 1).filter((item) => item !== value),
       random,
-    ).slice(0, 3);
+    ).slice(0, wrongCount);
     return {
       type,
       prompt: `How many ${content.objects} do you see? ${content.emoji.repeat(value)}`,
@@ -138,7 +164,7 @@ export function generateQuestion(type: QuizGameType, random: () => number = Math
     const letter = letterOrder[pickIndex(letterOrder.length, random)];
     const content = alphabetData[letter];
     const wrong = shuffle(letterOrder.filter((item) => item !== letter), random)
-      .slice(0, 3)
+      .slice(0, wrongCount)
       .map((item) => alphabetData[item].word);
     return {
       type,
@@ -151,9 +177,9 @@ export function generateQuestion(type: QuizGameType, random: () => number = Math
 
   if (type === 'odd-one-out') {
     const categories = [...new Set(uniqueWords.map((item) => item.category))]
-      .filter((category) => uniqueWords.filter((item) => item.category === category).length >= 3);
+      .filter((category) => uniqueWords.filter((item) => item.category === category).length >= wrongCount);
     const group = categories[pickIndex(categories.length, random)];
-    const same = shuffle(uniqueWords.filter((item) => item.category === group), random).slice(0, 3);
+    const same = shuffle(uniqueWords.filter((item) => item.category === group), random).slice(0, wrongCount);
     const others = uniqueWords.filter((item) => item.category !== group);
     const odd = others[pickIndex(others.length, random)];
     const items = shuffle([...same, odd], random);
@@ -168,11 +194,11 @@ export function generateQuestion(type: QuizGameType, random: () => number = Math
   }
 
   if (type === 'pattern') {
-    const shape = patternShapes[pickIndex(patternShapes.length, random)];
+    const shape = patternShapes[pickIndex(Math.max(1, Math.min(level.shapes, patternShapes.length)), random)];
     const period = Math.max(...shape) + 1;
     const chosen = shuffle(patternPictures, random);
     const used = chosen.slice(0, period);
-    const extra = chosen.slice(period, period + Math.max(1, 4 - period));
+    const extra = chosen.slice(period, period + Math.max(1, level.options - period));
     const answer = used[nextInShape(shape)];
     const options = shuffle([...used, ...extra], random);
     return {
@@ -188,7 +214,7 @@ export function generateQuestion(type: QuizGameType, random: () => number = Math
   const letter = letterOrder[pickIndex(letterOrder.length, random)];
   const content = alphabetData[letter];
   const wrong = shuffle(letterOrder.filter((item) => item !== letter), random)
-    .slice(0, 3)
+    .slice(0, wrongCount)
     .map((item) => alphabetData[item].word);
   return {
     type: 'listen',

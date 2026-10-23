@@ -18,9 +18,11 @@ import GameIntro from '../learning-games/GameIntro';
 import ScreenReaderStatus from '../learning-games/ScreenReaderStatus';
 import { useGameFeedback } from '../learning-games/useGameFeedback';
 import { isEditableTarget, prefersReducedMotion } from '../learning-games/motion';
-import type { GameDifficulty } from '../learning-games/difficulty';
+import { useEndlessLevel } from '../learning-games/useEndlessLevel';
+import LevelUpBanner from '../learning-games/LevelUpBanner';
+import EndlessControls from '../learning-games/EndlessControls';
 import {
-  DEFAULT_ROUND_LENGTH, ROUND_LENGTHS, catchLetter, catcherProfiles, catcherPrompt, catcherStars, createCatcherGame, fallY, nextCatcherRound,
+  catchLetter, catcherProfile, catcherPrompt, catcherStars, createCatcherGame, fallY, nextCatcherRound,
   type CatcherGame, type CatcherMotion, type LetterCase,
 } from './engine';
 
@@ -33,7 +35,6 @@ const motionOptions = [
   { value: 'still' as const, label: 'Letters stay still', emoji: '🧘' },
   { value: 'falling' as const, label: 'Letters fall slowly', emoji: '🍂' },
 ];
-const lengthOptions = ROUND_LENGTHS.map((value) => ({ value: String(value), label: `${value} letters` }));
 
 export default function AlphabetCatcher() {
   const theme = useTheme();
@@ -46,11 +47,12 @@ export default function AlphabetCatcher() {
   const reduced = prefersReducedMotion(settings.reducedMotion);
 
   const [phase, setPhase] = useState<'intro' | 'play' | 'done'>('intro');
-  const [difficulty, setDifficulty] = useState<GameDifficulty>(settings.gameDifficulty);
+  const endless = useEndlessLevel('alphabet-catcher', settings.gameDifficulty);
+  /** The level the next letter is made for, after the last catch. */
+  const nextLevel = useRef(1);
   const [letterCase, setLetterCase] = useState<LetterCase>('upper');
   const [motion, setMotion] = useState<CatcherMotion>('still');
   const [phonics, setPhonics] = useState(false);
-  const [length, setLength] = useState(String(DEFAULT_ROUND_LENGTH));
   const [game, setGame] = useState<CatcherGame | null>(null);
   const [paused, setPaused] = useState(false);
   const [shaking, setShaking] = useState<string | null>(null);
@@ -58,7 +60,6 @@ export default function AlphabetCatcher() {
   const [status, setStatus] = useState('');
   const [celebrate, setCelebrate] = useState(0);
   const gameRef = useRef<CatcherGame | null>(null);
-  const finishedRef = useRef(false);
 
   const speakRound = (next: CatcherGame) => say(catcherPrompt(next.round, next.phonics));
 
@@ -68,8 +69,9 @@ export default function AlphabetCatcher() {
   };
 
   const start = () => {
-    const next = createCatcherGame(difficulty, letterCase, phonics, Number(length));
-    finishedRef.current = false;
+    const level = endless.begin();
+    nextLevel.current = level;
+    const next = createCatcherGame(level, letterCase, phonics);
     update(next);
     setElapsed(0);
     setPaused(false);
@@ -97,7 +99,10 @@ export default function AlphabetCatcher() {
     addLetterExplored(current.round.target);
     setCelebrate((count) => count + 1);
     sound((v) => playConfirmation(v * 0.3));
-    const cheer = `You caught ${current.round.target}! ${current.round.target} is for ${info.word}.`;
+    const after = endless.record(current.roundMistakes === 0);
+    nextLevel.current = after.level;
+    const levelUp = after.change === 'up' ? ` Level up! Level ${after.level}!` : '';
+    const cheer = `You caught ${current.round.target}! ${current.round.target} is for ${info.word}.${levelUp}`;
     setStatus(cheer);
     say(cheer);
   };
@@ -105,22 +110,21 @@ export default function AlphabetCatcher() {
   const goNext = () => {
     const current = gameRef.current;
     if (!current) return;
-    const next = nextCatcherRound(current);
+    const next = nextCatcherRound(current, nextLevel.current);
     update(next);
-    if (next.finished) {
-      if (!finishedRef.current) {
-        finishedRef.current = true;
-        completeGameRound('alphabet-catcher', `${next.difficulty}-${next.letterCase}`);
-      }
-      setPhase('done');
-      setCelebrate((count) => count + 1);
-      sound((v) => playSuccess(v * 0.3));
-      say(`You caught ${next.length} letters! Super catching!`);
-      return;
-    }
     setElapsed(0);
     setStatus(catcherPrompt(next.round, next.phonics));
     speakRound(next);
+  };
+
+  /** The game never ends by itself: the child stops when they like. */
+  const finish = () => {
+    const current = gameRef.current;
+    if (current && current.caughtCount > 0) completeGameRound('alphabet-catcher', `level-${endless.level}`);
+    setPhase('done');
+    setCelebrate((count) => count + 1);
+    sound((v) => playSuccess(v * 0.3));
+    say(current && current.caughtCount > 0 ? `You caught ${current.caughtCount} letters and reached level ${endless.level}! Super catching!` : 'See you next time!');
   };
 
   // Falling letters: one animation loop that stops while paused, caught, or hidden.
@@ -175,14 +179,14 @@ export default function AlphabetCatcher() {
           { emoji: '👆', text: 'Tap that letter, or press it on the keyboard.' },
           { emoji: '🔁', text: 'Tap the speaker any time to hear it again.' },
         ]}
-        difficulty={difficulty}
-        onDifficulty={setDifficulty}
+        difficulty={endless.difficulty}
+        onDifficulty={endless.pickDifficulty}
+        endlessLevel={endless.planned}
         onStart={start}
         onHear={() => say('Listen to Pip, then tap the letter you hear. You can tap the speaker to hear it again.')}
       >
         <PillPicker value={letterCase} options={caseOptions} onChange={setLetterCase} world="violet" ariaLabel="Letter case" />
         <PillPicker value={motion} options={motionOptions} onChange={setMotion} world="violet" ariaLabel="How letters move" />
-        <PillPicker value={length} options={lengthOptions} onChange={setLength} world="violet" ariaLabel="Round length" />
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
           <FormControlLabel
             control={<Switch checked={phonics} onChange={(event) => setPhonics(event.target.checked)} />}
@@ -197,7 +201,7 @@ export default function AlphabetCatcher() {
     return (
       <GameResults
         stars={catcherStars(game)}
-        message={`You caught ${game.length} letters! ${game.firstTry} on the first try.`}
+        message={`You caught ${game.caughtCount} letters and reached Level ${endless.level}! ${game.firstTry} on the first try.`}
         celebrate={celebrate}
         onPlayAgain={start}
         onChooseGame={() => navigate('/games')}
@@ -208,7 +212,7 @@ export default function AlphabetCatcher() {
   if (!game) return null;
   const { round } = game;
   const info = alphabetData[round.target];
-  const profile = catcherProfiles[game.difficulty];
+  const profile = catcherProfile(game.level);
   const isFalling = motion === 'falling';
   const columns = round.choices.length <= 3 ? 3 : round.choices.length === 4 ? 2 : 3;
 
@@ -248,14 +252,18 @@ export default function AlphabetCatcher() {
         world="violet"
         backLabel="Back"
         onBack={() => setPhase('intro')}
-        score={game.number - (game.caught ? 0 : 1)}
-        scoreLabel={`${game.number - (game.caught ? 0 : 1)} letters caught`}
-        progress={{ value: game.number - (game.caught ? 0 : 1), total: game.length, label: `Letter ${game.number} of ${game.length}` }}
-        actions={isFalling ? (
-          <RoundIconButton label={paused ? 'Keep playing' : 'Pause'} world="violet" filled={paused} onClick={() => setPaused(!paused)}>
-            {paused ? <PlayArrowRounded /> : <PauseRounded />}
-          </RoundIconButton>
-        ) : undefined}
+        score={game.caughtCount}
+        scoreLabel={`${game.caughtCount} letters caught`}
+        actions={(
+          <>
+            {isFalling && (
+              <RoundIconButton label={paused ? 'Keep playing' : 'Pause'} world="violet" filled={paused} onClick={() => setPaused(!paused)}>
+                {paused ? <PlayArrowRounded /> : <PauseRounded />}
+              </RoundIconButton>
+            )}
+            <EndlessControls level={endless.level} world="violet" onFinish={finish} />
+          </>
+        )}
       />
 
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 2, px: 2, py: 1.5, borderRadius: '24px', bgcolor: violet.tint, flexWrap: 'wrap' }}>
@@ -316,11 +324,12 @@ export default function AlphabetCatcher() {
             {round.target} {round.target.toLowerCase()} is for {info.word}!
           </Typography>
           <Button variant="contained" color="success" endIcon={<NavigateNext />} onClick={goNext} sx={{ fontSize: '1.1rem', px: 3 }}>
-            {game.number >= game.length ? 'See Results' : 'Next Letter'}
+            Next Letter
           </Button>
         </Box>
       )}
       <ScreenReaderStatus message={status} />
+      <LevelUpBanner change={endless.lastChange} world="violet" />
       <Confetti fire={celebrate} />
     </Page>
   );

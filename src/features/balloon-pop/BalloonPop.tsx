@@ -15,8 +15,13 @@ import { playConfirmation, playError, playNote, playSuccess } from '../../servic
 import { GameHeader, GameResults } from '../learning-games/GameChrome';
 import { useGameFeedback } from '../learning-games/useGameFeedback';
 import { prefersReducedMotion } from '../learning-games/motion';
+import PillPicker from '../../components/ui/PillPicker';
+import { difficultyOptions } from '../learning-games/difficulty';
+import { useEndlessLevel } from '../learning-games/useEndlessLevel';
+import LevelUpBanner from '../learning-games/LevelUpBanner';
+import EndlessControls from '../learning-games/EndlessControls';
 import {
-  ROUND_POPS, balloonColors, balloonStars, colorIndex, createBalloonGame, popBalloon, stepBalloons, targetPhrase, valuePhrase,
+  balloonColors, balloonStars, colorIndex, createBalloonGame, popBalloon, stepBalloons, targetPhrase, valuePhrase, withLevel,
   type BalloonGame, type BalloonMode,
 } from './engine';
 
@@ -54,6 +59,7 @@ export default function BalloonPop() {
   const sky = useWorld('blue');
   const { say, sound, settings } = useGameFeedback();
   const incrementGamesCompleted = useAppStore((s) => s.incrementGamesCompleted);
+  const endless = useEndlessLevel('balloons', settings.gameDifficulty);
 
   const [status, setStatus] = useState<Status>('menu');
   const [game, setGame] = useState<BalloonGame | null>(null);
@@ -72,7 +78,7 @@ export default function BalloonPop() {
   }, [say]);
 
   const start = (mode: BalloonMode) => {
-    const next = createBalloonGame(mode);
+    const next = createBalloonGame(mode, endless.begin());
     gameRef.current = next;
     setGame(next);
     setBursts([]);
@@ -113,8 +119,11 @@ export default function BalloonPop() {
     const current = gameRef.current;
     if (!current || status !== 'playing') return;
     const outcome = popBalloon(current, id);
-    gameRef.current = outcome.game;
-    setGame(outcome.game);
+    // A finished target counts toward the endless level; the sky follows the new level.
+    const after = outcome.targetDone ? endless.record(outcome.firstTry) : null;
+    const nextGame = after ? withLevel(outcome.game, after.level) : outcome.game;
+    gameRef.current = nextGame;
+    setGame(nextGame);
     const balloon = outcome.balloon;
     if (!balloon) return;
 
@@ -133,27 +142,43 @@ export default function BalloonPop() {
     window.setTimeout(() => setBursts((items) => items.filter((item) => item.id !== balloon.id)), 500);
     sound((v) => playNote(880 + outcome.game.targetPops * 110, 0.12, v * 0.28, 'triangle'));
 
-    if (outcome.game.finished) {
-      incrementGamesCompleted();
-      setStatus('done');
-      setCelebrate((count) => count + 1);
-      sound((v) => playSuccess(v * 0.3));
-      say(`Hooray! You popped ${ROUND_POPS} balloons!`);
-      return;
-    }
     if (outcome.newTarget) {
       sound((v) => playConfirmation(v * 0.25));
       setCelebrate((count) => count + 1);
-      announceTarget(outcome.game);
+      if (after?.change === 'up') {
+        const phrase = `Level up! Level ${after.level}! ${targetPhrase(nextGame.mode, nextGame.target)}`;
+        setAnnouncement(phrase);
+        say(phrase);
+      } else {
+        announceTarget(nextGame);
+      }
       return;
     }
     say(current.mode === 'colors' ? 'Pop!' : balloon.value);
+  };
+
+  /** The game never ends by itself: the child stops when they like. */
+  const finish = () => {
+    const current = gameRef.current;
+    if (current && current.pops > 0) incrementGamesCompleted();
+    setStatus('done');
+    setCelebrate((count) => count + 1);
+    sound((v) => playSuccess(v * 0.3));
+    say(current && current.pops > 0 ? `Hooray! You popped ${current.pops} balloons and reached level ${endless.level}!` : 'See you next time!');
   };
 
   if (status === 'menu' || !game) {
     return (
       <Page>
         <PageHero world="blue" title="Balloon Pop" subtitle="Listen, look, and pop the right balloons!" emoji="🎈" />
+        <Box sx={{ mb: 3, textAlign: 'center' }}>
+          <Box data-testid="endless-level" sx={{ mb: 2, mx: 'auto', maxWidth: 520, p: 1.5, borderRadius: '20px', bgcolor: sky.tint, textAlign: 'center' }}>
+            <Typography sx={{ fontFamily: fonts.display, fontWeight: 700, fontSize: '1.5rem', color: sky.text }}>Level {endless.planned}</Typography>
+            <Typography sx={{ fontWeight: 700 }}>The levels never end. Finish 3 balloons in a row with no wrong pops to go up a level!</Typography>
+          </Box>
+          <Typography variant="h4" component="h2" sx={{ mb: 1.25, fontSize: '1.15rem' }}>Start from</Typography>
+          <PillPicker value={endless.difficulty} options={difficultyOptions} onChange={endless.pickDifficulty} world="blue" ariaLabel="Game level" />
+        </Box>
         <Grid container spacing={{ xs: 2, md: 3 }}>
           {modes.map((item, index) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item.mode}>
@@ -168,8 +193,8 @@ export default function BalloonPop() {
   if (status === 'done') {
     return (
       <GameResults
-        stars={balloonStars(game.misses)}
-        message={`You popped all ${ROUND_POPS} balloons!`}
+        stars={balloonStars(game)}
+        message={`You popped ${game.pops} balloons and reached Level ${endless.level}!`}
         celebrate={celebrate}
         onPlayAgain={() => start(game.mode)}
         onChooseGame={() => navigate('/games')}
@@ -190,12 +215,14 @@ export default function BalloonPop() {
         onBack={() => setStatus('menu')}
         score={game.pops}
         scoreLabel={`${game.pops} balloons popped`}
-        progress={{ value: game.pops, total: ROUND_POPS, label: `${game.pops} of ${ROUND_POPS} popped` }}
-        actions={
-          <RoundIconButton label={paused ? 'Keep playing' : 'Pause'} world="blue" filled={paused} onClick={() => setStatus(paused ? 'playing' : 'paused')}>
-            {paused ? <PlayArrowRounded /> : <PauseRounded />}
-          </RoundIconButton>
-        }
+        actions={(
+          <>
+            <RoundIconButton label={paused ? 'Keep playing' : 'Pause'} world="blue" filled={paused} onClick={() => setStatus(paused ? 'playing' : 'paused')}>
+              {paused ? <PlayArrowRounded /> : <PauseRounded />}
+            </RoundIconButton>
+            <EndlessControls level={endless.level} world="blue" onFinish={finish} />
+          </>
+        )}
       />
 
       <Box
@@ -350,6 +377,7 @@ export default function BalloonPop() {
       <Box aria-live="polite" sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>
         {announcement}
       </Box>
+      <LevelUpBanner change={endless.lastChange} world="blue" />
       <Confetti fire={celebrate} />
     </Page>
   );

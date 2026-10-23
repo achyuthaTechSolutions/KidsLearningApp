@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { lightTheme, darkTheme } from './theme/theme';
 import { useAppStore } from './store/useAppStore';
-import { setSpeechVolume } from './services/speech';
+import { setSpeechVolume, speechVolumeFor } from './services/speech';
 import AppLayout from './components/layout/AppLayout';
 import GameLoading from './features/learning-games/GameLoading';
 import HomePage from './features/home/HomePage';
@@ -64,7 +64,7 @@ export default function App() {
   const reducedMotion = useAppStore((s) => s.settings.reducedMotion);
 
   useEffect(() => {
-    setSpeechVolume(volume);
+    setSpeechVolume(speechVolumeFor(volume));
   }, [volume]);
 
   useEffect(() => {
