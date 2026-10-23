@@ -98,6 +98,9 @@ export interface LearningProgress {
 /** A parent-chosen starting level for the Play games. Age is only a hint. */
 export type GameDifficulty = 'beginner' | 'intermediate' | 'advanced';
 
+/** The app's overall look. Classic is the original design. */
+export type AppLook = 'classic' | 'garden' | 'blocks' | 'map';
+
 export interface AppSettings {
   speechEnabled: boolean;
   soundEnabled: boolean;
@@ -113,4 +116,6 @@ export interface AppSettings {
   storyCaptions: boolean;
   /** Quiet music while playing games, activities, and stories. */
   backgroundMusic: boolean;
+  /** Overall look: colours, shapes, Avi, Home, and the Games list. */
+  appLook: AppLook;
 }

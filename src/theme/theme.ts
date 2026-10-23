@@ -1,17 +1,27 @@
 import { createTheme, alpha, type PaletteMode, type Theme } from '@mui/material/styles';
+import type { AppLook } from '../types';
+import { looks } from './looks';
 import { colors, fonts, lip, motion, radii, worlds } from './tokens';
 
 type ButtonTone = 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info';
 
-function makeTheme(mode: PaletteMode): Theme {
+/**
+ * The MUI theme for a mode and look. In dark mode every look keeps the Classic dark
+ * colours, which are contrast-checked, and changes only its shapes and fonts.
+ */
+function makeTheme(mode: PaletteMode, look: AppLook = 'classic'): Theme {
   const dark = mode === 'dark';
-  const outline = dark ? colors.darkOutline : colors.outline;
-  const outlineStrong = dark ? '#433F6E' : colors.outlineStrong;
+  const spec = looks[look];
+  const outline = dark ? colors.darkOutline : spec.outline;
+  const outlineStrong = dark ? '#433F6E' : spec.outlineStrong;
+  const block = spec.surface === 'block';
+  const soft = spec.surface === 'soft';
+  const ink = dark ? colors.darkText : spec.ink;
 
   const base = createTheme({
     palette: {
       mode,
-      primary: { main: worlds.violet.main, light: worlds.violet.light, dark: worlds.violet.dark, contrastText: '#FFFFFF' },
+      primary: dark ? { main: worlds.violet.main, light: worlds.violet.light, dark: worlds.violet.dark, contrastText: '#FFFFFF' } : spec.primary,
       secondary: { main: worlds.green.main, light: worlds.green.light, dark: worlds.green.dark, contrastText: '#FFFFFF' },
       success: { main: worlds.green.main, light: worlds.green.light, dark: worlds.green.dark, contrastText: '#FFFFFF' },
       warning: { main: worlds.sun.main, light: worlds.sun.light, dark: worlds.sun.dark, contrastText: worlds.sun.onMain },
@@ -19,13 +29,13 @@ function makeTheme(mode: PaletteMode): Theme {
       info: { main: worlds.blue.main, light: worlds.blue.light, dark: worlds.blue.dark, contrastText: '#FFFFFF' },
       background: dark
         ? { default: colors.darkBackground, paper: colors.darkSurface }
-        : { default: colors.background, paper: colors.surface },
+        : { default: spec.background, paper: spec.paper },
       text: dark
         ? { primary: colors.darkText, secondary: colors.darkTextSecondary }
-        : { primary: colors.text, secondary: colors.textSecondary },
+        : { primary: spec.text, secondary: spec.textSecondary },
       divider: outline,
     },
-    shape: { borderRadius: radii.md },
+    shape: { borderRadius: look === 'classic' ? radii.md : spec.radius - 6 },
     typography: {
       fontFamily: fonts.body,
       h1: { fontFamily: fonts.display, fontWeight: 700, fontSize: '2.75rem', lineHeight: 1.1, letterSpacing: '-0.01em' },
@@ -67,12 +77,31 @@ function makeTheme(mode: PaletteMode): Theme {
             const tone = (ownerState.color && ownerState.color !== 'inherit' ? ownerState.color : 'primary') as ButtonTone;
             const toneColors = palette[tone];
             const common = {
-              borderRadius: radii.lg,
+              borderRadius: look === 'classic' ? radii.lg : spec.radius,
               padding: '10px 22px',
               fontSize: '1.02rem',
               minHeight: 48,
               transition: `transform ${motion.press} ${motion.ease}, box-shadow ${motion.press} ${motion.ease}, background-color ${motion.fast}, filter ${motion.fast}`,
             };
+            if (ownerState.variant === 'contained' && block) {
+              // Bright Blocks: a thick ink outline and a hard shadow that the button presses into.
+              return {
+                ...common,
+                border: `3px solid ${ink}`,
+                boxShadow: `4px 4px 0 ${ink}`,
+                '&:hover': { backgroundColor: toneColors.main, boxShadow: `4px 4px 0 ${ink}`, filter: 'brightness(1.06)' },
+                '&:active': { transform: 'translate(3px, 3px)', boxShadow: `1px 1px 0 ${ink}` },
+                '&.Mui-disabled': { boxShadow: 'none', border: `3px solid ${alpha(ink, 0.3)}`, backgroundColor: alpha(palette.text.primary, 0.1), color: alpha(palette.text.primary, 0.4) },
+              };
+            }
+            if (ownerState.variant === 'contained' && soft) {
+              return {
+                ...common,
+                '&:hover': { backgroundColor: toneColors.main, filter: 'brightness(1.08)' },
+                '&:active': { transform: 'scale(0.97)' },
+                '&.Mui-disabled': { backgroundColor: alpha(palette.text.primary, 0.1), color: alpha(palette.text.primary, 0.4) },
+              };
+            }
             if (ownerState.variant === 'contained') {
               return {
                 ...common,
@@ -80,6 +109,18 @@ function makeTheme(mode: PaletteMode): Theme {
                 '&:hover': { backgroundColor: toneColors.main, boxShadow: `0 ${lip.md}px 0 ${toneColors.dark}`, filter: 'brightness(1.06)' },
                 '&:active': { transform: `translateY(${lip.md - 1}px)`, boxShadow: `0 1px 0 ${toneColors.dark}` },
                 '&.Mui-disabled': { boxShadow: 'none', backgroundColor: alpha(palette.text.primary, 0.1), color: alpha(palette.text.primary, 0.4) },
+              };
+            }
+            if (ownerState.variant === 'outlined' && (block || soft)) {
+              return {
+                ...common,
+                border: `${block ? 3 : 2}px solid ${block ? ink : outlineStrong}`,
+                backgroundColor: palette.background.paper,
+                color: dark ? palette.text.primary : block ? ink : toneColors.dark,
+                boxShadow: block ? `3px 3px 0 ${ink}` : 'none',
+                '&:hover': { border: `${block ? 3 : 2}px solid ${block ? ink : toneColors.main}`, backgroundColor: alpha(toneColors.main, 0.06), boxShadow: block ? `3px 3px 0 ${ink}` : 'none' },
+                '&:active': block ? { transform: 'translate(2px, 2px)', boxShadow: `1px 1px 0 ${ink}` } : { transform: 'scale(0.97)' },
+                '&.Mui-disabled': { border: `2px solid ${outline}`, boxShadow: 'none' },
               };
             }
             if (ownerState.variant === 'outlined') {
@@ -102,10 +143,10 @@ function makeTheme(mode: PaletteMode): Theme {
         defaultProps: { elevation: 0 },
         styleOverrides: {
           root: {
-            borderRadius: radii.xl,
-            border: `2px solid ${outline}`,
+            borderRadius: look === 'classic' ? radii.xl : spec.radius + 4,
+            border: block ? `3px solid ${ink}` : `2px solid ${outline}`,
             backgroundColor: palette.background.paper,
-            boxShadow: dark ? 'none' : `0 10px 30px ${alpha(worlds.violet.dark, 0.06)}`,
+            boxShadow: dark || soft ? 'none' : block ? `5px 5px 0 ${ink}` : `0 10px 30px ${alpha(worlds.violet.dark, 0.06)}`,
             overflow: 'hidden',
           },
         },
@@ -150,10 +191,10 @@ function makeTheme(mode: PaletteMode): Theme {
             '&:hover': { backgroundColor: alpha(worlds.violet.main, 0.06) },
             '&:active': { transform: `translateY(${lip.sm - 1}px)`, boxShadow: `0 1px 0 ${outlineStrong}` },
             '&.Mui-selected, &.Mui-selected:hover': {
-              backgroundColor: worlds.violet.main,
-              color: '#FFFFFF',
-              borderColor: `${worlds.violet.main} !important`,
-              boxShadow: `0 ${lip.sm}px 0 ${worlds.violet.dark}`,
+              backgroundColor: palette.primary.main,
+              color: palette.primary.contrastText,
+              borderColor: `${palette.primary.main} !important`,
+              boxShadow: `0 ${lip.sm}px 0 ${palette.primary.dark}`,
             },
           },
         },
@@ -209,3 +250,15 @@ function makeTheme(mode: PaletteMode): Theme {
 
 export const lightTheme = makeTheme('light');
 export const darkTheme = makeTheme('dark');
+
+const cache = new Map<string, Theme>([['light-classic', lightTheme], ['dark-classic', darkTheme]]);
+
+export function themeFor(mode: PaletteMode, look: AppLook): Theme {
+  const key = `${mode}-${look}`;
+  let theme = cache.get(key);
+  if (!theme) {
+    theme = makeTheme(mode, look);
+    cache.set(key, theme);
+  }
+  return theme;
+}

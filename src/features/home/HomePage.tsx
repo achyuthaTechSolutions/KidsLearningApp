@@ -15,6 +15,10 @@ import ActivityCard from '../../components/ui/ActivityCard';
 import { gradient, resolveWorld, tactile, useWorld } from '../../components/ui/world';
 import { fonts, worlds, type WorldKey } from '../../theme/tokens';
 import Illustration from '../../components/ui/Illustration';
+import { useLook } from '../../theme/useLook';
+import GardenHome from './looks/GardenHome';
+import BlocksHome from './looks/BlocksHome';
+import MapHome from './looks/MapHome';
 
 function greeting(now = new Date()): string {
   const hour = now.getHours();
@@ -57,7 +61,16 @@ function StatTile({ world, emoji, label, value, total }: { world: WorldKey; emoj
   );
 }
 
+/** Home for the parent's chosen look. */
 export default function HomePage() {
+  const look = useLook();
+  if (look.id === 'garden') return <GardenHome />;
+  if (look.id === 'blocks') return <BlocksHome />;
+  if (look.id === 'map') return <MapHome />;
+  return <ClassicHome />;
+}
+
+function ClassicHome() {
   const navigate = useNavigate();
   const theme = useTheme();
   const progress = useAppStore((s) => s.progress);

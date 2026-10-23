@@ -4,12 +4,17 @@ import { Box, Typography, Grid } from '@mui/material';
 import Page from '../../components/ui/Page';
 import PageHero from '../../components/ui/PageHero';
 import ActivityCard from '../../components/ui/ActivityCard';
-import type { WorldKey } from '../../theme/tokens';
 import type { QuizGameType } from './questions';
 import QuizRound from './QuizRound';
 import { gameCatalog, gameCategories } from './catalog';
+import { useAppStore } from '../../store/useAppStore';
+import { useLook } from '../../theme/useLook';
+import { hubItems, type HubItem, type QuizCard } from './hubs/hubData';
+import GardenGames from './hubs/GardenGames';
+import BlocksGames from './hubs/BlocksGames';
+import MapGames from './hubs/MapGames';
 
-const gameList: { type: QuizGameType; title: string; description: string; emoji: string; world: WorldKey }[] = [
+const gameList: QuizCard[] = [
   { type: 'find-letter', title: 'Find the Letter', description: 'Identify the letter by its sound!', emoji: '🔤', world: 'green' },
   { type: 'guess-animal', title: 'Guess the Animal', description: 'Which animal makes this sound?', emoji: '🐾', world: 'orange' },
   { type: 'count', title: 'Count the Objects', description: 'How many objects do you see?', emoji: '🔢', world: 'sun' },
@@ -24,7 +29,17 @@ const gameList: { type: QuizGameType; title: string; description: string; emoji:
 export default function LearningGames() {
   const [gameType, setGameType] = useState<QuizGameType | 'select'>('select');
   const navigate = useNavigate();
+  const look = useLook();
+  const progress = useAppStore((s) => s.progress);
   const activeGame = gameList.find((game) => game.type === gameType);
+
+  if (gameType === 'select' && look.id !== 'classic') {
+    const items = hubItems(progress, gameList);
+    const open = (item: HubItem) => (item.quiz ? setGameType(item.quiz) : item.path && navigate(item.path));
+    if (look.id === 'garden') return <GardenGames items={items} onOpen={open} />;
+    if (look.id === 'blocks') return <BlocksGames items={items} badges={progress.achievementsEarned.length} onOpen={open} />;
+    return <MapGames items={items} onOpen={open} onBack={() => navigate('/')} />;
+  }
 
   if (gameType === 'select') {
     return (
